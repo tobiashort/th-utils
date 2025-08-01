@@ -1,0 +1,12 @@
+# github.com/tobiashort/ansi-go v0.0.0-20250729191540-72438c61f4ff
+## explicit; go 1.24
+github.com/tobiashort/ansi-go
+# github.com/tobiashort/cfmt-go v0.0.0-20250729192009-75c817e11e2c
+## explicit; go 1.24
+github.com/tobiashort/cfmt-go
+# github.com/tobiashort/isatty-go v0.0.0-20250729191520-f567daa300f4
+## explicit; go 1.24
+github.com/tobiashort/isatty-go
+# github.com/tobiashort/worker-go v0.0.0-20250731181545-0c3bca8c0e19
+## explicit; go 1.24
+github.com/tobiashort/worker-go

@@ -1,0 +1,8 @@
+github.com/tobiashort/ansi-go v0.0.0-20250729191540-72438c61f4ff h1:d91zcoC5EB7SyOwXym+eWYtFL+lRwxJbc3B5Oj7xZIs=
+github.com/tobiashort/ansi-go v0.0.0-20250729191540-72438c61f4ff/go.mod h1:yPoTE564mrx3g7842t9vvduaGlzo38iKRjIqtGANbyU=
+github.com/tobiashort/cfmt-go v0.0.0-20250729192009-75c817e11e2c h1:OigxXBnKNKcmUKIzfseFuhQJ8piGo9lZoSDouvpmMo8=
+github.com/tobiashort/cfmt-go v0.0.0-20250729192009-75c817e11e2c/go.mod h1:tE+kdUyDxTVjuWG+lgM2VFXmnEyAGXBYtG2heGyuITs=
+github.com/tobiashort/isatty-go v0.0.0-20250729191520-f567daa300f4 h1:QJRror5GGCrzPq2UhOH8QBFwSEnGMCZuGV0CRNtMccg=
+github.com/tobiashort/isatty-go v0.0.0-20250729191520-f567daa300f4/go.mod h1:SR1HPbCAU42WyNiMZUkT4uaFR0BhWEUI++hmevlg46Y=
+github.com/tobiashort/worker-go v0.0.0-20250731181545-0c3bca8c0e19 h1:xz+jJVSJEIpCSngZE7YugVJNnJ3daSx+hRx7i8eT6IY=
+github.com/tobiashort/worker-go v0.0.0-20250731181545-0c3bca8c0e19/go.mod h1:FEKJbeUUrLUHfSeEo53AHilq2unxp3BXUv2DSiVIOFM=

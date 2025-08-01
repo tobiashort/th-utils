@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+
+	"github.com/tobiashort/worker-go"
 )
 
 var utils = []string{
@@ -58,13 +60,28 @@ func build(args []string) error {
 		}
 		return nil
 	} else {
+		pool := worker.NewPool(5)
+		var errorSeen bool
 		for _, util := range utils {
-			err := buildUtil(util)
-			if err != nil {
-				return nil
-			}
+			worker := pool.GetWorker()
+			go func() {
+				worker.Printf("#y{COMPILING} %s", util)
+				err := buildUtil(util)
+				if err != nil {
+					worker.Logf("#r{ERROR} %s", err)
+					errorSeen = true
+				} else {
+					worker.Logf("#g{SUCCESS} %s", util)
+				}
+				worker.Done()
+			}()
 		}
-		return nil
+		pool.Wait()
+		if errorSeen {
+			return fmt.Errorf("check logs")
+		} else {
+			return nil
+		}
 	}
 }
 
