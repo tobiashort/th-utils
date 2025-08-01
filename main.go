@@ -1,45 +1,32 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
+	"github.com/tobiashort/cfmt-go"
 	"github.com/tobiashort/worker-go"
 )
 
-var utils = []string{
-	"append",
-	"prepend",
+var prefix = "th-"
+var installDir = os.ExpandEnv("$HOME/.th-utils/")
+
+func ensureDir(dir string) {
+	err := os.RemoveAll(dir)
+	if err != nil {
+		panic(err)
+	}
+
+	err = os.MkdirAll(dir, 0755)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func main() {
-	args := os.Args
-	if len(args) <= 1 {
-		help()
-		os.Exit(1)
-	}
-
-	switch args[1] {
-	case "help":
-		help()
-		os.Exit(0)
-	case "build":
-		err := build(args[1:])
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-	case "clean":
-		clean()
-		os.Exit(0)
-	}
-}
-
-var prefix = "th-"
-
-func build(args []string) error {
-	os.MkdirAll("build", 0755)
+	ensureDir("build")
+	ensureDir(installDir)
 
 	buildUtil := func(util string) error {
 		cmd := exec.Command("go", "build", "-o", "build/"+prefix+util, "./"+util)
@@ -52,49 +39,66 @@ func build(args []string) error {
 		return nil
 	}
 
-	if len(args) > 1 {
-		util := args[1]
-		err := buildUtil(util)
+	installUtil := func(util string) error {
+		cmd := exec.Command("cp", "build/"+prefix+util, installDir)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err := cmd.Run()
 		if err != nil {
 			return err
 		}
 		return nil
-	} else {
-		pool := worker.NewPool(5)
-		var errorSeen bool
-		for _, util := range utils {
-			worker := pool.GetWorker()
-			go func() {
-				worker.Printf("#y{COMPILING} %s", util)
-				err := buildUtil(util)
+	}
+
+	entries, err := os.ReadDir(".")
+	if err != nil {
+		panic(err)
+	}
+
+	utils := make([]string, 0)
+	for _, entry := range entries {
+		match := entry.IsDir()
+		match = match && entry.Name() != "build"
+		match = match && entry.Name() != "vendor"
+		match = match && !strings.HasPrefix(entry.Name(), ".")
+
+		if match {
+			utils = append(utils, entry.Name())
+		}
+	}
+
+	errorSeen := false
+	pool := worker.NewPool(5)
+	for _, util := range utils {
+		worker := pool.GetWorker()
+		go func() {
+			worker.Printf("#y{%s}", util)
+			err := buildUtil(util)
+			if err != nil {
+				errorSeen = true
+				worker.Logf("#r{ERROR} %s: %v", util, err)
+			} else {
+				err := installUtil(util)
 				if err != nil {
-					worker.Logf("#r{ERROR} %s", err)
 					errorSeen = true
+					worker.Logf("#r{ERROR} %s: %v", util, err)
 				} else {
 					worker.Logf("#g{SUCCESS} %s", util)
 				}
-				worker.Done()
-			}()
-		}
-		pool.Wait()
-		if errorSeen {
-			return fmt.Errorf("check logs")
-		} else {
-			return nil
-		}
+			}
+			worker.Done()
+		}()
 	}
-}
 
-func clean() {
-	os.RemoveAll("build")
-}
+	pool.Wait()
 
-func help() {
-	fmt.Print(`usage: th-utils CMD
-
-CMD:
-  build       - build all utils
-  clean       - remove generated files
-  help        - print help
-`)
+	if errorSeen {
+		cfmt.Printf("#r{---------------}\n")
+		cfmt.Printf("#r{OVERALL FAILURE}\n")
+		cfmt.Printf("#r{---------------}\n")
+	} else {
+		cfmt.Printf("#g{----------------%s}\n", strings.Repeat("-", len(installDir)))
+		cfmt.Printf("#g{OVERALL SUCCESS} %s\n", installDir)
+		cfmt.Printf("#g{----------------%s}\n", strings.Repeat("-", len(installDir)))
+	}
 }

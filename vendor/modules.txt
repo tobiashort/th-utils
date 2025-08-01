@@ -4,9 +4,18 @@ github.com/tobiashort/ansi-go
 # github.com/tobiashort/cfmt-go v0.0.0-20250729192009-75c817e11e2c
 ## explicit; go 1.24
 github.com/tobiashort/cfmt-go
+# github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08
+## explicit; go 1.24
+github.com/tobiashort/groupby-go
 # github.com/tobiashort/isatty-go v0.0.0-20250729191520-f567daa300f4
 ## explicit; go 1.24
 github.com/tobiashort/isatty-go
+# github.com/tobiashort/jwt-decode v0.0.0-20250419075139-d478d95b1002
+## explicit; go 1.19
+github.com/tobiashort/jwt-decode/jwt
+# github.com/tobiashort/jwt-encode v0.0.0-20250419075123-a13d31a0bee9
+## explicit; go 1.19
+github.com/tobiashort/jwt-encode/jwt
 # github.com/tobiashort/worker-go v0.0.0-20250731181545-0c3bca8c0e19
 ## explicit; go 1.24
 github.com/tobiashort/worker-go
