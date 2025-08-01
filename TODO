@@ -1,5 +1,5 @@
-[ ] append
-[ ] append-nl
+[x] append
+[x] append-nl
 [ ] base64
 [ ] cidr-to-mask
 [ ] ciphersuite-checker
@@ -24,7 +24,7 @@
 [ ] mask-to-cidr
 [ ] pipe-sum
 [ ] ports-to-port-ranges
-[ ] prepend
+[x] prepend
 [ ] random-string
 [ ] raw-deflate
 [ ] raw-inflate

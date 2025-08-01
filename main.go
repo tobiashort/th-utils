@@ -8,11 +8,12 @@ import (
 
 var utils = []string{
 	"append",
+	"prepend",
 }
 
 func main() {
 	args := os.Args
-	if len(args) <= 1 || len(args) > 2 {
+	if len(args) <= 1 {
 		help()
 		os.Exit(1)
 	}
@@ -22,7 +23,7 @@ func main() {
 		help()
 		os.Exit(0)
 	case "build":
-		err := build()
+		err := build(args[1:])
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -33,20 +34,38 @@ func main() {
 	}
 }
 
-func build() error {
+var prefix = "th-"
+
+func build(args []string) error {
 	os.MkdirAll("build", 0755)
 
-	for _, u := range utils {
-		cmd := exec.Command("go", "build", "-o", "build/"+u, "./"+u)
+	buildUtil := func(util string) error {
+		cmd := exec.Command("go", "build", "-o", "build/"+prefix+util, "./"+util)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		err := cmd.Run()
 		if err != nil {
 			return err
 		}
+		return nil
 	}
 
-	return nil
+	if len(args) > 1 {
+		util := args[1]
+		err := buildUtil(util)
+		if err != nil {
+			return err
+		}
+		return nil
+	} else {
+		for _, util := range utils {
+			err := buildUtil(util)
+			if err != nil {
+				return nil
+			}
+		}
+		return nil
+	}
 }
 
 func clean() {
