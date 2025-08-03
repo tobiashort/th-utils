@@ -8,6 +8,6 @@ Options:
   -h, --help  Show this help message and exit
 
 Positional arguments:
-  Suffix      the string that should be appended (required)
+  Suffix      the string that should be appended
 
 ```

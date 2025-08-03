@@ -2,39 +2,41 @@ package main
 
 import (
 	"encoding/base64"
-	"flag"
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/tobiashort/clap-go"
 )
 
+type Args struct {
+	Raw    bool `clap:"description='no padding'"`
+	Url    bool `clap:"description='url and file safe'"`
+	Decode bool `clap:"description='decode otherwise encode'"`
+}
+
 func main() {
-	var raw bool
-	var url bool
-	var decode bool
-	flag.BoolVar(&raw, "r", false, "no padding")
-	flag.BoolVar(&url, "u", false, "url and file safe")
-	flag.BoolVar(&decode, "d", false, "decode otherwise encode")
-	flag.Parse()
+	args := Args{}
+	clap.Parse(&args)
 	data, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		panic(err)
 	}
 	var encoding *base64.Encoding
-	if raw {
-		if url {
+	if args.Raw {
+		if args.Url {
 			encoding = base64.RawURLEncoding
 		} else {
 			encoding = base64.RawStdEncoding
 		}
 	} else {
-		if url {
+		if args.Url {
 			encoding = base64.URLEncoding
 		} else {
 			encoding = base64.StdEncoding
 		}
 	}
-	if decode {
+	if args.Decode {
 		decoded, err := encoding.DecodeString(string(data))
 		fmt.Print(string(decoded))
 		if err != nil {
