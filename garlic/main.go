@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -11,7 +10,14 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/tobiashort/clap-go"
 )
+
+type Args struct {
+	Dir    string `clap:"positional,description='Optional directory otherwise the current working directory is used'"`
+	Editor string `clap:"description='The path to the editor program to be opened'"`
+}
 
 func assertNil(val any) {
 	if val != nil {
@@ -19,37 +25,21 @@ func assertNil(val any) {
 	}
 }
 
-func usage() {
-	fmt.Fprintf(os.Stderr, `Usage: garlic [dir]
- 
-ARGUMENTS
-            [dir]   optional directory otherwise the current working directory
-                    is used.
- 
-OPTIONS
-`)
-	flag.PrintDefaults()
-}
-
 func main() {
-	var dir string
-	var editor string
+	args := Args{}
+	clap.Parse(&args)
 
-	flag.Usage = usage
-	flag.StringVar(&editor, "editor", os.Getenv("EDITOR"), "editor to be used")
-	flag.Parse()
-
-	if flag.NArg() == 0 {
+	dir := args.Dir
+	if dir == "" {
 		var err error
 		dir, err = os.Getwd()
 		assertNil(err)
-	} else if flag.NArg() == 1 {
-		dir = flag.Arg(0)
-	} else {
-		usage()
-		os.Exit(1)
 	}
 
+	editor := args.Editor
+	if editor == "" {
+		editor = os.Getenv("EDITOR")
+	}
 	if editor == "" {
 		fmt.Fprintf(os.Stderr, "No editor configured. Use EDITOR environment variable or -editor flag.\n")
 		os.Exit(1)
