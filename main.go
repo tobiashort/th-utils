@@ -6,11 +6,14 @@ import (
 	"strings"
 
 	"github.com/tobiashort/cfmt-go"
+	"github.com/tobiashort/clap-go"
 	"github.com/tobiashort/worker-go"
 )
 
-var prefix = "th-"
-var installDir = os.ExpandEnv("$HOME/.th-utils/")
+type Args struct {
+	Prefix     string `clap:"default-value='th-''"`
+	InstallDir string `clap:"default-value='$HOME/.th-utils/'"`
+}
 
 func ensureDir(dir string) {
 	err := os.RemoveAll(dir)
@@ -25,6 +28,11 @@ func ensureDir(dir string) {
 }
 
 func main() {
+	args := Args{}
+	clap.Parse(&args)
+	prefix := args.Prefix
+	installDir := os.ExpandEnv(args.InstallDir)
+
 	ensureDir("build")
 	ensureDir(installDir)
 
@@ -93,12 +101,12 @@ func main() {
 	pool.Wait()
 
 	if errorSeen {
-		cfmt.Printf("#r{---------------}\n")
-		cfmt.Printf("#r{OVERALL FAILURE}\n")
-		cfmt.Printf("#r{---------------}\n")
+		cfmt.Printf("#r{-----}\n")
+		cfmt.Printf("#r{ERROR}\n")
+		cfmt.Printf("#r{-----}\n")
 	} else {
 		cfmt.Printf("#g{----------------%s}\n", strings.Repeat("-", len(installDir)))
-		cfmt.Printf("#g{OVERALL SUCCESS} %s\n", installDir)
+		cfmt.Printf("#g{SUCCESS} %s\n", installDir)
 		cfmt.Printf("#g{----------------%s}\n", strings.Repeat("-", len(installDir)))
 	}
 }
