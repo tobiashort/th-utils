@@ -1,6 +1,6 @@
 ```
 Usage:
-  garlic [OPTIONS] [Dir]
+  rename-move-delete-files [OPTIONS] [Dir]
 
 Options:
   -e, --editor <Editor>  The path to the editor program to be opened
