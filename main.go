@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/tobiashort/cfmt-go"
@@ -11,8 +12,9 @@ import (
 )
 
 type Args struct {
-	Prefix     string `clap:"default-value='th-''"`
-	InstallDir string `clap:"default-value='$HOME/.th-utils/'"`
+	Prefix          string `clap:"default-value='th-',description='the prefix each binary will be given'"`
+	InstallDir      string `clap:"default-value='$HOME/.th-utils/',description='install directory where tool are going to be installed'"`
+	GenerateReadmes bool   `clap:"short=r,long=readmes,description='generates README.md for each tool'"`
 }
 
 func ensureDir(dir string) {
@@ -37,9 +39,7 @@ func main() {
 	ensureDir(installDir)
 
 	buildUtil := func(util string) error {
-		cmd := exec.Command("go", "build", "-o", "build/"+prefix+util, "./"+util)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
+		cmd := exec.Command("go", "build", "-o", filepath.Join("build", prefix+util), "."+string(filepath.Separator)+util)
 		err := cmd.Run()
 		if err != nil {
 			return err
@@ -48,12 +48,27 @@ func main() {
 	}
 
 	installUtil := func(util string) error {
-		cmd := exec.Command("cp", "build/"+prefix+util, installDir)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
+		cmd := exec.Command("cp", filepath.Join("build", prefix+util), installDir)
 		err := cmd.Run()
 		if err != nil {
 			return err
+		}
+		return nil
+	}
+
+	generateReadme := func(util string) error {
+		cmd := exec.Command("go", "run", "."+string(filepath.Separator)+util, "-h")
+		bs, err := cmd.Output()
+		if err != nil {
+			return err
+		}
+		if len(bs) > 0 {
+			bs = append([]byte{'`', '`', '`', '\n'}, bs...)
+			bs = append(bs, '\n', '`', '`', '`', '\n')
+			err = os.WriteFile(filepath.Join(".", util, "README.md"), bs, 0644)
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	}
@@ -81,17 +96,27 @@ func main() {
 		worker := pool.GetWorker()
 		go func() {
 			worker.Printf("#y{%s}", util)
-			err := buildUtil(util)
-			if err != nil {
-				errorSeen = true
-				worker.Logf("#r{ERROR} %s: %v", util, err)
-			} else {
-				err := installUtil(util)
+			if args.GenerateReadmes {
+				err := generateReadme(util)
 				if err != nil {
 					errorSeen = true
 					worker.Logf("#r{ERROR} %s: %v", util, err)
 				} else {
 					worker.Logf("#g{SUCCESS} %s", util)
+				}
+			} else {
+				err := buildUtil(util)
+				if err != nil {
+					errorSeen = true
+					worker.Logf("#r{ERROR} %s: %v", util, err)
+				} else {
+					err := installUtil(util)
+					if err != nil {
+						errorSeen = true
+						worker.Logf("#r{ERROR} %s: %v", util, err)
+					} else {
+						worker.Logf("#g{SUCCESS} %s", util)
+					}
 				}
 			}
 			worker.Done()
@@ -99,6 +124,10 @@ func main() {
 	}
 
 	pool.Wait()
+
+	if args.GenerateReadmes {
+		generateReadme(".")
+	}
 
 	if errorSeen {
 		cfmt.Printf("#r{-----}\n")
