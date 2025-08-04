@@ -1,19 +1,22 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"io"
 	"os"
 	"slices"
 	"strings"
+
+	"github.com/tobiashort/clap-go"
 )
 
-func main() {
-	var reverse bool
+type Args struct {
+	Reverse bool `clap:"description='Reverses the sort order'"`
+}
 
-	flag.BoolVar(&reverse, "r", false, "reverse")
-	flag.Parse()
+func main() {
+	args := Args{}
+	clap.Parse(&args)
 
 	data, err := io.ReadAll(os.Stdin)
 	if err != nil {
@@ -21,7 +24,7 @@ func main() {
 	}
 	lines := strings.Split(string(data), "\n")
 	slices.SortFunc(lines, func(a, b string) int {
-		if reverse {
+		if args.Reverse {
 			return len(a) - len(b)
 		}
 		return len(b) - len(a)
