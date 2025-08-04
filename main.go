@@ -12,9 +12,8 @@ import (
 )
 
 type Args struct {
-	Prefix          string `clap:"default-value='th-',description='the prefix each binary will be given'"`
-	InstallDir      string `clap:"default-value='$HOME/.th-utils/',description='install directory where tool are going to be installed'"`
-	GenerateReadmes bool   `clap:"short=r,long=readmes,description='generates README.md for each tool'"`
+	Prefix     string `clap:"default-value='th-',description='the prefix each binary will be given'"`
+	InstallDir string `clap:"default-value='$HOME/.th-utils/',description='install directory where tool are going to be installed'"`
 }
 
 func ensureDir(dir string) {
@@ -96,38 +95,35 @@ func main() {
 		worker := pool.GetWorker()
 		go func() {
 			worker.Printf("#y{%s}", util)
-			if args.GenerateReadmes {
-				err := generateReadme(util)
-				if err != nil {
-					errorSeen = true
-					worker.Logf("#r{ERROR} %s: %v", util, err)
-				} else {
-					worker.Logf("#g{SUCCESS} %s", util)
-				}
-			} else {
-				err := buildUtil(util)
-				if err != nil {
-					errorSeen = true
-					worker.Logf("#r{ERROR} %s: %v", util, err)
-				} else {
-					err := installUtil(util)
-					if err != nil {
-						errorSeen = true
-						worker.Logf("#r{ERROR} %s: %v", util, err)
-					} else {
-						worker.Logf("#g{SUCCESS} %s", util)
-					}
-				}
+			err := buildUtil(util)
+			if err != nil {
+				errorSeen = true
+				worker.Logf("#r{ERROR} %s: %v", util, err)
+				worker.Done()
+				return
 			}
+			err = installUtil(util)
+			if err != nil {
+				errorSeen = true
+				worker.Logf("#r{ERROR} %s: %v", util, err)
+				worker.Done()
+				return
+			}
+			err = generateReadme(util)
+			if err != nil {
+				errorSeen = true
+				worker.Logf("#r{ERROR} %s: %v", util, err)
+				worker.Done()
+				return
+			}
+			worker.Logf("#g{SUCCESS} %s", util)
 			worker.Done()
 		}()
 	}
 
 	pool.Wait()
 
-	if args.GenerateReadmes {
-		generateReadme(".")
-	}
+	generateReadme(".")
 
 	if errorSeen {
 		cfmt.Printf("#r{--------------------------------------------------------------------------------}\n")

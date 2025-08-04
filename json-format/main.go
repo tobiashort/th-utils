@@ -2,38 +2,30 @@ package main
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/tobiashort/clap-go"
 )
 
-func PrintUsage() {
-	fmt.Printf(`json-fmt [JSON]
-
-Arguments:
-	json-fmt takes a JSON string or reads from STDIN
-
-`)
-	flag.PrintDefaults()
+type Args struct {
+	JSON string `clap:"positional,description='The JSON string. Reads from Stdin if not specified.'"`
 }
 
 func main() {
-	flag.Parse()
-	flag.Usage = PrintUsage
-	if flag.NArg() > 1 {
-		PrintUsage()
-		os.Exit(1)
-	}
+	args := Args{}
+	clap.Parse(&args)
+
 	var input []byte
-	if flag.NArg() == 1 {
-		input = []byte(flag.Arg(0))
-	} else {
+	if args.JSON == "" {
 		var err error
 		input, err = io.ReadAll(os.Stdin)
 		if err != nil {
 			panic(err)
 		}
+	} else {
+		input = []byte(args.JSON)
 	}
 
 	var unmarshalled any
