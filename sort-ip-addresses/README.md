@@ -1,6 +1,6 @@
 ```
 Usage:
-  ip-sort [OPTIONS]
+  sort-ip-addresses [OPTIONS]
 
 Options:
   -r, --reverse  Reverses sort order
