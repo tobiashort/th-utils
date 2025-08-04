@@ -8,5 +8,4 @@ Options:
 
 Positional arguments:
   File                   The file to be loaded otherwise Stdin is used
-
 ```

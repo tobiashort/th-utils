@@ -9,5 +9,4 @@ Options:
 
 Positional arguments:
   Suffix      the string that should be appended
-
 ```

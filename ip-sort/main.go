@@ -2,17 +2,22 @@ package main
 
 import (
 	"bufio"
-	"flag"
 	"fmt"
 	"io"
 	"net"
 	"os"
 	"slices"
 	"strings"
+
+	"github.com/tobiashort/clap-go"
 )
 
+type Args struct {
+	Reverse bool `clap:"description=Reverses sort order"`
+}
+
 func sortIPs(ip1, ip2 net.IP) int {
-	for i := 0; i < 16; i++ {
+	for i := range 16 {
 		if ip1[i] != ip2[i] {
 			return int(ip1[i]) - int(ip2[i])
 		}
@@ -21,9 +26,8 @@ func sortIPs(ip1, ip2 net.IP) int {
 }
 
 func main() {
-	var reverse bool
-	flag.BoolVar(&reverse, "r", false, "reverse")
-	flag.Parse()
+	args := Args{}
+	clap.Parse(&args)
 	ips := make([]net.IP, 0)
 	reader := bufio.NewReader(os.Stdin)
 	for {
@@ -43,7 +47,7 @@ func main() {
 		}
 	}
 	slices.SortFunc(ips, sortIPs)
-	if reverse {
+	if args.Reverse {
 		slices.Reverse(ips)
 	}
 	for _, ip := range ips {
