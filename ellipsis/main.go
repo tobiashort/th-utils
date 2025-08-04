@@ -1,11 +1,12 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"io"
 	"os"
 	"strings"
+
+	"github.com/tobiashort/clap-go"
 )
 
 func must(err error) {
@@ -19,33 +20,26 @@ func must2[T any](val T, err error) T {
 	return val
 }
 
-func printUsage() {
-	fmt.Fprint(os.Stderr, `Usage: ellipsis [-l length]
-
-This program reads string from stdin and cuts ist at the specified length minus
-three and adds three dots.
-
-`)
-	flag.PrintDefaults()
-	os.Exit(1)
+type Args struct {
+	Length int `clap:"default-value=20,description='Max length of the string including the three dots'"`
 }
 
-var length int
-
 func main() {
-	flag.IntVar(&length, "l", 20, "Max length of the string including the three dots")
-	flag.Parse()
+	args := Args{}
+	clap.Description("This program reads string from stdin and cuts ist at the specified length minus three and adds three dots.")
+	clap.Parse(&args)
 
-	if length < 0 {
-		printUsage()
+	if args.Length < 0 {
+		fmt.Fprintln(os.Stderr, "length must be greather than 0")
+		os.Exit(1)
 	}
 
 	bytesRead := must2(io.ReadAll(os.Stdin))
 	text := string(bytesRead)
 	text = strings.TrimSpace(text)
-	if len(text) <= length {
+	if len(text) <= args.Length {
 		fmt.Print(text)
 	} else {
-		fmt.Print(text[:length-3] + "...")
+		fmt.Print(text[:args.Length-3] + "...")
 	}
 }
