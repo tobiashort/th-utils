@@ -130,12 +130,12 @@ func main() {
 	}
 
 	if errorSeen {
-		cfmt.Printf("#r{-----}\n")
+		cfmt.Printf("#r{--------------------------------------------------------------------------------}\n")
 		cfmt.Printf("#r{ERROR}\n")
-		cfmt.Printf("#r{-----}\n")
+		cfmt.Printf("#r{--------------------------------------------------------------------------------}\n")
 	} else {
-		cfmt.Printf("#g{----------------%s}\n", strings.Repeat("-", len(installDir)))
+		cfmt.Printf("#g{--------------------------------------------------------------------------------}\n")
 		cfmt.Printf("#g{SUCCESS} %s\n", installDir)
-		cfmt.Printf("#g{----------------%s}\n", strings.Repeat("-", len(installDir)))
+		cfmt.Printf("#g{--------------------------------------------------------------------------------}\n")
 	}
 }
