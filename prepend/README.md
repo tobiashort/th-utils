@@ -8,5 +8,5 @@ Options:
   -h, --help  Show this help message and exit
 
 Positional arguments:
-  Prefix      The prefix to append
+  Prefix      The prefix to append (required)
 ```
