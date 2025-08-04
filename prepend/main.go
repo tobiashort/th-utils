@@ -2,57 +2,45 @@ package main
 
 import (
 	"bufio"
-	"flag"
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/tobiashort/clap-go"
 )
 
-func usage() {
-	fmt.Print(`Usage: prepend STRING
-
-Reads from Stdin and prepends each line with the given STRING
-
-EXAMPLE:
-	$ echo "foobar" | prepend "prefix-"
-	prefix-foobar
-`)
-	flag.PrintDefaults()
+type Args struct {
+	Prefix string `clap:"positional,mandatory,description='The prefix to append'"`
 }
 
 func main() {
-	flag.Usage = usage
-	flag.Parse()
-	if flag.NArg() != 1 {
-		usage()
-		os.Exit(1)
-	}
+	args := Args{}
+	clap.Description("Reads from Stdin and prepends each line with the given prefix.")
+	clap.Parse(&args)
 
-	prefix := flag.Arg(0)
+	prefix := args.Prefix
 	prefixUnescaped := strings.Builder{}
-	i := 0
-	for i < len(prefix) {
+	for i := 0; i < len(prefix); i++ {
 		curr := prefix[i]
 		if curr == '\\' && i+1 < len(prefix) {
 			next := prefix[i+1]
 			switch next {
 			case 'n':
 				prefixUnescaped.WriteByte('\n')
-				i += 2
+				i++
 			case 'r':
 				prefixUnescaped.WriteByte('\r')
-				i += 2
+				i++
 			case 't':
 				prefixUnescaped.WriteByte('\t')
-				i += 2
+				i++
 			default:
 				prefixUnescaped.WriteByte(curr)
 				prefixUnescaped.WriteByte(next)
-				i += 2
+				i++
 			}
 		} else {
 			prefixUnescaped.WriteByte(curr)
-			i++
 		}
 	}
 

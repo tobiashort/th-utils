@@ -1,10 +1,12 @@
 ```
-Usage: prepend STRING
+Reads from Stdin and prepends each line with the given prefix.
 
-Reads from Stdin and prepends each line with the given STRING
+Usage:
+  prepend [OPTIONS] <Prefix>
 
-EXAMPLE:
-	$ echo "foobar" | prepend "prefix-"
-	prefix-foobar
+Options:
+  -h, --help  Show this help message and exit
 
+Positional arguments:
+  Prefix      The prefix to append
 ```
