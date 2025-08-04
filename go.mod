@@ -8,6 +8,7 @@ require (
 	github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08
 	github.com/tobiashort/jwt-decode v0.0.0-20250419075139-d478d95b1002
 	github.com/tobiashort/jwt-encode v0.0.0-20250419075123-a13d31a0bee9
+	github.com/tobiashort/orderedmap-go v0.0.0-20250729190624-ec8e8c7a251e
 	github.com/tobiashort/worker-go v0.0.0-20250731181545-0c3bca8c0e19
 )
 

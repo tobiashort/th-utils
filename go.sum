@@ -12,5 +12,7 @@ github.com/tobiashort/jwt-decode v0.0.0-20250419075139-d478d95b1002 h1:cAqIZ7UYs
 github.com/tobiashort/jwt-decode v0.0.0-20250419075139-d478d95b1002/go.mod h1:wbSJ8zEvccaGJRxIqPEomSJA2MWXVh6H5+PrsFS52AY=
 github.com/tobiashort/jwt-encode v0.0.0-20250419075123-a13d31a0bee9 h1:Zb1MchD6m+JlAYoTXgJjlZoejYj0QMRqMIaDzURKSy0=
 github.com/tobiashort/jwt-encode v0.0.0-20250419075123-a13d31a0bee9/go.mod h1:++3W9lHV0eu4T2EZYNosBf1DVTIfmsTWyW6UHf03U7M=
+github.com/tobiashort/orderedmap-go v0.0.0-20250729190624-ec8e8c7a251e h1:+wLWwLoGXo8JB4UO+EYvD5MsuXBLpn4i/T+UKrnXg3w=
+github.com/tobiashort/orderedmap-go v0.0.0-20250729190624-ec8e8c7a251e/go.mod h1:m2nzlh5XDU90UIVgY0mgGWFwObspBf7GeVF6DRUU0fY=
 github.com/tobiashort/worker-go v0.0.0-20250731181545-0c3bca8c0e19 h1:xz+jJVSJEIpCSngZE7YugVJNnJ3daSx+hRx7i8eT6IY=
 github.com/tobiashort/worker-go v0.0.0-20250731181545-0c3bca8c0e19/go.mod h1:FEKJbeUUrLUHfSeEo53AHilq2unxp3BXUv2DSiVIOFM=
