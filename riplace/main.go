@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -13,15 +12,13 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"github.com/tobiashort/clap-go"
 	"github.com/tobiashort/groupby-go"
 )
 
-func usage() {
-	fmt.Fprintf(os.Stderr, `Usage: riplace [-editor editor] -- [ripgrep flags]
-
-OPTIONS
-`)
-	flag.PrintDefaults()
+type Args struct {
+	Editor string   `clap:"description='The path to the editor program to be opened'"`
+	RgArgs []string `clap:"positional,description='Additional rg command line arguments'"`
 }
 
 func assertNil(val any) {
@@ -39,13 +36,21 @@ func assertNotNil(val any, format string, args ...any) {
 func main() {
 	var editor string
 
-	flag.Usage = usage
-	flag.StringVar(&editor, "editor", os.Getenv("EDITOR"), "the editor to be used (vim, nvim, hx, nano, etc)")
-	flag.Parse()
+	args := Args{}
+	clap.Parse(&args)
 
-	args := []string{"--line-number"}
-	args = append(args, flag.Args()...)
-	cmd := exec.Command("rg", args...)
+	editor = args.Editor
+	if editor == "" {
+		editor = os.Getenv("EDITOR")
+	}
+	if editor == "" {
+		fmt.Fprintf(os.Stderr, "No editor configured. Use EDITOR environment variable or -editor flag.\n")
+		os.Exit(1)
+	}
+
+	rgArgs := []string{"--line-number"}
+	rgArgs = append(rgArgs, args.RgArgs...)
+	cmd := exec.Command("rg", rgArgs...)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		if string(out) == "" {
