@@ -9,4 +9,5 @@ Options:
 
 Positional arguments:
   Prefix      The prefix to append (required)
+
 ```

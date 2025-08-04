@@ -7,4 +7,5 @@ Usage:
 Options:
   -l, --length <Length>  Max length of the string including the three dots (default: 20)
   -h, --help             Show this help message and exit
+
 ```

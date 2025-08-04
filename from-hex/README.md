@@ -1,7 +1,11 @@
 ```
-Usage: from-hex [STRING]
+Usage:
+  from-hex [OPTIONS] [Hex]
 
-If STRING is not specified it reads from STDIN.
+Options:
+  -h, --help  Show this help message and exit
 
+Positional arguments:
+  Hex         The hex code to decode. Reads from Stdin if not specified.
 
 ```

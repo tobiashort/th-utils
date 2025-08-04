@@ -2,21 +2,12 @@ package main
 
 import (
 	"encoding/hex"
-	"flag"
-	"fmt"
 	"io"
 	"os"
 	"strings"
+
+	"github.com/tobiashort/clap-go"
 )
-
-func usage() {
-	fmt.Printf(`Usage: from-hex [STRING]
-
-If STRING is not specified it reads from STDIN.
-
-`)
-	flag.PrintDefaults()
-}
 
 func assertNil(val any) {
 	if val != nil {
@@ -24,19 +15,20 @@ func assertNil(val any) {
 	}
 }
 
+type Args struct {
+	Hex string `clap:"positional,description='The hex code to decode. Reads from Stdin if not specified.'"`
+}
+
 func main() {
-	flag.Usage = usage
-	flag.Parse()
+	args := Args{}
+	clap.Parse(&args)
 
 	var input io.Reader
 
-	if flag.NArg() == 0 {
+	if args.Hex == "" {
 		input = os.Stdin
-	} else if flag.NArg() == 1 {
-		input = strings.NewReader(flag.Arg(0))
 	} else {
-		usage()
-		os.Exit(1)
+		input = strings.NewReader(args.Hex)
 	}
 
 	decoder := hex.NewDecoder(input)

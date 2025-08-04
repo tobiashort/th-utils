@@ -8,4 +8,5 @@ Options:
 
 Positional arguments:
   Dir                    Optional directory otherwise the current working directory is used
+
 ```

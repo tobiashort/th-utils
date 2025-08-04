@@ -8,4 +8,5 @@ Options:
 
 Positional arguments:
   RgArgs                 Additional rg command line arguments (can be specified multiple times)
+
 ```

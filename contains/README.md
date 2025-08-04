@@ -12,4 +12,5 @@ Options:
 
 Positional arguments:
   Match                     the pattern to match (required)
+
 ```
