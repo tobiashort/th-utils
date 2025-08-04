@@ -7,24 +7,17 @@ import (
 	"math"
 	"os"
 	"strings"
+
+	"github.com/tobiashort/clap-go"
 )
 
-func usage() {
-	fmt.Fprint(os.Stderr, `Usage: cols [-n COLS] [FILE]
-
-  ATTENTION
-	Be aware that this program loads the whole content
-	of the file into memory.
-
-  FILE
-	Optional file otherwise reads from stdin.
-
-`)
-
-	flag.PrintDefaults()
+type Args struct {
+	File   string `clap:"positional,description='The file to be loaded otherwise Stdin is used'"`
+	Number int    `clap:"default-value=4,description='The number of columns'"`
 }
 
 func textToCols(in string, nCols int) string {
+
 	text := strings.TrimSpace(in)
 	text = strings.ReplaceAll(text, "\r\n", "\n")
 	lines := strings.Split(text, "\n")
@@ -70,16 +63,12 @@ func textToCols(in string, nCols int) string {
 }
 
 func main() {
-	nCols := flag.Int("n", 4, "Number of columns")
-	flag.Usage = usage
-	flag.Parse()
+	args := Args{}
+	clap.Parse(&args)
 
 	var file *os.File
 
-	if flag.NArg() > 1 {
-		usage()
-		os.Exit(1)
-	} else if flag.NArg() == 1 {
+	if args.File != "" {
 		var err error
 		file, err = os.Open(flag.Arg(0))
 		if err != nil {
@@ -89,7 +78,7 @@ func main() {
 		file = os.Stdin
 	}
 
-	if *nCols < 2 {
+	if args.Number < 2 {
 		io.Copy(os.Stdout, file)
 		os.Exit(0)
 	}
@@ -100,5 +89,5 @@ func main() {
 	}
 
 	text := string(fileBytes)
-	fmt.Print(textToCols(text, *nCols))
+	fmt.Print(textToCols(text, args.Number))
 }
