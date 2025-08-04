@@ -1,6 +1,6 @@
 ```
 Usage:
-  riplace [OPTIONS] [RgArgs]...
+  multi-file-search-replace [OPTIONS] [RgArgs]...
 
 Options:
   -e, --editor <Editor>  The path to the editor program to be opened
