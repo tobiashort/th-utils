@@ -2,11 +2,15 @@ package main
 
 import (
 	"compress/flate"
-	"flag"
-	"fmt"
 	"io"
 	"os"
+
+	"github.com/tobiashort/clap-go"
 )
+
+type Args struct {
+	File string `clap:"positional,description='The file to raw-decompress. Reads from Stdin if not specified.'"`
+}
 
 func assertNoErr(err error) {
 	if err != nil {
@@ -14,28 +18,15 @@ func assertNoErr(err error) {
 	}
 }
 
-func printUsage() {
-	fmt.Fprint(os.Stderr, `Usage: raw-inflate [FILE]
-
-Raw-decompresses a given FILE.
-If no FILE is specified, this program reads from STDIN.
-`)
-
-	flag.PrintDefaults()
-}
-
 func main() {
-	flag.Usage = printUsage
-	flag.Parse()
+	args := Args{}
+	clap.Description("Raw-decompresses a given file.")
+	clap.Parse(&args)
 
 	var file *os.File
-	
-	if flag.NArg() > 1 {
-		printUsage()
-		os.Exit(1)
-	} else if flag.NArg() == 1 {
+	if args.File != "" {
 		var err error
-		file, err = os.OpenFile(flag.Arg(0), os.O_RDONLY, 0)
+		file, err = os.OpenFile(args.File, os.O_RDONLY, 0)
 		assertNoErr(err)
 	} else {
 		file = os.Stdin
