@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/tobiashort/clap-go"
+
+	"github.com/tobiashort/th-utils/pkg/ellipsis"
 )
 
 func must(err error) {
@@ -37,9 +39,6 @@ func main() {
 	bytesRead := must2(io.ReadAll(os.Stdin))
 	text := string(bytesRead)
 	text = strings.TrimSpace(text)
-	if len(text) <= args.Length {
-		fmt.Print(text)
-	} else {
-		fmt.Print(text[:args.Length-3] + "...")
-	}
+	text = ellipsis.Ellipsis(text, args.Length)
+	fmt.Print(text)
 }

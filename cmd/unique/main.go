@@ -5,14 +5,17 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"strings"
 
 	"github.com/tobiashort/clap-go"
 	"github.com/tobiashort/orderedmap-go"
+
+	"github.com/tobiashort/th-utils/pkg/ellipsis"
 )
 
 type Args struct {
 	Count bool `clap:"description='The count of the number of times the line occurred'"`
-	Plot  bool `clap:"description='Plot as horizontal ascii bar chart'"`
+	Plot  bool `clap:"conflicts-with=Count,description='Plot as horizontal ascii bar chart'"`
 }
 
 func main() {
@@ -39,19 +42,14 @@ func main() {
 	if args.Plot {
 		maxCount := slices.Max(keywordCounts.Values())
 		maxCountWidth := len(fmt.Sprintf("%d", maxCount))
-
-		labelWidths := make([]int, 0)
-		for value, _ := range keywordCounts.Iterate() {
-			labelWidths = append(labelWidths, len(value))
-		}
-
-		maxLabelWidth := slices.Max(labelWidths)
-
-		maxBarWidth := 80 - maxCountWidth - maxLabelWidth - 2
-
+		maxLabelWidth := 10
+		maxBarWidth := 2*80 - maxCountWidth - maxLabelWidth - 2
 		for value, count := range keywordCounts.Iterate() {
+			barWidth := int(float64(maxBarWidth) * float64(count) / float64(maxCount))
+			bar := strings.Repeat("\u28FF", barWidth/2)
+			bar += strings.Repeat("\u2847", barWidth%2)
+			fmt.Printf("%*s %s %d\n", maxLabelWidth, ellipsis.Ellipsis(value, maxLabelWidth), bar, count)
 		}
-
 		return
 	}
 
