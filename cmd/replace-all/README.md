@@ -1,8 +1,14 @@
 ```
-Usage: tr STR1 STR2
+Reads from Stdin and transforms the string by replacing all occurrences of OldString with NewString.
 
-Reads from STDIN and transforms the string by replacing all
-occurrences of STR1 with STR2.
+Usage:
+  replace-all [OPTIONS] <OldString> <NewString>
 
+Options:
+  -h, --help  Show this help message and exit
+
+Positional arguments:
+  OldString   The string to replace (required)
+  NewString   The strint that replaces OldString (required)
 
 ```

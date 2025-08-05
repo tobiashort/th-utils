@@ -1,42 +1,28 @@
 package main
 
 import (
-	"flag"
+	"bufio"
 	"fmt"
-	"io"
 	"os"
 	"strings"
+
+	"github.com/tobiashort/clap-go"
 )
 
-func usage() {
-	fmt.Print(`Usage: tr STR1 STR2
-
-Reads from STDIN and transforms the string by replacing all
-occurrences of STR1 with STR2.
-
-`)
-	flag.PrintDefaults()
+type Args struct {
+	OldString string `clap:"positional,mandatory,description='The string to replace'"`
+	NewString string `clap:"positional,mandatory,description='The strint that replaces OldString'"`
 }
 
 func main() {
-	flag.Usage = usage
-	flag.Parse()
+	args := Args{}
+	clap.Description("Reads from Stdin and transforms the string by replacing all occurrences of OldString with NewString.")
+	clap.Parse(&args)
 
-	if flag.NArg() != 2 {
-		usage()
-		os.Exit(1)
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		oldText := scanner.Text()
+		newText := strings.ReplaceAll(oldText, args.OldString, args.NewString)
+		fmt.Println(newText)
 	}
-
-	s1 := flag.Arg(0)
-	s2 := flag.Arg(1)
-
-	bIn, err := io.ReadAll(os.Stdin)
-	if err != nil {
-		panic(err)
-	}
-
-	sIn := string(bIn)
-	sOut := strings.ReplaceAll(sIn, s1, s2)
-
-	fmt.Print(sOut)
 }
