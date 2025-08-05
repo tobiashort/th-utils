@@ -7,7 +7,7 @@ Usage:
 Options:
   -o, --or-match <OrMatch>  adds an additional pattern to match (can be specified multiple times)
   -i, --invert              inverts the logic
-  -c, --casesensitive       case sensitive match
+  -c, --case-sensitive      case sensitive match
   -h, --help                Show this help message and exit
 
 Positional arguments:

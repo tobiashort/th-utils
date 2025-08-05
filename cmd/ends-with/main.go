@@ -11,7 +11,7 @@ import (
 
 type Args struct {
 	Match         string   `clap:"positional,mandatory,description='The suffix to match'"`
-	OrMatch       []string `clap:"long=or-match,description='adds an additional pattern to match'"`
+	OrMatch       []string `clap:"description='adds an additional pattern to match'"`
 	Invert        bool     `clap:"description='inverts the logic'"`
 	CaseSensitive bool     `clap:"description='case sensitive match'"`
 }

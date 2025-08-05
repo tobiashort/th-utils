@@ -11,9 +11,9 @@ import (
 
 type Args struct {
 	Match         string   `clap:"positional,mandatory,description='the pattern to match'"`
-	OrMatch       []string `clap:"long=or-match,description='adds an additional pattern to match'"`
-	Invert        bool     `clap:"long=invert,description='inverts the logic.'"`
-	CaseSensitive bool     `clap:"long=case-sensitive,description=case sensitive match'"`
+	OrMatch       []string `clap:"description='adds an additional pattern to match'"`
+	Invert        bool     `clap:"description='inverts the logic.'"`
+	CaseSensitive bool     `clap:"description=case sensitive match'"`
 }
 
 func main() {

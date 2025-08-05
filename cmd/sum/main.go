@@ -10,7 +10,7 @@ import (
 )
 
 type Args struct {
-	IgnoreNaN bool `clap:"long=ignore-nan,description='Ignores not numeric values and treats them as 0.'"`
+	IgnoreNaN bool `clap:"description='Ignores not numeric values and treats them as 0.'"`
 }
 
 func main() {

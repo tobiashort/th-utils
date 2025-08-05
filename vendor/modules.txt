@@ -4,7 +4,7 @@ github.com/tobiashort/ansi-go
 # github.com/tobiashort/cfmt-go v0.0.0-20250729192009-75c817e11e2c
 ## explicit; go 1.24
 github.com/tobiashort/cfmt-go
-# github.com/tobiashort/clap-go v0.0.0-20250805063914-7f96dce84016
+# github.com/tobiashort/clap-go v0.0.0-20250805163645-d1df6c0996c5
 ## explicit; go 1.24.3
 github.com/tobiashort/clap-go
 # github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08

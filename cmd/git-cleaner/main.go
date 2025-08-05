@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"io/fs"
 	"os"
@@ -10,10 +9,15 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/tobiashort/clap-go"
 	"github.com/tobiashort/worker-go"
 )
 
-var flagRemoveLocalBranches bool
+type Args struct {
+	RemoveLocalBranches bool `clap:"description='Removes all local branches'"`
+}
+
+var args Args
 
 type ExecutionResult struct {
 	path   string
@@ -147,7 +151,7 @@ func cleanGitRepository(path string, worker worker.Worker) {
 	if executionResult.err != nil {
 		goto errorCase
 	}
-	if flagRemoveLocalBranches {
+	if args.RemoveLocalBranches {
 		executionResult = gitRemoveLocalBranches(path)
 		if executionResult.err != nil {
 			goto errorCase
@@ -165,10 +169,11 @@ errorCase:
 }
 
 func main() {
-	flag.BoolVar(&flagRemoveLocalBranches, "remove-local-branches", false, "removes all local branches")
-	flag.Parse()
-	gitRepositories := findGitRepositories()
+	args = Args{}
+	clap.Parse(&args)
+
 	pool := worker.NewPool(5)
+	gitRepositories := findGitRepositories()
 	for _, path := range gitRepositories {
 		worker := pool.GetWorker()
 		go cleanGitRepository(path, worker)

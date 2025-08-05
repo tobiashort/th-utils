@@ -5,7 +5,7 @@ Usage:
   sum [OPTIONS]
 
 Options:
-  -i, --ignore-nan  Ignores not numeric values and treats them as 0.
-  -h, --help        Show this help message and exit
+  -i, --ignore-na-n  Ignores not numeric values and treats them as 0.
+  -h, --help         Show this help message and exit
 
 ```
