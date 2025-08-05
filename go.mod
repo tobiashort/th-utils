@@ -4,7 +4,7 @@ go 1.24.3
 
 require (
 	github.com/tobiashort/cfmt-go v0.0.0-20250729192009-75c817e11e2c
-	github.com/tobiashort/clap-go v0.0.0-20250804173000-2af7b75970b1
+	github.com/tobiashort/clap-go v0.0.0-20250805063914-7f96dce84016
 	github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08
 	github.com/tobiashort/jwt-decode v0.0.0-20250419075139-d478d95b1002
 	github.com/tobiashort/jwt-encode v0.0.0-20250419075123-a13d31a0bee9

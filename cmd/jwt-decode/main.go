@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/tobiashort/th-utils/jwt-decode/jwt"
+	"github.com/tobiashort/th-utils/pkg/jwt"
 )
 
 func printUsage() {
