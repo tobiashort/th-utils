@@ -1,37 +1,25 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"html"
 	"io"
 	"os"
+
+	"github.com/tobiashort/clap-go"
 )
 
-func printUsage() {
-	fmt.Fprintf(os.Stderr, `Usage: html-decode [STRING]
-Will read from STDIN if STRING is not defined as a parameter.
-		
-Flags:
-`)
-	flag.PrintDefaults()
-	os.Exit(1)
+type Args struct {
+	String string `clap:"positional,description='The string to decode. Reads from Stdin if not specified.'"`
 }
 
 func main() {
-	help := flag.Bool("help", false, "print help")
-	flag.Parse()
-	if *help {
-		printUsage()
-		return
-	}
-	if flag.NArg() > 1 {
-		printUsage()
-		return
-	}
-	input := ""
-	if flag.NArg() == 1 {
-		input = flag.Arg(0)
+	args := Args{}
+	clap.Parse(&args)
+
+	var input string
+	if args.String != "" {
+		input = args.String
 	} else {
 		data, err := io.ReadAll(os.Stdin)
 		if err != nil {
@@ -39,5 +27,6 @@ func main() {
 		}
 		input = string(data)
 	}
+
 	fmt.Print(html.UnescapeString(input))
 }
