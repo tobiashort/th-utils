@@ -28,6 +28,10 @@ func ensureDir(dir string) {
 	}
 }
 
+func filepathJoinUncleaned(parts ...string) string {
+	return strings.Join(parts, string(filepath.Separator))
+}
+
 func main() {
 	args := Args{}
 	clap.Parse(&args)
@@ -38,7 +42,7 @@ func main() {
 	ensureDir(installDir)
 
 	buildUtil := func(util string) error {
-		cmd := exec.Command("go", "build", "-o", filepath.Join("build", prefix+util), "."+string(filepath.Separator)+util)
+		cmd := exec.Command("go", "build", "-o", filepath.Join("build", prefix+util), filepathJoinUncleaned(".", "cmd", util))
 		err := cmd.Run()
 		if err != nil {
 			return err
@@ -56,7 +60,7 @@ func main() {
 	}
 
 	generateReadme := func(util string) error {
-		cmd := exec.Command("go", "run", "."+string(filepath.Separator)+util, "-h")
+		cmd := exec.Command("go", "run", filepathJoinUncleaned(".", "cmd", util), "-h")
 		bs, err := cmd.Output()
 		if err != nil {
 			return err
@@ -64,7 +68,7 @@ func main() {
 		if len(bs) > 0 {
 			bs = append([]byte{'`', '`', '`', '\n'}, bs...)
 			bs = append(bs, '\n', '`', '`', '`', '\n')
-			err = os.WriteFile(filepath.Join(".", util, "README.md"), bs, 0644)
+			err = os.WriteFile(filepath.Join("cmd", util, "README.md"), bs, 0644)
 			if err != nil {
 				return err
 			}
@@ -72,19 +76,14 @@ func main() {
 		return nil
 	}
 
-	entries, err := os.ReadDir(".")
+	entries, err := os.ReadDir("cmd")
 	if err != nil {
 		panic(err)
 	}
 
 	utils := make([]string, 0)
 	for _, entry := range entries {
-		match := entry.IsDir()
-		match = match && entry.Name() != "build"
-		match = match && entry.Name() != "vendor"
-		match = match && !strings.HasPrefix(entry.Name(), ".")
-
-		if match {
+		if entry.IsDir() {
 			utils = append(utils, entry.Name())
 		}
 	}

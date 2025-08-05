@@ -28,16 +28,31 @@ func main() {
 	}
 
 	if args.Count {
-		max := slices.Max(keywordCounts.Values())
-		width := len(fmt.Sprintf("%d", max))
+		maxCount := slices.Max(keywordCounts.Values())
+		maxCountWidth := len(fmt.Sprintf("%d", maxCount))
 		for value, count := range keywordCounts.Iterate() {
-			fmt.Printf("%*d %s\n", width, count, value)
+			fmt.Printf("%*d %s\n", maxCountWidth, count, value)
 		}
 		return
 	}
 
 	if args.Plot {
-		panic("not implemented")
+		maxCount := slices.Max(keywordCounts.Values())
+		maxCountWidth := len(fmt.Sprintf("%d", maxCount))
+
+		labelWidths := make([]int, 0)
+		for value, _ := range keywordCounts.Iterate() {
+			labelWidths = append(labelWidths, len(value))
+		}
+
+		maxLabelWidth := slices.Max(labelWidths)
+
+		maxBarWidth := 80 - maxCountWidth - maxLabelWidth - 2
+
+		for value, count := range keywordCounts.Iterate() {
+		}
+
+		return
 	}
 
 	for value := range keywordCounts.Keys() {
