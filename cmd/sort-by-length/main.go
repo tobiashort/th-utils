@@ -25,9 +25,9 @@ func main() {
 	lines := strings.Split(string(data), "\n")
 	slices.SortFunc(lines, func(a, b string) int {
 		if args.Reverse {
-			return len(a) - len(b)
+			return len([]rune(a)) - len([]rune(b))
 		}
-		return len(b) - len(a)
+		return len([]rune(b)) - len([]rune(a))
 	})
 
 	fmt.Println(strings.Join(lines, "\n"))
