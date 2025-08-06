@@ -2,61 +2,28 @@ package main
 
 import (
 	"bufio"
-	"flag"
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/tobiashort/clap-go"
 )
 
-type stringList []string
-
-func (l *stringList) String() string {
-	return fmt.Sprintf("%v", *l)
+type Args struct {
+	Match         string   `clap:"positional,mandatory,description='The prefix to match'"`
+	OrMatch       []string `clap:"description='adds an additional pattern to match'"`
+	Invert        bool     `clap:"description='inverts the logic'"`
+	CaseSensitive bool     `clap:"description='case sensitive match'"`
 }
-
-func (l *stringList) Set(value string) error {
-	*l = append(*l, value)
-	return nil
-}
-
-var (
-	matchFlag         string
-	orMatchFlags      stringList
-	invertFlag        bool
-	caseSensitiveFlag bool
-)
 
 func main() {
-	flag.Usage = func() {
-		fmt.Print(`Usage: starts-with
-
-Reads from stdin and prints all lines that start
-with the given prefix.
-
-`)
-		flag.PrintDefaults()
-	}
-
-	flag.StringVar(&matchFlag, "match", "", "the pattern to match")
-	flag.StringVar(&matchFlag, "m", "", "alias for -match")
-	flag.Var(&orMatchFlags, "or-match", "adds an additional pattern to match")
-	flag.Var(&orMatchFlags, "or", "alias for -or-match")
-	flag.BoolVar(&invertFlag, "invert", false, "inverts the logic.")
-	flag.BoolVar(&invertFlag, "i", false, "alias for -invert")
-	flag.BoolVar(&caseSensitiveFlag, "case-sensitive", false, "case sensitive match")
-	flag.BoolVar(&caseSensitiveFlag, "case", false, "alias for -case-sensitive")
-	flag.Parse()
-
-	if matchFlag == "" {
-		flag.Usage()
-		os.Exit(1)
-	}
+	args := Args{}
+	clap.Description("Reads from stdin and prints all lines that starts with the given prefix.")
+	clap.Parse(&args)
 
 	prefixes := make([]string, 0)
-	prefixes = append(prefixes, matchFlag)
-	for _, prefix := range orMatchFlags {
-		prefixes = append(prefixes, prefix)
-	}
+	prefixes = append(prefixes, args.Match)
+	prefixes = append(prefixes, args.OrMatch...)
 
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
@@ -64,7 +31,7 @@ with the given prefix.
 		line = strings.TrimSuffix(line, "\n")
 		matches := false
 		for _, prefix := range prefixes {
-			if caseSensitiveFlag {
+			if args.CaseSensitive {
 				if strings.HasPrefix(line, prefix) {
 					matches = true
 					break
@@ -76,7 +43,7 @@ with the given prefix.
 				}
 			}
 		}
-		if invertFlag {
+		if args.Invert {
 			if !matches {
 				fmt.Println(line)
 			}
