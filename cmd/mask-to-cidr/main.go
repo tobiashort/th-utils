@@ -1,61 +1,37 @@
 package main
 
 import (
-	"flag"
 	"fmt"
-	"io"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/tobiashort/clap-go"
 )
 
-func printUsage() {
-	fmt.Fprint(os.Stderr, `Usage: mask-to-cidr [MASK]
-Read from STDIN when MASK is not provided as an argument.
-
-Flags:
-`)
-	flag.PrintDefaults()
-	os.Exit(1)
+type Args struct {
+	Mask string `clap:"positional,mandatory,description='The mask to convert to CIDR'"`
 }
 
-func printInvalid(input string) {
-	fmt.Fprintf(os.Stderr, "Invalid input '%s'\n", input)
+func printInvalid(mask string) {
+	fmt.Fprintf(os.Stderr, "Invalid mask '%s'\n", mask)
 	os.Exit(1)
 }
 
 func main() {
-	flag.Usage = printUsage
-	help := flag.Bool("h", false, "print help")
-	flag.Parse()
-	if *help {
-		printUsage()
-		return
-	}
-	if len(os.Args) > 2 {
-		printUsage()
-		return
-	}
-	input := ""
-	if len(os.Args) == 2 {
-		input = os.Args[1]
-	} else {
-		bytes, err := io.ReadAll(os.Stdin)
-		if err != nil {
-			panic(err)
-		}
-		input = strings.TrimSpace(string(bytes))
-	}
-	split := strings.Split(input, ".")
+	args := Args{}
+	clap.Parse(&args)
+
+	split := strings.Split(args.Mask, ".")
 	if len(split) != 4 {
-		printInvalid(input)
+		printInvalid(args.Mask)
 		return
 	}
 	octets := [4]uint32{}
-	for idx := 0; idx < 4; idx++ {
+	for idx := range 4 {
 		octet, err := strconv.Atoi(split[idx])
 		if err != nil || octet < 0 || octet > 255 {
-			printInvalid(input)
+			printInvalid(args.Mask)
 			return
 		}
 		octets[idx] = uint32(octet)
@@ -63,11 +39,11 @@ func main() {
 	mask := (octets[0] << 24) | (octets[1] << 16) | (octets[2] << 8) | octets[3]
 	cidr := 0
 	flipped := false
-	for count := 0; count < 32; count++ {
+	for count := range 32 {
 		bit := (mask >> count) & 1
 		if bit == 0 {
 			if flipped {
-				printInvalid(input)
+				printInvalid(args.Mask)
 				return
 			}
 			continue
