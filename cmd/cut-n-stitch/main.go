@@ -2,43 +2,43 @@ package main
 
 import (
 	"bufio"
-	"flag"
 	"fmt"
 	"os"
 	"strings"
 	"text/template"
+
+	"github.com/tobiashort/clap-go"
 )
 
 func must(err error) {
-  if err != nil {
-    panic(err)
-  }
+	if err != nil {
+		panic(err)
+	}
 }
 
 func must2[T any](val T, err error) T {
-  must(err)
-  return val
+	must(err)
+	return val
 }
 
-func usage() {
-  fmt.Fprintln(os.Stdout, "Usage: cutnstitch DELIMITER FORMAT")
-  os.Exit(1)
+type Args struct {
+	Delimiter string `clap:"positional,mandatory,description='The delimiter where a given line from Stdin shall be cut.'"`
+	Format    string `clap:"positional,mandatory,description='The format how the cut line shall be stitched together'"`
 }
 
 func main() {
-  flag.Parse()
+	args := Args{}
+	clap.Example(`$ echo "left-middle-right" | cut-n-stitch -- "-"" "{{ index . 0 }}-{{ index . 2}}"
+left-right`)
+	clap.Parse(&args)
 
-  if flag.NArg() != 2 {
-    usage()
-  }
-  
-  delimiter := flag.Arg(0)
-  format := must2(template.New("").Parse(fmt.Sprintf("%s\n", flag.Arg(1))))
-  scanner := bufio.NewScanner(os.Stdin)
+	delimiter := args.Delimiter
+	format := must2(template.New("").Parse(fmt.Sprintf("%s\n", args.Format)))
+	scanner := bufio.NewScanner(os.Stdin)
 
-  for scanner.Scan() {
-    line := scanner.Text()
-    cut := strings.Split(line, delimiter)
-    must(format.Execute(os.Stdout, cut))
-  }
+	for scanner.Scan() {
+		line := scanner.Text()
+		cut := strings.Split(line, delimiter)
+		must(format.Execute(os.Stdout, cut))
+	}
 }
