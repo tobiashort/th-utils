@@ -3,12 +3,13 @@ package main
 import (
 	"encoding/base64"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io"
 	"math/big"
 	"os"
 	"strings"
+
+	"github.com/tobiashort/clap-go"
 )
 
 type JWK struct {
@@ -17,18 +18,8 @@ type JWK struct {
 	Exponent string `json:"e"`
 }
 
-func printUsage() {
-	fmt.Fprintf(os.Stderr, `Usage: jwk-rsa-to-der [JWK]
-Reads from STDIN if JWK not provided as an argument.
-		
-Flags:
-`)
-	flag.PrintDefaults()
-	fmt.Fprintf(os.Stderr, `
-To convert it into pem format:
-$ cat example.json | jwk-rsa-to-der | openssl rsa -inform der -RSAPublicKey_in
-`)
-	os.Exit(1)
+type Args struct {
+	JWK string `clap:"positional,description='The JSON Web Key. Reads from Stdin if not specified.'"`
 }
 
 func encodeLength(data []byte) []byte {
@@ -64,19 +55,15 @@ func encodeSequence(data []byte) []byte {
 }
 
 func main() {
-	help := flag.Bool("h", false, "print help")
-	flag.Parse()
-	if *help {
-		printUsage()
-		return
-	}
-	if flag.NArg() > 1 {
-		printUsage()
-		return
-	}
-	input := ""
-	if flag.NArg() == 1 {
-		input = flag.Arg(0)
+	args := Args{}
+	clap.Example(`To convert it into pem format:
+$ cat example.json | jwk-rsa-to-der | openssl rsa -inform der -RSAPublicKey_in
+`)
+	clap.Parse(&args)
+
+	var input string
+	if args.JWK != "" {
+		input = args.JWK
 	} else {
 		data, err := io.ReadAll(os.Stdin)
 		if err != nil {
@@ -84,6 +71,7 @@ func main() {
 		}
 		input = strings.TrimSpace(string(data))
 	}
+
 	var jwk JWK
 	err := json.Unmarshal([]byte(input), &jwk)
 	if err != nil {
@@ -91,11 +79,13 @@ func main() {
 		os.Exit(1)
 		return
 	}
+
 	if strings.ToLower(jwk.KeyType) != "rsa" {
 		fmt.Fprintf(os.Stderr, "JWK's key type (kty) is not RSA, but '%s'\n", jwk.KeyType)
 		os.Exit(1)
 		return
 	}
+
 	modulus, err := base64.RawURLEncoding.DecodeString(jwk.Modulus)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "modulus not base64 format:", err)
@@ -106,6 +96,7 @@ func main() {
 		// High order bit set, needs padding.
 		modulus = append([]byte{0x00}, modulus...)
 	}
+
 	exponent, err := base64.RawStdEncoding.DecodeString(jwk.Exponent)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "exponent not base64 format:", err)
@@ -116,6 +107,7 @@ func main() {
 		// High order bit set, needs padding.
 		exponent = append([]byte{0x00}, exponent...)
 	}
+
 	sequence := []byte{}
 	sequence = append(sequence, encodeInteger(modulus)...)
 	sequence = append(sequence, encodeInteger(exponent)...)
