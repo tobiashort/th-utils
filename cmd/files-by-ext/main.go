@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"io/fs"
 	"os"
@@ -9,6 +8,8 @@ import (
 	"slices"
 	"strings"
 	"text/tabwriter"
+
+	"github.com/tobiashort/clap-go"
 )
 
 func must(err error) {
@@ -22,12 +23,15 @@ func must2[T any](v T, err error) T {
 	return v
 }
 
+type Args struct {
+	WD string `clap:"positional,description='The working directory'"`
+}
+
 func main() {
-	var wd string
+	args := Args{}
+	clap.Parse(&args)
 
-	flag.StringVar(&wd, "wd", "", "working directory")
-	flag.Parse()
-
+	wd := args.WD
 	if wd == "" {
 		wd = must2(os.Getwd())
 	}
@@ -55,7 +59,7 @@ func main() {
 	slices.Sort(exts)
 	for _, ext := range exts {
 		count := byExt[ext]
-		fmt.Fprintf(w, fmt.Sprintf("%s\t%d\t\n", ext, count))
+		fmt.Fprintf(w, "%s\t%d\t\n", ext, count)
 	}
 	w.Flush()
 }
