@@ -44,7 +44,7 @@ func main() {
 		editor = os.Getenv("EDITOR")
 	}
 	if editor == "" {
-		fmt.Fprintf(os.Stderr, "No editor configured. Use EDITOR environment variable or -editor flag.\n")
+		fmt.Fprintf(os.Stderr, "No editor configured. Use EDITOR environment variable or --editor argument.\n")
 		os.Exit(1)
 	}
 

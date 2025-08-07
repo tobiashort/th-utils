@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"io"
 	"math"
@@ -70,7 +69,7 @@ func main() {
 
 	if args.File != "" {
 		var err error
-		file, err = os.Open(flag.Arg(0))
+		file, err = os.Open(args.File)
 		if err != nil {
 			panic(err)
 		}
