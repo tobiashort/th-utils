@@ -12,17 +12,21 @@ import (
 )
 
 type Args struct {
-	Prefix     string `clap:"default-value='th-',description='the prefix each binary will be given'"`
-	InstallDir string `clap:"default-value='$HOME/.th-utils/',description='install directory where tool are going to be installed'"`
+	Prefix      string `clap:"default-value='th-',description='the prefix each binary will be given'"`
+	InstallPath string `clap:"default-value='$HOME/.th-utils/',description='instalation path where tool are going to be installed'"`
+	Util        string `clap:"positional,description='only compiles and installes the given utitliy'"`
+	Clean       bool   `clap:"description='delete installation path'"`
 }
 
-func ensureDir(dir string) {
+func cleanUp(dir string) {
 	err := os.RemoveAll(dir)
 	if err != nil {
 		panic(err)
 	}
+}
 
-	err = os.MkdirAll(dir, 0755)
+func ensureDir(dir string) {
+	err := os.MkdirAll(dir, 0755)
 	if err != nil {
 		panic(err)
 	}
@@ -36,10 +40,15 @@ func main() {
 	args := Args{}
 	clap.Parse(&args)
 	prefix := args.Prefix
-	installDir := os.ExpandEnv(args.InstallDir)
+	installPath := os.ExpandEnv(args.InstallPath)
+
+	if args.Clean {
+		cleanUp("build")
+		cleanUp(installPath)
+	}
 
 	ensureDir("build")
-	ensureDir(installDir)
+	ensureDir(installPath)
 
 	buildUtil := func(util string) error {
 		cmd := exec.Command("go", "build", "-o", filepath.Join("build", prefix+util), filepathJoinUncleaned(".", "cmd", util))
@@ -51,7 +60,7 @@ func main() {
 	}
 
 	installUtil := func(util string) error {
-		cmd := exec.Command("cp", filepath.Join("build", prefix+util), installDir)
+		cmd := exec.Command("cp", filepath.Join("build", prefix+util), installPath)
 		err := cmd.Run()
 		if err != nil {
 			return err
@@ -76,15 +85,20 @@ func main() {
 		return nil
 	}
 
-	entries, err := os.ReadDir("cmd")
-	if err != nil {
-		panic(err)
-	}
-
 	utils := make([]string, 0)
-	for _, entry := range entries {
-		if entry.IsDir() {
-			utils = append(utils, entry.Name())
+
+	if args.Util != "" {
+		utils = append(utils, args.Util)
+	} else {
+		entries, err := os.ReadDir("cmd")
+		if err != nil {
+			panic(err)
+		}
+
+		for _, entry := range entries {
+			if entry.IsDir() {
+				utils = append(utils, entry.Name())
+			}
 		}
 	}
 
@@ -130,7 +144,7 @@ func main() {
 		cfmt.Printf("#r{--------------------------------------------------------------------------------}\n")
 	} else {
 		cfmt.Printf("#g{--------------------------------------------------------------------------------}\n")
-		cfmt.Printf("#g{SUCCESS} %s\n", installDir)
+		cfmt.Printf("#g{SUCCESS} %s\n", installPath)
 		cfmt.Printf("#g{--------------------------------------------------------------------------------}\n")
 	}
 }

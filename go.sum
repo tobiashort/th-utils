@@ -4,6 +4,10 @@ github.com/tobiashort/cfmt-go v0.0.0-20250806124920-965c74ae1783 h1:sbT91KvVN8Ej
 github.com/tobiashort/cfmt-go v0.0.0-20250806124920-965c74ae1783/go.mod h1:8pFtdCkzBpY6F+Kmqs+Mi7IJL7ysW+lershVsCLWMcc=
 github.com/tobiashort/clap-go v0.0.0-20250806174003-416f584ec88d h1:f2izTZWWcQ/gKlBK0BP2+Mk6s/bV9fvz97j/wNEWnKs=
 github.com/tobiashort/clap-go v0.0.0-20250806174003-416f584ec88d/go.mod h1:fXe6AMsDK0lviUTf5sJKXxfH/m5+KGbcK1jbNwy9Bd8=
+github.com/tobiashort/clap-go v0.0.0-20250807052208-b5b02d89f8a3 h1:OsyIGgnKIIuyQOsmTkbDb0vjzXVR6Hqi62JFQ2Juyj0=
+github.com/tobiashort/clap-go v0.0.0-20250807052208-b5b02d89f8a3/go.mod h1:fXe6AMsDK0lviUTf5sJKXxfH/m5+KGbcK1jbNwy9Bd8=
+github.com/tobiashort/clap-go v0.0.0-20250807053617-192f62dedebf h1:NVHN9lf6Mbe7cN6N5Bw5YuZKLpTHNp5//hQDnvK1AlY=
+github.com/tobiashort/clap-go v0.0.0-20250807053617-192f62dedebf/go.mod h1:fXe6AMsDK0lviUTf5sJKXxfH/m5+KGbcK1jbNwy9Bd8=
 github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08 h1:Ase1ht7+p9VuvTPlqQaimmy1Fk+2h4I1lOmYNFZaQhU=
 github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08/go.mod h1:a3sv+yq3hVlvvaApeloKdr+fBWpH6STm/C6eBRpruUY=
 github.com/tobiashort/isatty-go v0.0.0-20250729193227-00bbda39413c h1:bHu0yDhCDLYWwUvEf+5KUOzb2VNX8F5E046AWbHkHeY=
