@@ -7,14 +7,10 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"strings"
 	"time"
-)
 
-type CipherSuite struct {
-	Name     string
-	Security string
-}
+	"github.com/tobiashort/clap-go"
+)
 
 func must2[T any](v T, err error) T {
 	if err != nil {
@@ -22,6 +18,14 @@ func must2[T any](v T, err error) T {
 	}
 
 	return v
+}
+
+type Args struct {
+}
+
+type CipherSuite struct {
+	Name     string
+	Security string
 }
 
 func lookupSecurity(cipherSuite *CipherSuite) {
@@ -42,25 +46,16 @@ func lookupSecurity(cipherSuite *CipherSuite) {
 }
 
 func main() {
+	args := Args{}
+	clap.Description("Reads cipher suites line by line from Stdin and checks them")
+	clap.Parse(&args)
+
 	cipherSuites := make([]CipherSuite, 0)
-	reader := bufio.NewReader(os.Stdin)
 
-	for {
-		text, err := reader.ReadString('\n')
-
-		if err != nil && err != io.EOF {
-			panic(err)
-		}
-
-		text = strings.TrimSpace(text)
-
-		if text != "" {
-			cipherSuites = append(cipherSuites, CipherSuite{Name: text})
-		}
-
-		if err == io.EOF {
-			break
-		}
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		text := scanner.Text()
+		cipherSuites = append(cipherSuites, CipherSuite{Name: text})
 	}
 
 	for idx := range cipherSuites {
