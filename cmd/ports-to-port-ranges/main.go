@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/tobiashort/clap-go"
 )
 
 func groupInts(n []int) [][]int {
@@ -27,13 +28,17 @@ func groupInts(n []int) [][]int {
 	return groups
 }
 
+type Args struct {
+	Ports string `clap:"positional,mandatory,description='Comma separated ports.'"`
+}
+
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Fprintln(os.Stderr, "Usage: ports-to-port-ranges COMMA_SEPERATED_PORTS")
-		os.Exit(1)
-	}
-	commaSeperatedPorts := os.Args[1]
-	portStrings := strings.Split(commaSeperatedPorts, ",")
+	args := Args{}
+	clap.Example(`$ ports-to-port-ranges 1,2,3,4,5,6,11,223,445,555,556,557
+1-6,11,223,445,555-557`)
+	clap.Parse(&args)
+
+	portStrings := strings.Split(args.Ports, ",")
 	ports := make([]int, 0)
 	for _, portString := range portStrings {
 		port, err := strconv.Atoi(portString)
