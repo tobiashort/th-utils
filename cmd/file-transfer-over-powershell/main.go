@@ -1,47 +1,44 @@
 package main
 
 import (
-  "archive/zip"
-  "bytes"
+	"archive/zip"
+	"bytes"
 	"encoding/base64"
-	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/tobiashort/clap-go"
 )
 
-func printUsageAndExit() {
-  fmt.Println("Usage: file-transfer-over-powershell FILE")
-  os.Exit(1)
+type Args struct {
+	File string `clap:"positional,mandatory,description='The file.'"`
 }
 
 func must[T any](val T, err error) T {
-  if err != nil {
-    panic(err)
-  }
-  return val
+	if err != nil {
+		panic(err)
+	}
+	return val
 }
 
 func main() {
-  flag.Parse()
+	args := Args{}
+	clap.Parse(&args)
 
-  if flag.NArg() != 1 {
-    printUsageAndExit()
-  }
+	filePath := args.File
+	fileName := filepath.Base(filePath)
+	fileBytes := must(os.ReadFile(filePath))
 
-  filePath := flag.Arg(0)
-  fileName := filepath.Base(filePath)
-  fileBytes := must(os.ReadFile(filePath))
+	buf := new(bytes.Buffer)
+	zipWriter := zip.NewWriter(buf)
+	zipFile := must(zipWriter.Create(fileName))
+	zipFile.Write(fileBytes)
+	must(true, zipWriter.Close())
+	zipBase64 := base64.StdEncoding.EncodeToString(buf.Bytes())
+	zipFileName := fmt.Sprintf("%s.zip", fileName)
 
-  buf := new(bytes.Buffer)
-  zipWriter := zip.NewWriter(buf)
-  zipFile := must(zipWriter.Create(fileName))
-  zipFile.Write(fileBytes)
-  must(true, zipWriter.Close())
-  zipBase64 := base64.StdEncoding.EncodeToString(buf.Bytes())
-  zipFileName := fmt.Sprintf("%s.zip", fileName)
-
-  fmt.Printf(`$b64 = '%s'
+	fmt.Printf(`$b64 = '%s'
 $filename = "$env:TEMP\%s"
 $bytes = [Convert]::FromBase64String($b64)
 [IO.File]::WriteAllBytes($filename, $bytes)
