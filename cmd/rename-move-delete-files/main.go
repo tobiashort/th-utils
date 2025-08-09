@@ -12,17 +12,12 @@ import (
 	"strings"
 
 	"github.com/tobiashort/clap-go"
+	. "github.com/tobiashort/utils-go/must"
 )
 
 type Args struct {
 	Dir    string `clap:"positional,description='Optional directory otherwise the current working directory is used'"`
 	Editor string `clap:"description='The path to the editor program to be opened'"`
-}
-
-func assertNil(val any) {
-	if val != nil {
-		panic(val)
-	}
 }
 
 func main() {
@@ -31,9 +26,7 @@ func main() {
 
 	dir := args.Dir
 	if dir == "" {
-		var err error
-		dir, err = os.Getwd()
-		assertNil(err)
+		dir = Must2(os.Getwd())
 	}
 
 	editor := args.Editor
@@ -45,14 +38,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	entries, err := os.ReadDir(dir)
-	assertNil(err)
+	entries := Must2(os.ReadDir(dir))
 
 	lineFormat := fmt.Sprintf("[%%%dd] %%s", len(strconv.Itoa(len(entries))))
 	linePattern := regexp.MustCompile("^(\\[\\s*[0-9]+\\]\\s)(.*)$")
 
-	tempFile, err := os.CreateTemp("", "garlic")
-	assertNil(err)
+	tempFile := Must2(os.CreateTemp("", "garlic"))
 	defer tempFile.Close()
 	defer os.Remove(tempFile.Name())
 
@@ -63,8 +54,7 @@ func main() {
 		linesBefore = append(linesBefore, line)
 	}
 
-	_, err = tempFile.WriteString(strings.Join(linesBefore, "\n"))
-	assertNil(err)
+	Must2(tempFile.WriteString(strings.Join(linesBefore, "\n")))
 
 	cmd := exec.Command(editor, tempFile.Name())
 	cmd.Stdin = os.Stdin
@@ -73,9 +63,8 @@ func main() {
 	cmd.Run()
 	cmd.Wait()
 
-	tempFile, err = os.Open(tempFile.Name())
-	data, err := io.ReadAll(tempFile)
-	assertNil(err)
+	tempFile = Must2(os.Open(tempFile.Name()))
+	data := Must2(io.ReadAll(tempFile))
 
 	linesAfter := make([]string, 0)
 
@@ -100,7 +89,7 @@ linesBeforeLoop:
 					if lineBeforeFileName != lineAfterFileName {
 						fmt.Println(lineBeforeFileName, "->", lineAfterFileName)
 						actions = append(actions, func() {
-							err = os.Rename(lineBeforeFileName, lineAfterFileName)
+							err := os.Rename(lineBeforeFileName, lineAfterFileName)
 							if err != nil {
 								fmt.Fprint(os.Stderr, err)
 							}
@@ -112,7 +101,7 @@ linesBeforeLoop:
 		}
 		fmt.Println("Delete", lineBeforeFileName)
 		actions = append(actions, func() {
-			err = os.RemoveAll(lineBeforeFileName)
+			err := os.RemoveAll(lineBeforeFileName)
 			if err != nil {
 				fmt.Fprint(os.Stderr, err)
 			}
@@ -124,7 +113,7 @@ linesBeforeLoop:
 			if strings.HasSuffix(lineAfter, string(os.PathSeparator)) {
 				fmt.Println("Mkdir", lineAfter)
 				actions = append(actions, func() {
-					err = os.MkdirAll(lineAfter, 0755)
+					err := os.MkdirAll(lineAfter, 0755)
 					if err != nil {
 						fmt.Fprint(os.Stderr, err)
 					}
@@ -132,7 +121,7 @@ linesBeforeLoop:
 			} else {
 				fmt.Println("Touch", lineAfter)
 				actions = append(actions, func() {
-					err = os.MkdirAll(filepath.Dir(lineAfter), 0755)
+					err := os.MkdirAll(filepath.Dir(lineAfter), 0755)
 					if err != nil {
 						fmt.Fprint(os.Stderr, err)
 					} else {
@@ -155,8 +144,7 @@ linesBeforeLoop:
 confirmation:
 	fmt.Print("Apply changes? (y/N) ")
 	reader := bufio.NewReader(os.Stdin)
-	answer, err := reader.ReadString('\n')
-	assertNil(err)
+	answer := Must2(reader.ReadString('\n'))
 	answer = strings.TrimSpace(answer)
 	switch answer {
 	case "y":

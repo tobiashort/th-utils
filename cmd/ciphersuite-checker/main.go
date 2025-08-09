@@ -10,15 +10,8 @@ import (
 	"time"
 
 	"github.com/tobiashort/clap-go"
+	. "github.com/tobiashort/utils-go/must"
 )
-
-func must2[T any](v T, err error) T {
-	if err != nil {
-		panic(err)
-	}
-
-	return v
-}
 
 type Args struct {
 }
@@ -31,17 +24,17 @@ type CipherSuite struct {
 func lookupSecurity(cipherSuite *CipherSuite) {
 	url := fmt.Sprintf("https://ciphersuite.info/api/cs/%s/", cipherSuite.Name)
 	client := http.Client{Timeout: 10 * time.Second}
-	resp := must2(client.Get(url))
+	resp := Must2(client.Get(url))
 
 	if resp.StatusCode == http.StatusNotFound {
 		cipherSuite.Security = "unknown"
 		return
 	}
 
-	data := must2(io.ReadAll(resp.Body))
-	dict := make(map[string]interface{})
+	data := Must2(io.ReadAll(resp.Body))
+	dict := make(map[string]any)
 	json.Unmarshal(data, &dict)
-	security := dict[cipherSuite.Name].(map[string]interface{})["security"].(string)
+	security := dict[cipherSuite.Name].(map[string]any)["security"].(string)
 	cipherSuite.Security = security
 }
 

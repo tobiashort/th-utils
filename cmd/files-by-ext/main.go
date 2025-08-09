@@ -10,18 +10,8 @@ import (
 	"text/tabwriter"
 
 	"github.com/tobiashort/clap-go"
+	. "github.com/tobiashort/utils-go/must"
 )
-
-func must(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
-func must2[T any](v T, err error) T {
-	must(err)
-	return v
-}
 
 type Args struct {
 	WD string `clap:"positional,description='The working directory'"`
@@ -33,7 +23,7 @@ func main() {
 
 	wd := args.WD
 	if wd == "" {
-		wd = must2(os.Getwd())
+		wd = Must2(os.Getwd())
 	}
 
 	byExt := make(map[string]int)

@@ -7,13 +7,8 @@ import (
 	"strings"
 
 	"github.com/tobiashort/clap-go"
+	. "github.com/tobiashort/utils-go/must"
 )
-
-func assertNil(val any) {
-	if val != nil {
-		panic(val)
-	}
-}
 
 type Args struct {
 	Hex string `clap:"positional,description='The hex code to decode. Reads from Stdin if not specified.'"`
@@ -32,6 +27,5 @@ func main() {
 	}
 
 	decoder := hex.NewDecoder(input)
-	_, err := io.Copy(os.Stdout, decoder)
-	assertNil(err)
+	Must2(io.Copy(os.Stdout, decoder))
 }

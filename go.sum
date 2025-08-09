@@ -2,12 +2,8 @@ github.com/tobiashort/ansi-go v0.0.0-20250806124809-2629ce31199d h1:KCznFY8B2c+H
 github.com/tobiashort/ansi-go v0.0.0-20250806124809-2629ce31199d/go.mod h1:yPoTE564mrx3g7842t9vvduaGlzo38iKRjIqtGANbyU=
 github.com/tobiashort/cfmt-go v0.0.0-20250806124920-965c74ae1783 h1:sbT91KvVN8EjNZ63c1PKyolrC0oXAXZ53rggAL/jeHQ=
 github.com/tobiashort/cfmt-go v0.0.0-20250806124920-965c74ae1783/go.mod h1:8pFtdCkzBpY6F+Kmqs+Mi7IJL7ysW+lershVsCLWMcc=
-github.com/tobiashort/clap-go v0.0.0-20250806174003-416f584ec88d h1:f2izTZWWcQ/gKlBK0BP2+Mk6s/bV9fvz97j/wNEWnKs=
-github.com/tobiashort/clap-go v0.0.0-20250806174003-416f584ec88d/go.mod h1:fXe6AMsDK0lviUTf5sJKXxfH/m5+KGbcK1jbNwy9Bd8=
-github.com/tobiashort/clap-go v0.0.0-20250807052208-b5b02d89f8a3 h1:OsyIGgnKIIuyQOsmTkbDb0vjzXVR6Hqi62JFQ2Juyj0=
-github.com/tobiashort/clap-go v0.0.0-20250807052208-b5b02d89f8a3/go.mod h1:fXe6AMsDK0lviUTf5sJKXxfH/m5+KGbcK1jbNwy9Bd8=
-github.com/tobiashort/clap-go v0.0.0-20250807053617-192f62dedebf h1:NVHN9lf6Mbe7cN6N5Bw5YuZKLpTHNp5//hQDnvK1AlY=
-github.com/tobiashort/clap-go v0.0.0-20250807053617-192f62dedebf/go.mod h1:fXe6AMsDK0lviUTf5sJKXxfH/m5+KGbcK1jbNwy9Bd8=
+github.com/tobiashort/clap-go v0.0.0-20250807203524-ab844a28f97b h1:LK8uZ2JXlUppWIa+hmaN4MABKhdUlmvLW3qBvcGp+bE=
+github.com/tobiashort/clap-go v0.0.0-20250807203524-ab844a28f97b/go.mod h1:fXe6AMsDK0lviUTf5sJKXxfH/m5+KGbcK1jbNwy9Bd8=
 github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08 h1:Ase1ht7+p9VuvTPlqQaimmy1Fk+2h4I1lOmYNFZaQhU=
 github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08/go.mod h1:a3sv+yq3hVlvvaApeloKdr+fBWpH6STm/C6eBRpruUY=
 github.com/tobiashort/isatty-go v0.0.0-20250729193227-00bbda39413c h1:bHu0yDhCDLYWwUvEf+5KUOzb2VNX8F5E046AWbHkHeY=
@@ -16,7 +12,9 @@ github.com/tobiashort/jwt-decode v0.0.0-20250419075139-d478d95b1002 h1:cAqIZ7UYs
 github.com/tobiashort/jwt-decode v0.0.0-20250419075139-d478d95b1002/go.mod h1:wbSJ8zEvccaGJRxIqPEomSJA2MWXVh6H5+PrsFS52AY=
 github.com/tobiashort/jwt-encode v0.0.0-20250419075123-a13d31a0bee9 h1:Zb1MchD6m+JlAYoTXgJjlZoejYj0QMRqMIaDzURKSy0=
 github.com/tobiashort/jwt-encode v0.0.0-20250419075123-a13d31a0bee9/go.mod h1:++3W9lHV0eu4T2EZYNosBf1DVTIfmsTWyW6UHf03U7M=
-github.com/tobiashort/orderedmap-go v0.0.0-20250729190624-ec8e8c7a251e h1:+wLWwLoGXo8JB4UO+EYvD5MsuXBLpn4i/T+UKrnXg3w=
-github.com/tobiashort/orderedmap-go v0.0.0-20250729190624-ec8e8c7a251e/go.mod h1:m2nzlh5XDU90UIVgY0mgGWFwObspBf7GeVF6DRUU0fY=
+github.com/tobiashort/orderedmap-go v0.0.0-20250808211554-a621a4f4674c h1:59UJ5j5oU2Bh4zujC1i/uFlNlzfUgGCbWcPSYsLbFYc=
+github.com/tobiashort/orderedmap-go v0.0.0-20250808211554-a621a4f4674c/go.mod h1:2UXuS6N03zbjxIxA+NaUvoFGF7H5fsrfYShgYIYJC/o=
+github.com/tobiashort/utils-go v0.0.0-20250809133151-e63ee93a3da7 h1:p7rx4hxWGQsRTd8jxcwXn6VTKb4kWcyeBI8Ep50ocRs=
+github.com/tobiashort/utils-go v0.0.0-20250809133151-e63ee93a3da7/go.mod h1:3wsCtfMiXqp06v1rGwOpa8djcN7gBE1aVW7AobOjJBE=
 github.com/tobiashort/worker-go v0.0.0-20250731181545-0c3bca8c0e19 h1:xz+jJVSJEIpCSngZE7YugVJNnJ3daSx+hRx7i8eT6IY=
 github.com/tobiashort/worker-go v0.0.0-20250731181545-0c3bca8c0e19/go.mod h1:FEKJbeUUrLUHfSeEo53AHilq2unxp3BXUv2DSiVIOFM=

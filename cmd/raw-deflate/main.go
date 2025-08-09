@@ -7,16 +7,11 @@ import (
 	"os"
 
 	"github.com/tobiashort/clap-go"
+	. "github.com/tobiashort/utils-go/must"
 )
 
 type Args struct {
 	File string `clap:"positional,description='The file to raw-compress. Reads from Stdin if not specified.'"`
-}
-
-func assertNoErr(err error) {
-	if err != nil {
-		panic(err)
-	}
 }
 
 func main() {
@@ -27,15 +22,12 @@ func main() {
 	var file *os.File
 
 	if args.File != "" {
-		var err error
-		file, err = os.OpenFile(args.File, os.O_RDONLY, 0)
-		assertNoErr(err)
+		file = Must2(os.OpenFile(args.File, os.O_RDONLY, 0))
 	} else {
 		file = os.Stdin
 	}
 
-	writer, err := flate.NewWriter(os.Stdout, zlib.DefaultCompression)
-	assertNoErr(err)
+	writer := Must2(flate.NewWriter(os.Stdout, zlib.DefaultCompression))
 	defer writer.Close()
 	io.Copy(writer, file)
 }

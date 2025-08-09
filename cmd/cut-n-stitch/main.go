@@ -8,18 +8,8 @@ import (
 	"text/template"
 
 	"github.com/tobiashort/clap-go"
+	. "github.com/tobiashort/utils-go/must"
 )
-
-func must(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
-func must2[T any](val T, err error) T {
-	must(err)
-	return val
-}
 
 type Args struct {
 	Delimiter string `clap:"positional,mandatory,description='The delimiter where a given line from Stdin shall be cut.'"`
@@ -33,12 +23,12 @@ left-right`)
 	clap.Parse(&args)
 
 	delimiter := args.Delimiter
-	format := must2(template.New("").Parse(fmt.Sprintf("%s\n", args.Format)))
+	format := Must2(template.New("").Parse(fmt.Sprintf("%s\n", args.Format)))
 	scanner := bufio.NewScanner(os.Stdin)
 
 	for scanner.Scan() {
 		line := scanner.Text()
 		cut := strings.Split(line, delimiter)
-		must(format.Execute(os.Stdout, cut))
+		Must(format.Execute(os.Stdout, cut))
 	}
 }

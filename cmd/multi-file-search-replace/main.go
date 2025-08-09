@@ -14,23 +14,13 @@ import (
 
 	"github.com/tobiashort/clap-go"
 	"github.com/tobiashort/groupby-go"
+	"github.com/tobiashort/utils-go/assert"
+	. "github.com/tobiashort/utils-go/must"
 )
 
 type Args struct {
 	Editor string   `clap:"description='The path to the editor program to be opened'"`
 	RgArgs []string `clap:"positional,description='Additional rg command line arguments'"`
-}
-
-func assertNil(val any) {
-	if val != nil {
-		panic(val)
-	}
-}
-
-func assertNotNil(val any, format string, args ...any) {
-	if val == nil {
-		panic(fmt.Errorf(format, args...))
-	}
 }
 
 func main() {
@@ -68,8 +58,7 @@ func main() {
 	tmp, err := os.CreateTemp("", "riplace")
 	defer os.Remove(tmp.Name())
 
-	_, err = io.Copy(tmp, bytes.NewBufferString(stateBefore))
-	assertNil(err)
+	Must2(io.Copy(tmp, bytes.NewBufferString(stateBefore)))
 
 	tmp.Close()
 
@@ -80,8 +69,7 @@ func main() {
 	cmd.Run()
 	cmd.Wait()
 
-	data, err := os.ReadFile(tmp.Name())
-	assertNil(err)
+	data := Must2(os.ReadFile(tmp.Name()))
 
 	stateAfter := string(data)
 	stateAfter = strings.TrimSpace(stateAfter)
@@ -104,18 +92,16 @@ func main() {
 	for stateBeforeLineIdx := range stateBeforeLines {
 		stateBeforeLine := stateBeforeLines[stateBeforeLineIdx]
 		stateBeforeLineMatches := pattern.FindStringSubmatch(stateBeforeLine)
-		assertNotNil(stateBeforeLineMatches, "%s", stateBeforeLine)
+		assert.NotNil(stateBeforeLineMatches, stateBeforeLine)
 		stateBeforeLineFile := stateBeforeLineMatches[1]
-		stateBeforeLineNumber, err := strconv.Atoi(stateBeforeLineMatches[2])
-		assertNil(err)
+		stateBeforeLineNumber := Must2(strconv.Atoi(stateBeforeLineMatches[2]))
 		stateBeforeLineContent := stateBeforeLineMatches[3]
 
 		stateAfterLine := stateAfterLines[stateBeforeLineIdx]
 		stateAfterLineMatches := pattern.FindStringSubmatch(stateAfterLine)
-		assertNotNil(stateAfterLineMatches, "%s", stateAfterLine)
+		assert.NotNil(stateAfterLineMatches, stateAfterLine)
 		stateAfterLineFile := stateAfterLineMatches[1]
-		stateAfterLineNumber, err := strconv.Atoi(stateAfterLineMatches[2])
-		assertNil(err)
+		stateAfterLineNumber := Must2(strconv.Atoi(stateAfterLineMatches[2]))
 		stateAfterLineContent := stateAfterLineMatches[3]
 
 		if stateBeforeLineFile != stateAfterLineFile && stateBeforeLineNumber != stateAfterLineNumber {
@@ -152,8 +138,7 @@ func main() {
 ask:
 	fmt.Print("Apply changes? (y/n) ")
 	reader := bufio.NewReader(os.Stdin)
-	ans, err := reader.ReadString('\n')
-	assertNil(err)
+	ans := Must2(reader.ReadString('\n'))
 	ans = strings.TrimSpace(ans)
 	switch ans {
 	case "n":
@@ -170,13 +155,11 @@ ask:
 
 	for _, changes := range changesGroupedByFile {
 		file := changes[0].File
-		data, err := os.ReadFile(file)
-		assertNil(err)
+		data := Must2(os.ReadFile(file))
 		lines := strings.Split(string(data), "\n")
 		for _, change := range changes {
 			lines[change.Line-1] = change.Content
 		}
-		err = os.WriteFile(file, []byte(strings.Join(lines, "\n")), 0644)
-		assertNil(err)
+		Must(os.WriteFile(file, []byte(strings.Join(lines, "\n")), 0644))
 	}
 }

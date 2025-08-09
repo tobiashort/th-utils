@@ -7,20 +7,10 @@ import (
 	"strings"
 
 	"github.com/tobiashort/clap-go"
+	. "github.com/tobiashort/utils-go/must"
 
 	"github.com/tobiashort/th-utils/pkg/ellipsis"
 )
-
-func must(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
-func must2[T any](val T, err error) T {
-	must(err)
-	return val
-}
 
 type Args struct {
 	Length int `clap:"default-value=20,description='Max length of the string including the three dots'"`
@@ -36,7 +26,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	bytesRead := must2(io.ReadAll(os.Stdin))
+	bytesRead := Must2(io.ReadAll(os.Stdin))
 	text := string(bytesRead)
 	text = strings.TrimSpace(text)
 	text = ellipsis.Ellipsis(text, args.Length)

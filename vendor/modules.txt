@@ -4,7 +4,7 @@ github.com/tobiashort/ansi-go
 # github.com/tobiashort/cfmt-go v0.0.0-20250806124920-965c74ae1783
 ## explicit; go 1.24
 github.com/tobiashort/cfmt-go
-# github.com/tobiashort/clap-go v0.0.0-20250807053617-192f62dedebf
+# github.com/tobiashort/clap-go v0.0.0-20250807203524-ab844a28f97b
 ## explicit; go 1.24.3
 github.com/tobiashort/clap-go
 # github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08
@@ -19,9 +19,13 @@ github.com/tobiashort/jwt-decode/jwt
 # github.com/tobiashort/jwt-encode v0.0.0-20250419075123-a13d31a0bee9
 ## explicit; go 1.19
 github.com/tobiashort/jwt-encode/jwt
-# github.com/tobiashort/orderedmap-go v0.0.0-20250729190624-ec8e8c7a251e
-## explicit; go 1.24
+# github.com/tobiashort/orderedmap-go v0.0.0-20250808211554-a621a4f4674c
+## explicit; go 1.24.3
 github.com/tobiashort/orderedmap-go
+# github.com/tobiashort/utils-go v0.0.0-20250809133151-e63ee93a3da7
+## explicit; go 1.24.3
+github.com/tobiashort/utils-go/assert
+github.com/tobiashort/utils-go/must
 # github.com/tobiashort/worker-go v0.0.0-20250731181545-0c3bca8c0e19
 ## explicit; go 1.24
 github.com/tobiashort/worker-go
