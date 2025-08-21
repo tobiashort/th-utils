@@ -1,9 +1,9 @@
-github.com/tobiashort/ansi-go v0.0.0-20250806124809-2629ce31199d h1:KCznFY8B2c+HW83hT67OEDLmNA4t5sEGrjHVDLA6ZhY=
-github.com/tobiashort/ansi-go v0.0.0-20250806124809-2629ce31199d/go.mod h1:yPoTE564mrx3g7842t9vvduaGlzo38iKRjIqtGANbyU=
-github.com/tobiashort/cfmt-go v0.0.0-20250806124920-965c74ae1783 h1:sbT91KvVN8EjNZ63c1PKyolrC0oXAXZ53rggAL/jeHQ=
-github.com/tobiashort/cfmt-go v0.0.0-20250806124920-965c74ae1783/go.mod h1:8pFtdCkzBpY6F+Kmqs+Mi7IJL7ysW+lershVsCLWMcc=
-github.com/tobiashort/clap-go v0.0.0-20250807203524-ab844a28f97b h1:LK8uZ2JXlUppWIa+hmaN4MABKhdUlmvLW3qBvcGp+bE=
-github.com/tobiashort/clap-go v0.0.0-20250807203524-ab844a28f97b/go.mod h1:fXe6AMsDK0lviUTf5sJKXxfH/m5+KGbcK1jbNwy9Bd8=
+github.com/tobiashort/ansi-go v0.0.0-20250816044101-514d44e7de80 h1:6O17Z9hZ7g5r2mMigBB+0aobRJMgmTW6ZAFGCMq1YYI=
+github.com/tobiashort/ansi-go v0.0.0-20250816044101-514d44e7de80/go.mod h1:yPoTE564mrx3g7842t9vvduaGlzo38iKRjIqtGANbyU=
+github.com/tobiashort/cfmt-go v0.0.0-20250816044318-5ab05204143b h1:YCDY8IL6LST360MqNxbgVJh08s7rJziHbUP1zkPA1tk=
+github.com/tobiashort/cfmt-go v0.0.0-20250816044318-5ab05204143b/go.mod h1:cCrrgWw5vNVXK8lR7nEeGzQa2FQMR3EltD/Xm/FE2Y8=
+github.com/tobiashort/clap-go v0.0.0-20250816044847-f2f7e53e9976 h1:7yeDVpDq8yO3WpIoogLLWUJPnSAb+K7wqxfNWmx0RFA=
+github.com/tobiashort/clap-go v0.0.0-20250816044847-f2f7e53e9976/go.mod h1:fXe6AMsDK0lviUTf5sJKXxfH/m5+KGbcK1jbNwy9Bd8=
 github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08 h1:Ase1ht7+p9VuvTPlqQaimmy1Fk+2h4I1lOmYNFZaQhU=
 github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08/go.mod h1:a3sv+yq3hVlvvaApeloKdr+fBWpH6STm/C6eBRpruUY=
 github.com/tobiashort/isatty-go v0.0.0-20250729193227-00bbda39413c h1:bHu0yDhCDLYWwUvEf+5KUOzb2VNX8F5E046AWbHkHeY=
@@ -16,5 +16,5 @@ github.com/tobiashort/orderedmap-go v0.0.0-20250808211554-a621a4f4674c h1:59UJ5j
 github.com/tobiashort/orderedmap-go v0.0.0-20250808211554-a621a4f4674c/go.mod h1:2UXuS6N03zbjxIxA+NaUvoFGF7H5fsrfYShgYIYJC/o=
 github.com/tobiashort/utils-go v0.0.0-20250809133151-e63ee93a3da7 h1:p7rx4hxWGQsRTd8jxcwXn6VTKb4kWcyeBI8Ep50ocRs=
 github.com/tobiashort/utils-go v0.0.0-20250809133151-e63ee93a3da7/go.mod h1:3wsCtfMiXqp06v1rGwOpa8djcN7gBE1aVW7AobOjJBE=
-github.com/tobiashort/worker-go v0.0.0-20250731181545-0c3bca8c0e19 h1:xz+jJVSJEIpCSngZE7YugVJNnJ3daSx+hRx7i8eT6IY=
-github.com/tobiashort/worker-go v0.0.0-20250731181545-0c3bca8c0e19/go.mod h1:FEKJbeUUrLUHfSeEo53AHilq2unxp3BXUv2DSiVIOFM=
+github.com/tobiashort/worker-go v0.0.0-20250821193852-5ad5b8124a62 h1:4k8eVblO1Qxl51dCxicyIo4DMXucPP6vu67Ci3D5Kt8=
+github.com/tobiashort/worker-go v0.0.0-20250821193852-5ad5b8124a62/go.mod h1:S2EefYJNWTZLQhNvRZ1jLO8nfLB7hOR5/eBAYzyUbGs=

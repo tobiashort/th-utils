@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 
 	"github.com/tobiashort/cfmt-go"
@@ -32,6 +33,25 @@ type arg struct {
 	positional    bool
 	description   string
 	defaultValue  string
+}
+
+func (arg arg) String() string {
+	if arg.positional {
+		return arg.name
+	} else {
+		var s string
+		if arg.short != "" {
+			s = "-" + arg.short
+		}
+		if arg.long != "" {
+			if s != "" {
+				s += "|--" + arg.long
+			} else {
+				s = "--" + arg.long
+			}
+		}
+		return s
+	}
 }
 
 type userError struct {
@@ -247,7 +267,7 @@ func parseNonPositionalAtIndex(arg arg, strct any, index int) int {
 		return index
 	} else {
 		if index+1 >= len(os.Args) {
-			userErr(fmt.Sprintf("missing value for: -%s|--%s", arg.short, arg.long))
+			userErr(fmt.Sprintf("missing value for: %s", arg))
 		}
 		value := os.Args[index+1]
 		parseNonPositional(arg, strct, value)
@@ -277,6 +297,8 @@ func parseNonPositional(arg arg, strct any, value string) {
 			developerErr("not implemented argument kind []" + innerKind.String())
 		}
 		addToSlice(strct, arg.name, parsed)
+	} else if arg.type_ == reflect.TypeOf(time.Duration(0)) {
+		setDuration(strct, arg.name, parseDuration(value))
 	} else {
 		developerErr(fmt.Sprintf("not implemented argument kind: %v", arg.kind))
 		panic("unreachable")
@@ -308,6 +330,8 @@ func parsePositional(arg arg, strct any, value string) {
 			developerErr("not implemented argument kind []" + innerKind.String())
 		}
 		addToSlice(strct, arg.name, parsed)
+	} else if arg.type_ == reflect.TypeOf(time.Duration(0)) {
+		setDuration(strct, arg.name, parseDuration(value))
 	} else {
 		developerErr(fmt.Sprintf("not implemented argument kind: %v", arg.kind))
 	}
@@ -325,6 +349,14 @@ func parseFloat(arg string) float64 {
 	val, err := strconv.ParseFloat(arg, 64)
 	if err != nil {
 		userErr("value is not a float: " + arg)
+	}
+	return val
+}
+
+func parseDuration(arg string) time.Duration {
+	val, err := time.ParseDuration(arg)
+	if err != nil {
+		userErr("value is not a duration: " + arg)
 	}
 	return val
 }
@@ -366,6 +398,10 @@ func setBool(strct any, name string, val bool) {
 
 func setString(strct any, name string, val string) {
 	reflect.ValueOf(strct).Elem().FieldByName(name).SetString(val)
+}
+
+func setDuration(strct any, name string, val time.Duration) {
+	reflect.ValueOf(strct).Elem().FieldByName(name).Set(reflect.ValueOf(val))
 }
 
 func addToSlice(strct any, name string, val any) {
@@ -455,7 +491,7 @@ func checkForConflicts(givenNonPositionalArgs []arg) {
 		for _, inConflict := range outerArg.conflictsWith {
 			for _, innerArg := range givenNonPositionalArgs {
 				if innerArg.name == inConflict {
-					userErr(fmt.Sprintf("conflicting arguments: -%s|--%s, -%s|--%s", outerArg.short, outerArg.long, innerArg.short, innerArg.long))
+					userErr(fmt.Sprintf("conflicting arguments: %s, %s", outerArg, innerArg))
 				}
 			}
 		}
@@ -478,7 +514,7 @@ outer:
 			if arg.positional {
 				userErr(fmt.Sprintf("missing mandatory positional argument: %s", arg.name))
 			} else {
-				userErr(fmt.Sprintf("missing mandatory argument: -%s|--%s", arg.short, arg.long))
+				userErr(fmt.Sprintf("missing mandatory argument: %s", arg))
 			}
 		}
 	}
@@ -492,7 +528,7 @@ func checkForMultipleUse(givenNonPositionalArgs []arg) {
 			seen[arg.name] = true
 		} else {
 			if arg.kind != reflect.Slice {
-				userErr(fmt.Sprintf("multiple use of argument -%s|--%s", arg.short, arg.long))
+				userErr(fmt.Sprintf("multiple use of argument %s", arg))
 			}
 		}
 	}

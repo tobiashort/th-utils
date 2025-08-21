@@ -8,6 +8,7 @@ import (
 
 type Worker interface {
 	Done()
+	Go(f func())
 	Printf(format string, args ...any)
 	Logf(format string, args ...any)
 }
@@ -22,6 +23,13 @@ type worker struct {
 func (w *worker) Done() {
 	w.done = true
 	w.pool.done()
+}
+
+func (w *worker) Go(f func()) {
+	go func() {
+		defer w.Done()
+		f()
+	}()
 }
 
 func (w *worker) Printf(format string, args ...any) {

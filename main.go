@@ -106,32 +106,29 @@ func main() {
 	pool := worker.NewPool(5)
 	for _, util := range utils {
 		worker := pool.GetWorker()
-		go func() {
-			worker.Printf("#y{%s}", util)
-			err := buildUtil(util)
-			if err != nil {
-				errorSeen = true
-				worker.Logf("#r{ERROR} %s: %v", util, err)
-				worker.Done()
-				return
-			}
-			err = installUtil(util)
-			if err != nil {
-				errorSeen = true
-				worker.Logf("#r{ERROR} %s: %v", util, err)
-				worker.Done()
-				return
-			}
-			err = generateReadme(util)
-			if err != nil {
-				errorSeen = true
-				worker.Logf("#r{ERROR} %s: %v", util, err)
-				worker.Done()
-				return
-			}
-			worker.Logf("#g{SUCCESS} %s", util)
-			worker.Done()
-		}()
+		worker.Go(
+			func() {
+				worker.Printf("#y{%s}", util)
+				err := buildUtil(util)
+				if err != nil {
+					errorSeen = true
+					worker.Logf("#r{ERROR} %s: %v", util, err)
+					return
+				}
+				err = installUtil(util)
+				if err != nil {
+					errorSeen = true
+					worker.Logf("#r{ERROR} %s: %v", util, err)
+					return
+				}
+				err = generateReadme(util)
+				if err != nil {
+					errorSeen = true
+					worker.Logf("#r{ERROR} %s: %v", util, err)
+					return
+				}
+				worker.Logf("#g{SUCCESS} %s", util)
+			})
 	}
 
 	pool.Wait()
