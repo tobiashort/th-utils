@@ -4,9 +4,9 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/tobiashort/clap-go"
+	"github.com/tobiashort/th-utils/pkg/unescape"
 )
 
 type Args struct {
@@ -19,34 +19,11 @@ func main() {
 	clap.Parse(&args)
 
 	prefix := args.Prefix
-	prefixUnescaped := strings.Builder{}
-	for i := 0; i < len(prefix); i++ {
-		curr := prefix[i]
-		if curr == '\\' && i+1 < len(prefix) {
-			next := prefix[i+1]
-			switch next {
-			case 'n':
-				prefixUnescaped.WriteByte('\n')
-				i++
-			case 'r':
-				prefixUnescaped.WriteByte('\r')
-				i++
-			case 't':
-				prefixUnescaped.WriteByte('\t')
-				i++
-			default:
-				prefixUnescaped.WriteByte(curr)
-				prefixUnescaped.WriteByte(next)
-				i++
-			}
-		} else {
-			prefixUnescaped.WriteByte(curr)
-		}
-	}
+	prefixUnescaped := unescape.Unescape(prefix)
 
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		text := scanner.Text()
-		fmt.Printf("%s%s\n", prefixUnescaped.String(), text)
+		fmt.Printf("%s%s\n", prefixUnescaped, text)
 	}
 }

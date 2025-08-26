@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/tobiashort/clap-go"
+	"github.com/tobiashort/th-utils/pkg/unescape"
 )
 
 type Args struct {
@@ -22,7 +23,7 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		oldText := scanner.Text()
-		newText := strings.ReplaceAll(oldText, args.OldString, args.NewString)
+		newText := strings.ReplaceAll(oldText, unescape.Unescape(args.OldString), unescape.Unescape(args.NewString))
 		fmt.Println(newText)
 	}
 }
