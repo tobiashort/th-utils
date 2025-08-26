@@ -53,7 +53,7 @@ func main() {
 		return
 	}
 
-	for value := range keywordCounts.Keys() {
+	for _, value := range keywordCounts.Keys() {
 		fmt.Println(value)
 	}
 }
