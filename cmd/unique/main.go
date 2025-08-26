@@ -14,13 +14,23 @@ import (
 )
 
 type Args struct {
-	Count bool `clap:"description='The count of the number of times the line occurred'"`
-	Plot  bool `clap:"conflicts-with=Count,description='Plot as horizontal ascii bar chart'"`
+	Count           bool `clap:"description='The count of the number of times the line occurred'"`
+	Plot            bool `clap:"conflicts-with=Count,description='Plot as horizontal ascii bar chart'"`
+	PlotLabelWidth  int  `clap:"short=,default-value=10,description='The label width when plotting.'"`
+	PlotMaxBarWidth int  `clap:"short=,default-value=80,description='The max bar width when plotting.'"`
 }
 
 func main() {
 	args := Args{}
 	clap.Parse(&args)
+
+	if args.PlotLabelWidth < 3 {
+		args.PlotLabelWidth = 3
+	}
+
+	if args.PlotMaxBarWidth < 0 {
+		args.PlotMaxBarWidth = 0
+	}
 
 	keywordCounts := orderedmap.NewOrderedMap[string, int]()
 	scanner := bufio.NewScanner(os.Stdin)
@@ -41,14 +51,11 @@ func main() {
 
 	if args.Plot {
 		maxCount := slices.Max(keywordCounts.Values())
-		maxCountWidth := len(fmt.Sprintf("%d", maxCount))
-		maxLabelWidth := 10
-		maxBarWidth := 2*80 - maxCountWidth - maxLabelWidth - 2
 		for value, count := range keywordCounts.Iterate() {
-			barWidth := int(float64(maxBarWidth) * float64(count) / float64(maxCount))
+			barWidth := int(float64(args.PlotMaxBarWidth) * float64(count) / float64(maxCount))
 			bar := strings.Repeat("\u28FF", barWidth/2)
 			bar += strings.Repeat("\u2847", barWidth%2)
-			fmt.Printf("%*s %s %d\n", maxLabelWidth, ellipsis.Ellipsis(value, maxLabelWidth), bar, count)
+			fmt.Printf("%*s %s %d\n", args.PlotLabelWidth, ellipsis.Ellipsis(value, args.PlotLabelWidth), bar, count)
 		}
 		return
 	}
