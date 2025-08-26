@@ -1,13 +1,14 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
 	"github.com/tobiashort/clap-go"
 	"github.com/tobiashort/th-utils/pkg/unescape"
+	. "github.com/tobiashort/utils-go/must"
 )
 
 type Args struct {
@@ -20,10 +21,7 @@ func main() {
 	clap.Description("Reads from Stdin and transforms the string by replacing all occurrences of OldString with NewString.")
 	clap.Parse(&args)
 
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		oldText := scanner.Text()
-		newText := strings.ReplaceAll(oldText, unescape.Unescape(args.OldString), unescape.Unescape(args.NewString))
-		fmt.Println(newText)
-	}
+	oldText := string(Must2(io.ReadAll(os.Stdin)))
+	newText := strings.ReplaceAll(oldText, unescape.Unescape(args.OldString), unescape.Unescape(args.NewString))
+	fmt.Println(newText)
 }
