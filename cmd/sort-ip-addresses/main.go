@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"net"
@@ -10,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/tobiashort/clap-go"
+	. "github.com/tobiashort/utils-go/must"
 )
 
 type Args struct {
@@ -28,29 +28,25 @@ func sortIPs(ip1, ip2 net.IP) int {
 func main() {
 	args := Args{}
 	clap.Parse(&args)
-	ips := make([]net.IP, 0)
-	reader := bufio.NewReader(os.Stdin)
-	for {
-		line, err := reader.ReadString('\n')
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			panic(err)
+	input := string(Must2(io.ReadAll(os.Stdin)))
+	lines := strings.Split(input, "\n")
+	slices.SortFunc(lines, func(line1, line2 string) int {
+		split1 := strings.Split(line1, " ")
+		split2 := strings.Split(line2, " ")
+		ip1 := net.ParseIP(split1[0])
+		if ip1 == nil {
+			return 1
 		}
-		line = strings.TrimSpace(line)
-		ip := net.ParseIP(line)
-		if ip == nil {
-			fmt.Fprintf(os.Stderr, "parse error: '%s'", line)
-		} else {
-			ips = append(ips, ip)
+		ip2 := net.ParseIP(split2[0])
+		if ip2 == nil {
+			return -1
 		}
-	}
-	slices.SortFunc(ips, sortIPs)
+		return sortIPs(ip1, ip2)
+	})
 	if args.Reverse {
-		slices.Reverse(ips)
+		slices.Reverse(lines)
 	}
-	for _, ip := range ips {
-		fmt.Println(ip.String())
+	for _, line := range lines {
+		fmt.Println(line)
 	}
 }
