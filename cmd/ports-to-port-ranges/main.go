@@ -2,11 +2,14 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/tobiashort/clap-go"
+	. "github.com/tobiashort/utils-go/must"
 )
 
 func groupInts(n []int) [][]int {
@@ -29,7 +32,7 @@ func groupInts(n []int) [][]int {
 }
 
 type Args struct {
-	Ports string `clap:"positional,mandatory,description='Comma separated ports.'"`
+	Ports string `clap:"positional,description='Comma separated ports. Reads from Stdin if not specified.'"`
 }
 
 func main() {
@@ -38,7 +41,14 @@ func main() {
 1-6,11,223,445,555-557`)
 	clap.Parse(&args)
 
-	portStrings := strings.Split(args.Ports, ",")
+	portsString := args.Ports
+	if portsString == "" {
+		portsString = string(Must2(io.ReadAll(os.Stdin)))
+		portsString = strings.TrimSpace(portsString)
+	}
+
+	portStrings := strings.Split(portsString, ",")
+
 	ports := make([]int, 0)
 	for _, portString := range portStrings {
 		port, err := strconv.Atoi(portString)
@@ -47,6 +57,7 @@ func main() {
 		}
 		ports = append(ports, port)
 	}
+
 	portRangeStrings := make([]string, 0)
 	for _, group := range groupInts(ports) {
 		if len(group) == 1 {
@@ -58,5 +69,6 @@ func main() {
 			portRangeStrings = append(portRangeStrings, fmt.Sprintf("%d-%d", group[0], group[len(group)-1]))
 		}
 	}
+
 	fmt.Println(strings.Join(portRangeStrings, ","))
 }
