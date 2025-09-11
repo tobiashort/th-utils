@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/tobiashort/clap-go"
+	. "github.com/tobiashort/utils-go/must"
 )
 
 type Args struct {
@@ -53,4 +54,5 @@ func main() {
 			}
 		}
 	}
+	Must(scanner.Err())
 }

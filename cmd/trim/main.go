@@ -8,6 +8,8 @@ import (
 	"unicode"
 
 	"github.com/tobiashort/clap-go"
+	. "github.com/tobiashort/utils-go/must"
+
 	"github.com/tobiashort/th-utils/pkg/unescape"
 )
 
@@ -40,4 +42,5 @@ func main() {
 		}
 		fmt.Println(text)
 	}
+	Must(scanner.Err())
 }

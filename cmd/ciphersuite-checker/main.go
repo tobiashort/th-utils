@@ -50,6 +50,7 @@ func main() {
 		text := scanner.Text()
 		cipherSuites = append(cipherSuites, CipherSuite{Name: text})
 	}
+	Must(scanner.Err())
 
 	for idx := range cipherSuites {
 		cipherSuite := &cipherSuites[idx]

@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/tobiashort/clap-go"
@@ -34,6 +36,18 @@ func filepathJoinUncleaned(parts ...string) string {
 	return strings.Join(parts, string(filepath.Separator))
 }
 
+func runTests() {
+	fmt.Println("Running tests...")
+	cmd := exec.Command("go", "test", "./...", "-count", "10", "-v")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println(string(out))
+		os.Exit(1)
+	} else {
+		fmt.Println("Tests ok.")
+	}
+}
+
 func main() {
 	args := Args{}
 	clap.Parse(&args)
@@ -45,25 +59,35 @@ func main() {
 
 	ensureDir("build")
 
+	runTests()
+
 	buildUtil := func(util string) error {
-		cmd := exec.Command("go", "build", "-o", filepath.Join("build", prefix+util), filepathJoinUncleaned(".", "cmd", util))
-		err := cmd.Run()
+		executable := filepath.Join("build", prefix+util)
+		if runtime.GOOS == "windows" {
+			executable += ".exe"
+		}
+		cmd := exec.Command("go", "build", "-o", executable, filepathJoinUncleaned(".", "cmd", util))
+		cmd.Env = os.Environ()
+		if runtime.GOOS == "windows" {
+			cmd.Env = append(cmd.Env, "CC=zig cc")
+		}
+		out, err := cmd.CombinedOutput()
 		if err != nil {
-			return err
+			return fmt.Errorf("%w: %s", err, string(out))
 		}
 		return nil
 	}
 
 	generateReadme := func(util string) error {
 		cmd := exec.Command("go", "run", filepathJoinUncleaned(".", "cmd", util), "-h")
-		bs, err := cmd.Output()
+		out, err := cmd.CombinedOutput()
 		if err != nil {
-			return err
+			return fmt.Errorf("%w: %s", err, string(out))
 		}
-		if len(bs) > 0 {
-			bs = append([]byte{'`', '`', '`', '\n'}, bs...)
-			bs = append(bs, '\n', '`', '`', '`', '\n')
-			err = os.WriteFile(filepath.Join("cmd", util, "README.md"), bs, 0644)
+		if len(out) > 0 {
+			out = append([]byte{'`', '`', '`', '\n'}, out...)
+			out = append(out, '\n', '`', '`', '`', '\n')
+			err = os.WriteFile(filepath.Join("cmd", util, "README.md"), out, 0644)
 			if err != nil {
 				return err
 			}
@@ -88,6 +112,8 @@ func main() {
 		}
 	}
 
+	fmt.Println("Building utils...")
+
 	pool := worker.NewPool(5)
 	for _, util := range utils {
 		worker := pool.GetWorker()
@@ -107,7 +133,6 @@ func main() {
 				worker.Logf("#g{SUCCESS} %s", util)
 			})
 	}
-
 	pool.Wait()
 
 	generateReadme(".")

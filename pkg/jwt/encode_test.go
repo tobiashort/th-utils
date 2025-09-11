@@ -3,8 +3,7 @@ package jwt_test
 import (
 	"testing"
 
-	jwt_decode "github.com/tobiashort/jwt-decode/jwt"
-	jwt_encode "github.com/tobiashort/jwt-encode/jwt"
+	"github.com/tobiashort/th-utils/pkg/jwt"
 )
 
 var TestDecodeEncodeExamples = []string{
@@ -19,14 +18,18 @@ var TestDecodeEncodeExamples = []string{
 func TestDecodeEncode(t *testing.T) {
 	for _, example := range TestDecodeEncodeExamples {
 		t.Run(example, func(t *testing.T) {
-			decoded, err := jwt_decode.Decode(example)
+			t.Parallel()
+
+			decoded, err := jwt.Decode(example)
 			if err != nil {
 				t.Error(err)
 			}
-			encoded, err := jwt_encode.Encode(decoded)
+
+			encoded, err := jwt.Encode(decoded)
 			if err != nil {
 				t.Error(err)
 			}
+
 			if example != encoded {
 				t.Errorf("Not equal:\n%s\n%s", example, encoded)
 			}

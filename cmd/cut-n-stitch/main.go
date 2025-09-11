@@ -31,4 +31,5 @@ left-right`)
 		cut := strings.Split(line, delimiter)
 		Must(format.Execute(os.Stdout, cut))
 	}
+	Must(scanner.Err())
 }

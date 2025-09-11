@@ -6,6 +6,8 @@ import (
 	"os"
 
 	"github.com/tobiashort/clap-go"
+	. "github.com/tobiashort/utils-go/must"
+
 	"github.com/tobiashort/th-utils/pkg/unescape"
 )
 
@@ -26,4 +28,5 @@ func main() {
 		text := scanner.Text()
 		fmt.Printf("%s%s\n", text, suffixUnescaped)
 	}
+	Must(scanner.Err())
 }

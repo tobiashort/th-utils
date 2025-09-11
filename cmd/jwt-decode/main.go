@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/tobiashort/clap-go"
+
 	"github.com/tobiashort/th-utils/pkg/jwt"
 )
 
