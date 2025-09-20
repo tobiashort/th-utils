@@ -8,6 +8,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/tobiashort/th-utils/pkg/ip"
+
 	"github.com/tobiashort/clap-go"
 	. "github.com/tobiashort/utils-go/must"
 )
@@ -31,17 +33,13 @@ func main() {
 	input := string(Must2(io.ReadAll(os.Stdin)))
 	lines := strings.Split(input, "\n")
 	slices.SortFunc(lines, func(line1, line2 string) int {
-		split1 := strings.Split(line1, " ")
-		split2 := strings.Split(line2, " ")
+		trim1 := strings.TrimSpace(line1)
+		trim2 := strings.TrimSpace(line2)
+		split1 := strings.Split(trim1, " ")
+		split2 := strings.Split(trim2, " ")
 		ip1 := net.ParseIP(split1[0])
-		if ip1 == nil {
-			return 1
-		}
 		ip2 := net.ParseIP(split2[0])
-		if ip2 == nil {
-			return -1
-		}
-		return sortIPs(ip1, ip2)
+		return ip.ToInt(ip1).Cmp(ip.ToInt(ip2))
 	})
 	if args.Reverse {
 		slices.Reverse(lines)
