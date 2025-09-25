@@ -27,7 +27,10 @@ func FromInt(n *big.Int) net.IP {
 			break
 		}
 	}
+
 	if v4 {
+		bs[11] = 255
+		bs[10] = 255
 		return net.IP(bs).To4()
 	} else {
 		return net.IP(bs).To16()

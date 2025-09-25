@@ -1,6 +1,6 @@
 ```
 Usage:
-  cidr-to-list [OPTIONS] <CIDR>
+  cidr-expand [OPTIONS] <CIDR>
 
 Options:
   -h, --help  Show this help message and exit
