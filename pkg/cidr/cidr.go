@@ -6,11 +6,13 @@ import (
 	"net"
 
 	"github.com/tobiashort/th-utils/pkg/ip"
-	. "github.com/tobiashort/utils-go/must"
 )
 
-func Expand(cidr string) []net.IP {
-	_, subnet := Must3(net.ParseCIDR(cidr))
+func Expand(cidr string) ([]net.IP, error) {
+	_, subnet, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return nil, err
+	}
 	start := ip.ToInt(subnet.IP)
 	ones, bits := subnet.Mask.Size()
 	zeros := bits - ones
@@ -20,5 +22,5 @@ func Expand(cidr string) []net.IP {
 		ret[i] = ip.FromInt(start)
 		start.Add(start, big.NewInt(1))
 	}
-	return ret
+	return ret, nil
 }

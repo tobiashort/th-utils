@@ -18,15 +18,6 @@ type Args struct {
 	Reverse bool `clap:"description=Reverses sort order"`
 }
 
-func sortIPs(ip1, ip2 net.IP) int {
-	for i := range 16 {
-		if ip1[i] != ip2[i] {
-			return int(ip1[i]) - int(ip2[i])
-		}
-	}
-	return 0
-}
-
 func main() {
 	args := Args{}
 	clap.Parse(&args)
