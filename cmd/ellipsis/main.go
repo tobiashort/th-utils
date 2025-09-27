@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/tobiashort/clap-go"
-	. "github.com/tobiashort/utils-go/must"
+	"github.com/tobiashort/utils-go/must"
 
 	"github.com/tobiashort/th-utils/pkg/ellipsis"
 )
@@ -26,7 +26,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	bytesRead := Must2(io.ReadAll(os.Stdin))
+	bytesRead := must.Do2(io.ReadAll(os.Stdin))
 	text := string(bytesRead)
 	text = strings.TrimSpace(text)
 	text = ellipsis.Ellipsis(text, args.Length)

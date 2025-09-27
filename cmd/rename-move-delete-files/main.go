@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	"github.com/tobiashort/clap-go"
-	. "github.com/tobiashort/utils-go/must"
+	"github.com/tobiashort/utils-go/must"
 )
 
 type Args struct {
@@ -26,7 +26,7 @@ func main() {
 
 	dir := args.Dir
 	if dir == "" {
-		dir = Must2(os.Getwd())
+		dir = must.Do2(os.Getwd())
 	}
 
 	editor := args.Editor
@@ -38,12 +38,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	entries := Must2(os.ReadDir(dir))
+	entries := must.Do2(os.ReadDir(dir))
 
 	lineFormat := fmt.Sprintf("[%%%dd] %%s", len(strconv.Itoa(len(entries))))
 	linePattern := regexp.MustCompile("^(\\[\\s*[0-9]+\\]\\s)(.*)$")
 
-	tempFile := Must2(os.CreateTemp("", "garlic"))
+	tempFile := must.Do2(os.CreateTemp("", "garlic"))
 	defer tempFile.Close()
 	defer os.Remove(tempFile.Name())
 
@@ -54,7 +54,7 @@ func main() {
 		linesBefore = append(linesBefore, line)
 	}
 
-	Must2(tempFile.WriteString(strings.Join(linesBefore, "\n")))
+	must.Do2(tempFile.WriteString(strings.Join(linesBefore, "\n")))
 
 	cmd := exec.Command(editor, tempFile.Name())
 	cmd.Stdin = os.Stdin
@@ -63,8 +63,8 @@ func main() {
 	cmd.Run()
 	cmd.Wait()
 
-	tempFile = Must2(os.Open(tempFile.Name()))
-	data := Must2(io.ReadAll(tempFile))
+	tempFile = must.Do2(os.Open(tempFile.Name()))
+	data := must.Do2(io.ReadAll(tempFile))
 
 	linesAfter := make([]string, 0)
 
@@ -144,7 +144,7 @@ linesBeforeLoop:
 confirmation:
 	fmt.Print("Apply changes? (y/N) ")
 	reader := bufio.NewReader(os.Stdin)
-	answer := Must2(reader.ReadString('\n'))
+	answer := must.Do2(reader.ReadString('\n'))
 	answer = strings.TrimSpace(answer)
 	switch answer {
 	case "y":

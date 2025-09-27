@@ -7,11 +7,11 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/tobiashort/th-utils/pkg/ellipsis"
+
 	"github.com/tobiashort/clap-go"
 	"github.com/tobiashort/orderedmap-go"
-	. "github.com/tobiashort/utils-go/must"
-
-	"github.com/tobiashort/th-utils/pkg/ellipsis"
+	"github.com/tobiashort/utils-go/assert"
 )
 
 type Args struct {
@@ -40,7 +40,7 @@ func main() {
 		count, _ := keywordCounts.Get(text)
 		keywordCounts.Put(text, count+1)
 	}
-	Must(scanner.Err())
+	assert.Nilf(scanner.Err(), "scanner error: %w", scanner.Err())
 
 	if args.Count {
 		maxCount := slices.Max(keywordCounts.Values())

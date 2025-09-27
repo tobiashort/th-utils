@@ -16,7 +16,7 @@ github.com/tobiashort/isatty-go
 # github.com/tobiashort/orderedmap-go v0.0.0-20250808211554-a621a4f4674c
 ## explicit; go 1.24.3
 github.com/tobiashort/orderedmap-go
-# github.com/tobiashort/utils-go v0.0.0-20250809133151-e63ee93a3da7
+# github.com/tobiashort/utils-go v0.0.0-20250927043418-165d27a5022e
 ## explicit; go 1.24.3
 github.com/tobiashort/utils-go/assert
 github.com/tobiashort/utils-go/must

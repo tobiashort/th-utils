@@ -8,7 +8,8 @@ import (
 	"text/template"
 
 	"github.com/tobiashort/clap-go"
-	. "github.com/tobiashort/utils-go/must"
+	"github.com/tobiashort/utils-go/assert"
+	"github.com/tobiashort/utils-go/must"
 )
 
 type Args struct {
@@ -23,13 +24,13 @@ left-right`)
 	clap.Parse(&args)
 
 	delimiter := args.Delimiter
-	format := Must2(template.New("").Parse(fmt.Sprintf("%s\n", args.Format)))
+	format := must.Do2(template.New("").Parse(fmt.Sprintf("%s\n", args.Format)))
 	scanner := bufio.NewScanner(os.Stdin)
 
 	for scanner.Scan() {
 		line := scanner.Text()
 		cut := strings.Split(line, delimiter)
-		Must(format.Execute(os.Stdout, cut))
+		must.Do(format.Execute(os.Stdout, cut))
 	}
-	Must(scanner.Err())
+	assert.Nilf(scanner.Err(), "scanner error: %w", scanner.Err())
 }

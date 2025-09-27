@@ -11,7 +11,7 @@ import (
 	"github.com/tobiashort/th-utils/pkg/ip"
 
 	"github.com/tobiashort/clap-go"
-	. "github.com/tobiashort/utils-go/must"
+	"github.com/tobiashort/utils-go/must"
 )
 
 type Args struct {
@@ -21,7 +21,7 @@ type Args struct {
 func main() {
 	args := Args{}
 	clap.Parse(&args)
-	input := string(Must2(io.ReadAll(os.Stdin)))
+	input := string(must.Do2(io.ReadAll(os.Stdin)))
 	lines := strings.Split(input, "\n")
 	slices.SortFunc(lines, func(line1, line2 string) int {
 		trim1 := strings.TrimSpace(line1)

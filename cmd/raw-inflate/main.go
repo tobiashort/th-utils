@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/tobiashort/clap-go"
-	. "github.com/tobiashort/utils-go/must"
+	"github.com/tobiashort/utils-go/must"
 )
 
 type Args struct {
@@ -20,7 +20,7 @@ func main() {
 
 	var file *os.File
 	if args.File != "" {
-		file = Must2(os.OpenFile(args.File, os.O_RDONLY, 0))
+		file = must.Do2(os.OpenFile(args.File, os.O_RDONLY, 0))
 	} else {
 		file = os.Stdin
 	}

@@ -9,7 +9,7 @@ import (
 	"runtime/debug"
 	"strings"
 
-	. "github.com/tobiashort/utils-go/must"
+	"github.com/tobiashort/utils-go/must"
 )
 
 type OrderedMap[K comparable, V any] struct {
@@ -100,14 +100,14 @@ func (m *OrderedMap[K, V]) UnmarshalJSON(data []byte) (err error) {
 	decoder := json.NewDecoder(bytes.NewReader(data))
 
 	// parse {
-	token := Must2(decoder.Token())
+	token := must.Do2(decoder.Token())
 	if token != json.Delim('{') {
 		return fmt.Errorf("at %d expected '{', got '%s'", decoder.InputOffset(), token)
 	}
 
 next:
 	// parse }
-	token = Must2(decoder.Token())
+	token = must.Do2(decoder.Token())
 	if token == json.Delim('}') {
 		return nil
 	}
@@ -117,10 +117,10 @@ next:
 
 	// parse value
 	var valueRaw json.RawMessage
-	Must(decoder.Decode(&valueRaw))
+	must.Do(decoder.Decode(&valueRaw))
 
 	var valueCompacted bytes.Buffer
-	Must(json.Compact(&valueCompacted, valueRaw))
+	must.Do(json.Compact(&valueCompacted, valueRaw))
 
 	valueStr := valueCompacted.String()
 
@@ -132,27 +132,27 @@ next:
 	isStringToAny := reflect.TypeOf(m) == reflect.TypeOf(NewOrderedMap[string, any]())
 	if isStringToAny && strings.HasPrefix(valueStr, "{") {
 		var omap OrderedMap[K, V]
-		Must(json.Unmarshal([]byte(valueStr), &omap))
+		must.Do(json.Unmarshal([]byte(valueStr), &omap))
 		value = omap
 	} else if isStringToAny && strings.HasPrefix(valueStr, "[{") {
 		var omaps []OrderedMap[K, V]
-		Must(json.Unmarshal([]byte(valueStr), &omaps))
+		must.Do(json.Unmarshal([]byte(valueStr), &omaps))
 		value = omaps
 	} else if strings.HasPrefix(valueStr, "{") {
 		// if current OrderedMap is of type [string, V],
 		// subsequent json object shall be unmarshaled to
 		// the concrete type V
 		var tmp V
-		Must(json.Unmarshal([]byte(valueStr), &tmp))
+		must.Do(json.Unmarshal([]byte(valueStr), &tmp))
 		value = tmp
 	} else if strings.HasPrefix(valueStr, "[{") {
 		var tmp []V
-		Must(json.Unmarshal([]byte(valueStr), &tmp))
+		must.Do(json.Unmarshal([]byte(valueStr), &tmp))
 		value = tmp
 	} else {
 		// in any other case the valueStr shall be unmarshaled
 		// to whatever type it may be (int, float, bool, str, etc.)
-		Must(json.Unmarshal([]byte(valueStr), &value))
+		must.Do(json.Unmarshal([]byte(valueStr), &value))
 	}
 
 	// add key and value

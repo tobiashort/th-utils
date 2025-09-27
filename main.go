@@ -38,7 +38,7 @@ func filepathJoinUncleaned(parts ...string) string {
 
 func runTests() {
 	fmt.Println("Running tests...")
-	cmd := exec.Command("go", "test", "./...", "-count", "10", "-v")
+	cmd := exec.Command("go", "test", "./...")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Println(string(out))

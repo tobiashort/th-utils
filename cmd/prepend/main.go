@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/tobiashort/clap-go"
-	. "github.com/tobiashort/utils-go/must"
+	"github.com/tobiashort/utils-go/assert"
 
 	"github.com/tobiashort/th-utils/pkg/unescape"
 )
@@ -28,5 +28,5 @@ func main() {
 		text := scanner.Text()
 		fmt.Printf("%s%s\n", prefixUnescaped, text)
 	}
-	Must(scanner.Err())
+	assert.Nilf(scanner.Err(), "scanner error: %w", scanner.Err())
 }

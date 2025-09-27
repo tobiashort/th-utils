@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/tobiashort/clap-go"
-	. "github.com/tobiashort/utils-go/must"
+	"github.com/tobiashort/utils-go/must"
 	"github.com/tobiashort/worker-go"
 )
 
@@ -28,7 +28,7 @@ type ExecutionResult struct {
 
 func findGitRepositories() []string {
 	var paths []string
-	wd := Must2(os.Getwd())
+	wd := must.Do2(os.Getwd())
 	filepath.WalkDir(wd, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err

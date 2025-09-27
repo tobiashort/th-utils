@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/tobiashort/clap-go"
-	. "github.com/tobiashort/utils-go/must"
+	"github.com/tobiashort/utils-go/must"
 )
 
 type Args struct {
@@ -22,13 +22,13 @@ func main() {
 
 	filePath := args.File
 	fileName := filepath.Base(filePath)
-	fileBytes := Must2(os.ReadFile(filePath))
+	fileBytes := must.Do2(os.ReadFile(filePath))
 
 	buf := new(bytes.Buffer)
 	zipWriter := zip.NewWriter(buf)
-	zipFile := Must2(zipWriter.Create(fileName))
+	zipFile := must.Do2(zipWriter.Create(fileName))
 	zipFile.Write(fileBytes)
-	Must2(true, zipWriter.Close())
+	must.Do2(true, zipWriter.Close())
 	zipBase64 := base64.StdEncoding.EncodeToString(buf.Bytes())
 	zipFileName := fmt.Sprintf("%s.zip", fileName)
 

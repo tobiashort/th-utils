@@ -10,7 +10,8 @@ import (
 	"time"
 
 	"github.com/tobiashort/clap-go"
-	. "github.com/tobiashort/utils-go/must"
+	"github.com/tobiashort/utils-go/assert"
+	"github.com/tobiashort/utils-go/must"
 )
 
 type Args struct {
@@ -24,14 +25,14 @@ type CipherSuite struct {
 func lookupSecurity(cipherSuite *CipherSuite) {
 	url := fmt.Sprintf("https://ciphersuite.info/api/cs/%s/", cipherSuite.Name)
 	client := http.Client{Timeout: 10 * time.Second}
-	resp := Must2(client.Get(url))
+	resp := must.Do2(client.Get(url))
 
 	if resp.StatusCode == http.StatusNotFound {
 		cipherSuite.Security = "unknown"
 		return
 	}
 
-	data := Must2(io.ReadAll(resp.Body))
+	data := must.Do2(io.ReadAll(resp.Body))
 	dict := make(map[string]any)
 	json.Unmarshal(data, &dict)
 	security := dict[cipherSuite.Name].(map[string]any)["security"].(string)
@@ -50,7 +51,7 @@ func main() {
 		text := scanner.Text()
 		cipherSuites = append(cipherSuites, CipherSuite{Name: text})
 	}
-	Must(scanner.Err())
+	assert.Nilf(scanner.Err(), "scanner error: %w", scanner.Err())
 
 	for idx := range cipherSuites {
 		cipherSuite := &cipherSuites[idx]

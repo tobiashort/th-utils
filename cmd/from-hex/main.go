@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/tobiashort/clap-go"
-	. "github.com/tobiashort/utils-go/must"
+	"github.com/tobiashort/utils-go/must"
 )
 
 type Args struct {
@@ -27,5 +27,5 @@ func main() {
 	}
 
 	decoder := hex.NewDecoder(input)
-	Must2(io.Copy(os.Stdout, decoder))
+	must.Do2(io.Copy(os.Stdout, decoder))
 }

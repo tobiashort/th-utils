@@ -8,7 +8,7 @@ import (
 
 	"github.com/tobiashort/clap-go"
 	"github.com/tobiashort/th-utils/pkg/unescape"
-	. "github.com/tobiashort/utils-go/must"
+	"github.com/tobiashort/utils-go/must"
 )
 
 type Args struct {
@@ -21,7 +21,7 @@ func main() {
 	clap.Description("Reads from Stdin and transforms the string by replacing all occurrences of OldString with NewString.")
 	clap.Parse(&args)
 
-	oldText := string(Must2(io.ReadAll(os.Stdin)))
+	oldText := string(must.Do2(io.ReadAll(os.Stdin)))
 	newText := strings.ReplaceAll(oldText, unescape.Unescape(args.OldString), unescape.Unescape(args.NewString))
 	fmt.Println(newText)
 }

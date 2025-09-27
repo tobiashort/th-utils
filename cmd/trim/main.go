@@ -7,10 +7,10 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/tobiashort/clap-go"
-	. "github.com/tobiashort/utils-go/must"
-
 	"github.com/tobiashort/th-utils/pkg/unescape"
+
+	"github.com/tobiashort/clap-go"
+	"github.com/tobiashort/utils-go/assert"
 )
 
 type Args struct {
@@ -42,5 +42,5 @@ func main() {
 		}
 		fmt.Println(text)
 	}
-	Must(scanner.Err())
+	assert.Nilf(scanner.Err(), "scanner error: %w", scanner.Err())
 }

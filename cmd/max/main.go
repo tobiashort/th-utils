@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/tobiashort/clap-go"
-	. "github.com/tobiashort/utils-go/must"
+	"github.com/tobiashort/utils-go/assert"
 )
 
 type Args struct {
@@ -35,7 +35,7 @@ func main() {
 			}
 		}
 	}
-	Must(scanner.Err())
+	assert.Nilf(scanner.Err(), "scanner error: %w", scanner.Err())
 
 	fmt.Println(max)
 }

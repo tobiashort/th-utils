@@ -15,7 +15,7 @@ import (
 	"github.com/tobiashort/clap-go"
 	"github.com/tobiashort/groupby-go"
 	"github.com/tobiashort/utils-go/assert"
-	. "github.com/tobiashort/utils-go/must"
+	"github.com/tobiashort/utils-go/must"
 )
 
 type Args struct {
@@ -58,7 +58,7 @@ func main() {
 	tmp, err := os.CreateTemp("", "riplace")
 	defer os.Remove(tmp.Name())
 
-	Must2(io.Copy(tmp, bytes.NewBufferString(stateBefore)))
+	must.Do2(io.Copy(tmp, bytes.NewBufferString(stateBefore)))
 
 	tmp.Close()
 
@@ -69,7 +69,7 @@ func main() {
 	cmd.Run()
 	cmd.Wait()
 
-	data := Must2(os.ReadFile(tmp.Name()))
+	data := must.Do2(os.ReadFile(tmp.Name()))
 
 	stateAfter := string(data)
 	stateAfter = strings.TrimSpace(stateAfter)
@@ -94,14 +94,14 @@ func main() {
 		stateBeforeLineMatches := pattern.FindStringSubmatch(stateBeforeLine)
 		assert.NotNil(stateBeforeLineMatches, stateBeforeLine)
 		stateBeforeLineFile := stateBeforeLineMatches[1]
-		stateBeforeLineNumber := Must2(strconv.Atoi(stateBeforeLineMatches[2]))
+		stateBeforeLineNumber := must.Do2(strconv.Atoi(stateBeforeLineMatches[2]))
 		stateBeforeLineContent := stateBeforeLineMatches[3]
 
 		stateAfterLine := stateAfterLines[stateBeforeLineIdx]
 		stateAfterLineMatches := pattern.FindStringSubmatch(stateAfterLine)
 		assert.NotNil(stateAfterLineMatches, stateAfterLine)
 		stateAfterLineFile := stateAfterLineMatches[1]
-		stateAfterLineNumber := Must2(strconv.Atoi(stateAfterLineMatches[2]))
+		stateAfterLineNumber := must.Do2(strconv.Atoi(stateAfterLineMatches[2]))
 		stateAfterLineContent := stateAfterLineMatches[3]
 
 		if stateBeforeLineFile != stateAfterLineFile && stateBeforeLineNumber != stateAfterLineNumber {
@@ -138,7 +138,7 @@ func main() {
 ask:
 	fmt.Print("Apply changes? (y/n) ")
 	reader := bufio.NewReader(os.Stdin)
-	ans := Must2(reader.ReadString('\n'))
+	ans := must.Do2(reader.ReadString('\n'))
 	ans = strings.TrimSpace(ans)
 	switch ans {
 	case "n":
@@ -155,11 +155,11 @@ ask:
 
 	for _, changes := range changesGroupedByFile {
 		file := changes[0].File
-		data := Must2(os.ReadFile(file))
+		data := must.Do2(os.ReadFile(file))
 		lines := strings.Split(string(data), "\n")
 		for _, change := range changes {
 			lines[change.Line-1] = change.Content
 		}
-		Must(os.WriteFile(file, []byte(strings.Join(lines, "\n")), 0644))
+		must.Do(os.WriteFile(file, []byte(strings.Join(lines, "\n")), 0644))
 	}
 }

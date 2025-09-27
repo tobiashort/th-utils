@@ -10,7 +10,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/tobiashort/clap-go"
-	. "github.com/tobiashort/utils-go/must"
+	"github.com/tobiashort/utils-go/must"
 )
 
 type Args struct {
@@ -23,7 +23,7 @@ func main() {
 
 	wd := args.WD
 	if wd == "" {
-		wd = Must2(os.Getwd())
+		wd = must.Do2(os.Getwd())
 	}
 
 	byExt := make(map[string]int)

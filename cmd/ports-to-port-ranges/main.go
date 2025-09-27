@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/tobiashort/clap-go"
-	. "github.com/tobiashort/utils-go/must"
+	"github.com/tobiashort/utils-go/must"
 )
 
 func groupInts(n []int) [][]int {
@@ -43,7 +43,7 @@ func main() {
 
 	portsString := args.Ports
 	if portsString == "" {
-		portsString = string(Must2(io.ReadAll(os.Stdin)))
+		portsString = string(must.Do2(io.ReadAll(os.Stdin)))
 		portsString = strings.TrimSpace(portsString)
 	}
 

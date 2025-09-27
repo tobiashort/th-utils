@@ -12,5 +12,7 @@ github.com/tobiashort/orderedmap-go v0.0.0-20250808211554-a621a4f4674c h1:59UJ5j
 github.com/tobiashort/orderedmap-go v0.0.0-20250808211554-a621a4f4674c/go.mod h1:2UXuS6N03zbjxIxA+NaUvoFGF7H5fsrfYShgYIYJC/o=
 github.com/tobiashort/utils-go v0.0.0-20250809133151-e63ee93a3da7 h1:p7rx4hxWGQsRTd8jxcwXn6VTKb4kWcyeBI8Ep50ocRs=
 github.com/tobiashort/utils-go v0.0.0-20250809133151-e63ee93a3da7/go.mod h1:3wsCtfMiXqp06v1rGwOpa8djcN7gBE1aVW7AobOjJBE=
+github.com/tobiashort/utils-go v0.0.0-20250927043418-165d27a5022e h1:oIUEOElzFzmAkIe89hZfghtRzbmwYKb2K1QesoQ+V+g=
+github.com/tobiashort/utils-go v0.0.0-20250927043418-165d27a5022e/go.mod h1:3wsCtfMiXqp06v1rGwOpa8djcN7gBE1aVW7AobOjJBE=
 github.com/tobiashort/worker-go v0.0.0-20250821193852-5ad5b8124a62 h1:4k8eVblO1Qxl51dCxicyIo4DMXucPP6vu67Ci3D5Kt8=
 github.com/tobiashort/worker-go v0.0.0-20250821193852-5ad5b8124a62/go.mod h1:S2EefYJNWTZLQhNvRZ1jLO8nfLB7hOR5/eBAYzyUbGs=
