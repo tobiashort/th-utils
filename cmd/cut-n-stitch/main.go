@@ -32,5 +32,5 @@ left-right`)
 		cut := strings.Split(line, delimiter)
 		must.Do(format.Execute(os.Stdout, cut))
 	}
-	assert.Nilf(scanner.Err(), "scanner error: %w", scanner.Err())
+	assert.Nil(scanner.Err(), "scanner error: %w", scanner.Err())
 }

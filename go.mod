@@ -5,8 +5,8 @@ go 1.24.3
 require (
 	github.com/tobiashort/clap-go v0.0.0-20250911061501-7bf481b3798e
 	github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08
-	github.com/tobiashort/orderedmap-go v0.0.0-20250808211554-a621a4f4674c
-	github.com/tobiashort/utils-go v0.0.0-20250927043418-165d27a5022e
+	github.com/tobiashort/orderedmap-go v0.0.0-20251002054801-04382e46b2d2
+	github.com/tobiashort/utils-go v0.0.0-20251002054717-2fe114a3860d
 	github.com/tobiashort/worker-go v0.0.0-20250821193852-5ad5b8124a62
 )
 

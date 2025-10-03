@@ -28,5 +28,5 @@ func main() {
 		text := scanner.Text()
 		fmt.Printf("%s%s\n", text, suffixUnescaped)
 	}
-	assert.Nilf(scanner.Err(), "scanner error: %w", scanner.Err())
+	assert.Nil(scanner.Err(), "scanner error: %w", scanner.Err())
 }

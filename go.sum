@@ -10,9 +10,11 @@ github.com/tobiashort/isatty-go v0.0.0-20250729193227-00bbda39413c h1:bHu0yDhCDL
 github.com/tobiashort/isatty-go v0.0.0-20250729193227-00bbda39413c/go.mod h1:SR1HPbCAU42WyNiMZUkT4uaFR0BhWEUI++hmevlg46Y=
 github.com/tobiashort/orderedmap-go v0.0.0-20250808211554-a621a4f4674c h1:59UJ5j5oU2Bh4zujC1i/uFlNlzfUgGCbWcPSYsLbFYc=
 github.com/tobiashort/orderedmap-go v0.0.0-20250808211554-a621a4f4674c/go.mod h1:2UXuS6N03zbjxIxA+NaUvoFGF7H5fsrfYShgYIYJC/o=
-github.com/tobiashort/utils-go v0.0.0-20250809133151-e63ee93a3da7 h1:p7rx4hxWGQsRTd8jxcwXn6VTKb4kWcyeBI8Ep50ocRs=
-github.com/tobiashort/utils-go v0.0.0-20250809133151-e63ee93a3da7/go.mod h1:3wsCtfMiXqp06v1rGwOpa8djcN7gBE1aVW7AobOjJBE=
-github.com/tobiashort/utils-go v0.0.0-20250927043418-165d27a5022e h1:oIUEOElzFzmAkIe89hZfghtRzbmwYKb2K1QesoQ+V+g=
-github.com/tobiashort/utils-go v0.0.0-20250927043418-165d27a5022e/go.mod h1:3wsCtfMiXqp06v1rGwOpa8djcN7gBE1aVW7AobOjJBE=
+github.com/tobiashort/orderedmap-go v0.0.0-20251002054801-04382e46b2d2 h1:2rhECCKhcsy2fL3Qr5wy2AbfR4MYBD1AVMKnb21rOWc=
+github.com/tobiashort/orderedmap-go v0.0.0-20251002054801-04382e46b2d2/go.mod h1:9byjND2cspBjUQdf5xcKGrBqqR1rLYOWAxt5F8/L0QM=
+github.com/tobiashort/utils-go v0.0.0-20251002054048-26121d632576 h1:wWIFVE5RXDB44xIao4ejQ+15hfN5UNclM2D/6Ue1h3s=
+github.com/tobiashort/utils-go v0.0.0-20251002054048-26121d632576/go.mod h1:3wsCtfMiXqp06v1rGwOpa8djcN7gBE1aVW7AobOjJBE=
+github.com/tobiashort/utils-go v0.0.0-20251002054717-2fe114a3860d h1:HW7JOpaY9ZGzg5eWiXIPS85JGgVtfoootJ34QhC5W+g=
+github.com/tobiashort/utils-go v0.0.0-20251002054717-2fe114a3860d/go.mod h1:3wsCtfMiXqp06v1rGwOpa8djcN7gBE1aVW7AobOjJBE=
 github.com/tobiashort/worker-go v0.0.0-20250821193852-5ad5b8124a62 h1:4k8eVblO1Qxl51dCxicyIo4DMXucPP6vu67Ci3D5Kt8=
 github.com/tobiashort/worker-go v0.0.0-20250821193852-5ad5b8124a62/go.mod h1:S2EefYJNWTZLQhNvRZ1jLO8nfLB7hOR5/eBAYzyUbGs=

@@ -40,7 +40,7 @@ func main() {
 		count, _ := keywordCounts.Get(text)
 		keywordCounts.Put(text, count+1)
 	}
-	assert.Nilf(scanner.Err(), "scanner error: %w", scanner.Err())
+	assert.Nil(scanner.Err(), "scanner error: %w", scanner.Err())
 
 	if args.Count {
 		maxCount := slices.Max(keywordCounts.Values())

@@ -87,19 +87,19 @@ func main() {
 
 	var changes = make([]Change, 0)
 
-	pattern := regexp.MustCompile("^([^:]+):(\\d+):(.*)$")
+	pattern := regexp.MustCompile(`^([^:]+):(\\d+):(.*)$`)
 
 	for stateBeforeLineIdx := range stateBeforeLines {
 		stateBeforeLine := stateBeforeLines[stateBeforeLineIdx]
 		stateBeforeLineMatches := pattern.FindStringSubmatch(stateBeforeLine)
-		assert.NotNil(stateBeforeLineMatches, stateBeforeLine)
+		assert.NotNil(stateBeforeLineMatches, "%s", stateBeforeLine)
 		stateBeforeLineFile := stateBeforeLineMatches[1]
 		stateBeforeLineNumber := must.Do2(strconv.Atoi(stateBeforeLineMatches[2]))
 		stateBeforeLineContent := stateBeforeLineMatches[3]
 
 		stateAfterLine := stateAfterLines[stateBeforeLineIdx]
 		stateAfterLineMatches := pattern.FindStringSubmatch(stateAfterLine)
-		assert.NotNil(stateAfterLineMatches, stateAfterLine)
+		assert.NotNil(stateAfterLineMatches, "%s", stateAfterLine)
 		stateAfterLineFile := stateAfterLineMatches[1]
 		stateAfterLineNumber := must.Do2(strconv.Atoi(stateAfterLineMatches[2]))
 		stateAfterLineContent := stateAfterLineMatches[3]

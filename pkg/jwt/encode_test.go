@@ -1,6 +1,7 @@
 package jwt_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/tobiashort/th-utils/pkg/jwt"
@@ -16,8 +17,8 @@ var TestDecodeEncodeExamples = []string{
 }
 
 func TestDecodeEncode(t *testing.T) {
-	for _, example := range TestDecodeEncodeExamples {
-		t.Run(example, func(t *testing.T) {
+	for i, example := range TestDecodeEncodeExamples {
+		t.Run(fmt.Sprintf("example%d", i), func(t *testing.T) {
 			t.Parallel()
 
 			decoded, err := jwt.Decode(example)

@@ -33,7 +33,7 @@ func main() {
 			}
 		}
 	}
-	assert.Nilf(scanner.Err(), "scanner error: %w", scanner.Err())
+	assert.Nil(scanner.Err(), "scanner error: %w", scanner.Err())
 
 	fmt.Println(sum)
 }

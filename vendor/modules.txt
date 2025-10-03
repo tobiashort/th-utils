@@ -13,13 +13,14 @@ github.com/tobiashort/groupby-go
 # github.com/tobiashort/isatty-go v0.0.0-20250729193227-00bbda39413c
 ## explicit; go 1.24
 github.com/tobiashort/isatty-go
-# github.com/tobiashort/orderedmap-go v0.0.0-20250808211554-a621a4f4674c
+# github.com/tobiashort/orderedmap-go v0.0.0-20251002054801-04382e46b2d2
 ## explicit; go 1.24.3
 github.com/tobiashort/orderedmap-go
-# github.com/tobiashort/utils-go v0.0.0-20250927043418-165d27a5022e
+# github.com/tobiashort/utils-go v0.0.0-20251002054717-2fe114a3860d
 ## explicit; go 1.24.3
 github.com/tobiashort/utils-go/assert
 github.com/tobiashort/utils-go/must
+github.com/tobiashort/utils-go/strings
 # github.com/tobiashort/worker-go v0.0.0-20250821193852-5ad5b8124a62
 ## explicit; go 1.24
 github.com/tobiashort/worker-go
