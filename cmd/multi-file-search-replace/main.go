@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
 	"io"
@@ -12,6 +11,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"github.com/tobiashort/choose-go"
 	"github.com/tobiashort/clap-go"
 	"github.com/tobiashort/groupby-go"
 	"github.com/tobiashort/utils-go/assert"
@@ -135,31 +135,15 @@ func main() {
 	}
 	tabwriter.Flush()
 
-ask:
-	fmt.Print("Apply changes? (y/n) ")
-	reader := bufio.NewReader(os.Stdin)
-	ans := must.Do2(reader.ReadString('\n'))
-	ans = strings.TrimSpace(ans)
-	switch ans {
-	case "n":
-		fallthrough
-	case "N":
-		os.Exit(0)
-	case "y":
-		fallthrough
-	case "Y":
-		break
-	default:
-		goto ask
-	}
-
-	for _, changes := range changesGroupedByFile {
-		file := changes[0].File
-		data := must.Do2(os.ReadFile(file))
-		lines := strings.Split(string(data), "\n")
-		for _, change := range changes {
-			lines[change.Line-1] = change.Content
+	if choose.YesNo("Apply changes?", choose.DEFAULT_NONE) {
+		for _, changes := range changesGroupedByFile {
+			file := changes[0].File
+			data := must.Do2(os.ReadFile(file))
+			lines := strings.Split(string(data), "\n")
+			for _, change := range changes {
+				lines[change.Line-1] = change.Content
+			}
+			must.Do(os.WriteFile(file, []byte(strings.Join(lines, "\n")), 0644))
 		}
-		must.Do(os.WriteFile(file, []byte(strings.Join(lines, "\n")), 0644))
 	}
 }

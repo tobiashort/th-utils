@@ -4,6 +4,9 @@ github.com/tobiashort/ansi-go
 # github.com/tobiashort/cfmt-go v0.0.0-20250816044318-5ab05204143b
 ## explicit; go 1.24
 github.com/tobiashort/cfmt-go
+# github.com/tobiashort/choose-go v0.0.0-20250927044005-ee0cb13aacf9
+## explicit; go 1.24.3
+github.com/tobiashort/choose-go
 # github.com/tobiashort/clap-go v0.0.0-20250911061501-7bf481b3798e
 ## explicit; go 1.24.3
 github.com/tobiashort/clap-go
@@ -24,3 +27,11 @@ github.com/tobiashort/utils-go/strings
 # github.com/tobiashort/worker-go v0.0.0-20250821193852-5ad5b8124a62
 ## explicit; go 1.24
 github.com/tobiashort/worker-go
+# golang.org/x/sys v0.36.0
+## explicit; go 1.24.0
+golang.org/x/sys/plan9
+golang.org/x/sys/unix
+golang.org/x/sys/windows
+# golang.org/x/term v0.35.0
+## explicit; go 1.24.0
+golang.org/x/term
