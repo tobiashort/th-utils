@@ -87,7 +87,7 @@ func main() {
 
 	var changes = make([]Change, 0)
 
-	pattern := regexp.MustCompile(`^([^:]+):(\\d+):(.*)$`)
+	pattern := regexp.MustCompile(`^([^:]+):(\d+):(.*)$`)
 
 	for stateBeforeLineIdx := range stateBeforeLines {
 		stateBeforeLine := stateBeforeLines[stateBeforeLineIdx]
