@@ -6,6 +6,8 @@ github.com/tobiashort/choose-go v0.0.0-20250927044005-ee0cb13aacf9 h1:z+y97//0/c
 github.com/tobiashort/choose-go v0.0.0-20250927044005-ee0cb13aacf9/go.mod h1:09QZaN646D4nJtoI4z54A9jrnUAxsyJXPD73P52ngqs=
 github.com/tobiashort/clap-go v0.0.0-20250911061501-7bf481b3798e h1:y0RxPNX2qbTLRFtPedRRtK3o+8EjamuEZGsOZ1pG5QU=
 github.com/tobiashort/clap-go v0.0.0-20250911061501-7bf481b3798e/go.mod h1:fXe6AMsDK0lviUTf5sJKXxfH/m5+KGbcK1jbNwy9Bd8=
+github.com/tobiashort/clap-go v0.0.0-20251006191821-52c932084634 h1:h413ub8sbqRiItDL2T83ciOF5/wdDMkowN/cBvTFlxs=
+github.com/tobiashort/clap-go v0.0.0-20251006191821-52c932084634/go.mod h1:9qtAEV9CrsK38jty6g0EZZIOe9AphxoCn/VKXIqHHF0=
 github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08 h1:Ase1ht7+p9VuvTPlqQaimmy1Fk+2h4I1lOmYNFZaQhU=
 github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08/go.mod h1:a3sv+yq3hVlvvaApeloKdr+fBWpH6STm/C6eBRpruUY=
 github.com/tobiashort/isatty-go v0.0.0-20250729193227-00bbda39413c h1:bHu0yDhCDLYWwUvEf+5KUOzb2VNX8F5E046AWbHkHeY=

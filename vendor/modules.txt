@@ -7,7 +7,7 @@ github.com/tobiashort/cfmt-go
 # github.com/tobiashort/choose-go v0.0.0-20250927044005-ee0cb13aacf9
 ## explicit; go 1.24.3
 github.com/tobiashort/choose-go
-# github.com/tobiashort/clap-go v0.0.0-20250911061501-7bf481b3798e
+# github.com/tobiashort/clap-go v0.0.0-20251006191821-52c932084634
 ## explicit; go 1.24.3
 github.com/tobiashort/clap-go
 # github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08
