@@ -27,7 +27,7 @@ func main() {
 		var err error
 		file, err = os.Open(args.File)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "open file error: %s: %s", args.File, err)
+			fmt.Fprintf(os.Stderr, "open file error: %s: %v", args.File, err)
 			os.Exit(1)
 		}
 	} else {
@@ -38,10 +38,14 @@ func main() {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		text := scanner.Text()
+		text = strings.TrimSpace(text)
+		if text == "" {
+			continue
+		}
 		if strings.Contains(text, "/") {
 			expanded, err := cidr.Expand(text)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "parse error: %s: %s", text, err)
+				fmt.Fprintf(os.Stderr, "parse error: %s: %v", text, err)
 				os.Exit(1)
 			}
 			ips = append(ips, expanded...)
@@ -57,7 +61,7 @@ func main() {
 	err := scanner.Err()
 	if err != nil {
 		log.Fatalln()
-		fmt.Fprintf(os.Stderr, "scanner error: %s", err)
+		fmt.Fprintf(os.Stderr, "scanner error: %v", err)
 		os.Exit(1)
 	}
 
