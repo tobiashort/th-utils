@@ -53,6 +53,8 @@ func Collapse(ips []net.IP) []string {
 	for _, ip := range ipsAsInt {
 		if len(curRange) == 0 {
 			curRange = append(curRange, ip)
+		} else if big.NewInt(0).Sub(ip, curRange[len(curRange)-1]).Cmp(big.NewInt(0)) == 0 {
+			// ignore duplicate
 		} else if big.NewInt(0).Sub(ip, curRange[len(curRange)-1]).Cmp(big.NewInt(1)) == 0 {
 			curRange = append(curRange, ip)
 		} else {
