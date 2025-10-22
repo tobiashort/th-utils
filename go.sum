@@ -8,6 +8,10 @@ github.com/tobiashort/clap-go v0.0.0-20250911061501-7bf481b3798e h1:y0RxPNX2qbTL
 github.com/tobiashort/clap-go v0.0.0-20250911061501-7bf481b3798e/go.mod h1:fXe6AMsDK0lviUTf5sJKXxfH/m5+KGbcK1jbNwy9Bd8=
 github.com/tobiashort/clap-go v0.0.0-20251022181119-28e65aaa95e6 h1:fVZIes9RF6lksH6NO8XjVU5bEZtfty8Y953CS1UYmGk=
 github.com/tobiashort/clap-go v0.0.0-20251022181119-28e65aaa95e6/go.mod h1:9qtAEV9CrsK38jty6g0EZZIOe9AphxoCn/VKXIqHHF0=
+github.com/tobiashort/clap-go v0.0.0-20251022183124-ea7b7f8b26dc h1:CSbSU0T/OjRy2Gd41kda+5nCsfzpNhGxIvyt7nEQ0OY=
+github.com/tobiashort/clap-go v0.0.0-20251022183124-ea7b7f8b26dc/go.mod h1:9qtAEV9CrsK38jty6g0EZZIOe9AphxoCn/VKXIqHHF0=
+github.com/tobiashort/clap-go v0.0.0-20251022183259-a683fc1f0c62 h1:f9ZNB5djXU9TMsHddOYXCUWgW7bZnEPcbCcvqsHxwSk=
+github.com/tobiashort/clap-go v0.0.0-20251022183259-a683fc1f0c62/go.mod h1:9qtAEV9CrsK38jty6g0EZZIOe9AphxoCn/VKXIqHHF0=
 github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08 h1:Ase1ht7+p9VuvTPlqQaimmy1Fk+2h4I1lOmYNFZaQhU=
 github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08/go.mod h1:a3sv+yq3hVlvvaApeloKdr+fBWpH6STm/C6eBRpruUY=
 github.com/tobiashort/isatty-go v0.0.0-20250729193227-00bbda39413c h1:bHu0yDhCDLYWwUvEf+5KUOzb2VNX8F5E046AWbHkHeY=
