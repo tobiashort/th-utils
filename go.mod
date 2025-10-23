@@ -1,10 +1,11 @@
 module github.com/tobiashort/th-utils
 
-go 1.24.3
+go 1.25.0
 
 require (
 	github.com/tobiashort/choose-go v0.0.0-20250927044005-ee0cb13aacf9
 	github.com/tobiashort/clap-go v0.0.0-20251022183259-a683fc1f0c62
+	github.com/tobiashort/clog-go v0.0.0-20251022194732-d5de09cc722c
 	github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08
 	github.com/tobiashort/orderedmap-go v0.0.0-20251002054801-04382e46b2d2
 	github.com/tobiashort/utils-go v0.0.0-20251002054717-2fe114a3860d

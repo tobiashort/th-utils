@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/tobiashort/clap-go"
+	"github.com/tobiashort/clog-go"
 	"github.com/tobiashort/worker-go"
 )
 
@@ -37,7 +38,7 @@ func filepathJoinUncleaned(parts ...string) string {
 }
 
 func runTests() {
-	fmt.Println("Running tests...")
+	clog.Print("#b{[test]}")
 	cmd := exec.Command("go", "test", "./...")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -112,7 +113,7 @@ func main() {
 		}
 	}
 
-	fmt.Println("Building utils...")
+	clog.Print("#b{[build]}")
 
 	pool := worker.NewPool(5)
 	for _, util := range utils {
