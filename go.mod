@@ -3,6 +3,7 @@ module github.com/tobiashort/th-utils
 go 1.25.0
 
 require (
+	github.com/expr-lang/expr v1.17.7
 	github.com/tobiashort/choose-go v0.0.0-20250927044005-ee0cb13aacf9
 	github.com/tobiashort/clap-go v0.0.0-20251022183259-a683fc1f0c62
 	github.com/tobiashort/clog-go v0.0.0-20251022194732-d5de09cc722c
