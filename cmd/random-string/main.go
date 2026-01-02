@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
 	"os"
 	"time"
 
 	"github.com/tobiashort/clap-go"
+	"github.com/tobiashort/th-utils/pkg/random"
 )
 
 const (
@@ -76,13 +76,9 @@ the given alphabet.`)
 		alphabet = Lowercase + Uppercase + Numbers + Symbols
 	}
 
-	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+	seed := time.Now().UnixNano()
 
 	for range args.Amount {
-		b := make([]byte, args.Width)
-		for i := range args.Width {
-			b[i] = alphabet[rnd.Intn(len(alphabet))]
-		}
-		fmt.Println(string(b))
+		fmt.Println(random.String(alphabet, args.Width, seed))
 	}
 }
