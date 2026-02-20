@@ -4,6 +4,7 @@ Usage:
 
 Options:
   -e, --editor <Editor>  The path to the editor program to be opened
+  -r, --recursive        Recursively list all files.
   -h, --help             Show this help message and exit
 
 Positional arguments:
