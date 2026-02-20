@@ -8,8 +8,8 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/tobiashort/cfmt-go"
 	"github.com/tobiashort/clap-go"
-	"github.com/tobiashort/clog-go"
 	"github.com/tobiashort/worker-go"
 )
 
@@ -38,14 +38,14 @@ func filepathJoinUncleaned(parts ...string) string {
 }
 
 func runTests() {
-	clog.Print("#b{[test]}")
+	cfmt.Print("#b{[test]} ")
 	cmd := exec.Command("go", "test", "./...")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		fmt.Println(string(out))
+		cfmt.Println(string(out))
 		os.Exit(1)
 	} else {
-		fmt.Println("Tests ok.")
+		cfmt.Println("Tests ok.")
 	}
 }
 
@@ -113,7 +113,7 @@ func main() {
 		}
 	}
 
-	clog.Print("#b{[build]}")
+	cfmt.Println("#b{[build]}")
 
 	pool := worker.NewPool(5)
 	for _, util := range utils {

@@ -20,6 +20,7 @@ var (
 	prog        string
 	description string
 	example     string
+	parseCalled bool
 )
 
 func init() {
@@ -82,10 +83,16 @@ func Prog(s string) {
 }
 
 func Description(s string) {
+	if parseCalled {
+		userErr("Description must be called before Parse", nil)
+	}
 	description = s
 }
 
 func Example(s string) {
+	if parseCalled {
+		userErr("Example must be called before Parse", nil)
+	}
 	example = s
 }
 
@@ -107,6 +114,7 @@ func Parse(strct any) {
 			}
 		}
 	}()
+	parseCalled = true
 	parse(os.Args, strct)
 }
 
@@ -156,9 +164,14 @@ func parse(osArgs []string, strct any) {
 					command = true
 					positional = true
 				} else {
-					developerErr("unknown tag value: " + tagValue)
+					developerErr(fmt.Sprintf("unknown tag value: %s. Valid tage values are: short, long, conflicts-with, default-value, description, mandatory, positional, command.", tagValue))
 				}
 			}
+		}
+
+		if positional {
+			short = ""
+			long = ""
 		}
 
 		programArgs = append(programArgs, arg{
