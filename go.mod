@@ -7,7 +7,7 @@ require (
 	github.com/gomarkdown/markdown v0.0.0-20250810172220-2e2c11897d1a
 	github.com/tobiashort/cfmt-go v0.0.0-20260219105602-04bd83f83e39
 	github.com/tobiashort/choose-go v0.0.0-20250927044005-ee0cb13aacf9
-	github.com/tobiashort/clap-go v0.0.0-20260220090014-6ba535e67646
+	github.com/tobiashort/clap-go v0.0.0-20260221202326-79486e810bf2
 	github.com/tobiashort/clog-go v0.0.0-20260220202143-7976e23e3ff0
 	github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08
 	github.com/tobiashort/orderedmap-go v0.0.0-20251002054801-04382e46b2d2
