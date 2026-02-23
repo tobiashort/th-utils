@@ -11,7 +11,7 @@ import (
 )
 
 type Args struct {
-	File string `clap:"positional,description='The file to raw-compress. Reads from Stdin if not specified.'"`
+	File string `clap:"positional,desc='The file to raw-compress. Reads from Stdin if not specified.'"`
 }
 
 func main() {

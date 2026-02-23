@@ -18,14 +18,14 @@ const (
 )
 
 type Args struct {
-	Width     int    `clap:"default-value=12,description='Width in characters'"`
-	Lowercase bool   `clap:"description='Use lowercase characters'"`
-	Uppercase bool   `clap:"description='Use uppercase characters'"`
-	Numbers   bool   `clap:"description='Use numbers'"`
-	Symbols   bool   `clap:"description='Use symbols'"`
-	Hex       bool   `clap:"short=x,conflicts-with='Alphabet,Lowercase,Uppercase,Numbers,Symbols',description='Use hexadecimals as the alphabet'"`
-	Alphabet  string `clap:"conflicts-with='Hex,Lowercase,Uppercase,Numbers,Symbols',description='The custom alphabet to be used'"`
-	Amount    int    `clap:"short=c,default-value=1,description='The amount of strings to be generated'"`
+	Width     int    `clap:"default=12,desc='Width in characters'"`
+	Lowercase bool   `clap:"desc='Use lowercase characters'"`
+	Uppercase bool   `clap:"desc='Use uppercase characters'"`
+	Numbers   bool   `clap:"desc='Use numbers'"`
+	Symbols   bool   `clap:"desc='Use symbols'"`
+	Hex       bool   `clap:"short=x,conflicts='Alphabet,Lowercase,Uppercase,Numbers,Symbols',desc='Use hexadecimals as the alphabet'"`
+	Alphabet  string `clap:"conflicts='Hex,Lowercase,Uppercase,Numbers,Symbols',desc='The custom alphabet to be used'"`
+	Amount    int    `clap:"short=c,default=1,desc='The amount of strings to be generated'"`
 }
 
 func main() {

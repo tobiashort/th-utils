@@ -11,10 +11,10 @@ import (
 )
 
 type Args struct {
-	Match         string   `clap:"positional,mandatory,description='The suffix to match'"`
-	OrMatch       []string `clap:"description='adds an additional pattern to match'"`
-	Invert        bool     `clap:"description='inverts the logic'"`
-	CaseSensitive bool     `clap:"description='case sensitive match'"`
+	Match         string   `clap:"positional,mandatory,desc='The suffix to match'"`
+	OrMatch       []string `clap:"desc='adds an additional pattern to match'"`
+	Invert        bool     `clap:"desc='inverts the logic'"`
+	CaseSensitive bool     `clap:"desc='case sensitive match'"`
 }
 
 func main() {

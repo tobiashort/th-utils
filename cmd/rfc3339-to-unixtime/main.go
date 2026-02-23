@@ -9,7 +9,7 @@ import (
 )
 
 type Args struct {
-	RFC3339 string `clap:"positional,mandatory,description='The datetime in RFC3339 format, e.g. 1970-01-01T00:00:00Z'"`
+	RFC3339 string `clap:"positional,mandatory,desc='The datetime in RFC3339 format, e.g. 1970-01-01T00:00:00Z'"`
 }
 
 func main() {

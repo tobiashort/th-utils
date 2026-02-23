@@ -19,7 +19,7 @@ type JWK struct {
 }
 
 type Args struct {
-	JWK string `clap:"positional,description='The JSON Web Key. Reads from Stdin if not specified.'"`
+	JWK string `clap:"positional,desc='The JSON Web Key. Reads from Stdin if not specified.'"`
 }
 
 func encodeLength(data []byte) []byte {

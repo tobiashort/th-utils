@@ -10,7 +10,7 @@ import (
 )
 
 type Args struct {
-	JSON string `clap:"positional,description='The JSON string. Reads from Stdin if not specified.'"`
+	JSON string `clap:"positional,desc='The JSON string. Reads from Stdin if not specified.'"`
 }
 
 func main() {

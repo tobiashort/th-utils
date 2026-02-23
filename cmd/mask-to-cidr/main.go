@@ -10,7 +10,7 @@ import (
 )
 
 type Args struct {
-	Mask string `clap:"positional,mandatory,description='The mask to convert to CIDR'"`
+	Mask string `clap:"positional,mandatory,desc='The mask to convert to CIDR'"`
 }
 
 func printInvalid(mask string) {

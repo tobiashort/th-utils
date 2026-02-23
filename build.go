@@ -14,9 +14,9 @@ import (
 )
 
 type Args struct {
-	Prefix string `clap:"default-value='th-',description='the prefix each binary will be given'"`
-	Util   string `clap:"positional,description='only compiles and installes the given utitliy'"`
-	Clean  bool   `clap:"description='delete installation path'"`
+	Prefix string `clap:"default='th-',desc='the prefix each binary will be given'"`
+	Util   string `clap:"positional,desc='only compiles and installes the given utitliy'"`
+	Clean  bool   `clap:"desc='delete installation path'"`
 }
 
 func cleanUp(dir string) {

@@ -10,6 +10,8 @@ github.com/tobiashort/choose-go v0.0.0-20250927044005-ee0cb13aacf9 h1:z+y97//0/c
 github.com/tobiashort/choose-go v0.0.0-20250927044005-ee0cb13aacf9/go.mod h1:09QZaN646D4nJtoI4z54A9jrnUAxsyJXPD73P52ngqs=
 github.com/tobiashort/clap-go v0.0.0-20260221202326-79486e810bf2 h1:3EwwFTA2PgGnDOQBLDXFrDRz4mVF1dZA+plTv/f1kGo=
 github.com/tobiashort/clap-go v0.0.0-20260221202326-79486e810bf2/go.mod h1:ajbS7re/CEpzdtzND1cuV5UDxTKksHO7bBEZpDrUXcc=
+github.com/tobiashort/clap-go v0.0.0-20260223054944-3b992a9a3d33 h1:kTvprSFMNkvfs0g9y2lnu1TSgFjQrIiugSTi9jsvl+g=
+github.com/tobiashort/clap-go v0.0.0-20260223054944-3b992a9a3d33/go.mod h1:ajbS7re/CEpzdtzND1cuV5UDxTKksHO7bBEZpDrUXcc=
 github.com/tobiashort/clog-go v0.0.0-20260220202143-7976e23e3ff0 h1:WKkSyFlLUa+udtQo4Mdm+BVKFebJwzPsRIJNbhSRBis=
 github.com/tobiashort/clog-go v0.0.0-20260220202143-7976e23e3ff0/go.mod h1:6nenz4pUVKKxx5SGuVCqqMXzliXFx00tX71D8uadgwc=
 github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08 h1:Ase1ht7+p9VuvTPlqQaimmy1Fk+2h4I1lOmYNFZaQhU=

@@ -32,7 +32,7 @@ func groupInts(n []int) [][]int {
 }
 
 type Args struct {
-	Ports string `clap:"positional,description='Comma separated ports. Reads from Stdin if not specified.'"`
+	Ports string `clap:"positional,desc='Comma separated ports. Reads from Stdin if not specified.'"`
 }
 
 func main() {

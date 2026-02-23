@@ -15,9 +15,9 @@ import (
 )
 
 type Args struct {
-	Dir       string `clap:"positional,description='Optional directory otherwise the current working directory is used'"`
-	Editor    string `clap:"description='The path to the editor program to be opened'"`
-	Recursive bool   `clap:"description='Recursively list all files.'"`
+	Dir       string `clap:"positional,desc='Optional directory otherwise the current working directory is used'"`
+	Editor    string `clap:"desc='The path to the editor program to be opened'"`
+	Recursive bool   `clap:"desc='Recursively list all files.'"`
 }
 
 type Action interface {

@@ -8,7 +8,7 @@ import (
 )
 
 type Args struct {
-	Secs int `clap:"positional,mandatory,description='The seconds to convert to RFC3339 format'"`
+	Secs int `clap:"positional,mandatory,desc='The seconds to convert to RFC3339 format'"`
 }
 
 func main() {

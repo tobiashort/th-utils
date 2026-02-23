@@ -104,14 +104,14 @@ func IoctlSetHwTstamp(fd int, ifname string, cfg *HwTstampConfig) error {
 // suitable for system calls like ClockGettime.
 func FdToClockID(fd int) int32 { return int32((int(^fd) << 3) | 3) }
 
-// IoctlPtpClockGetcaps returns the description of a given PTP device.
+// IoctlPtpClockGetcaps returns the desc of a given PTP device.
 func IoctlPtpClockGetcaps(fd int) (*PtpClockCaps, error) {
 	var value PtpClockCaps
 	err := ioctlPtr(fd, PTP_CLOCK_GETCAPS2, unsafe.Pointer(&value))
 	return &value, err
 }
 
-// IoctlPtpSysOffsetPrecise returns a description of the clock
+// IoctlPtpSysOffsetPrecise returns a desc of the clock
 // offset compared to the system clock.
 func IoctlPtpSysOffsetPrecise(fd int) (*PtpSysOffsetPrecise, error) {
 	var value PtpSysOffsetPrecise
@@ -119,7 +119,7 @@ func IoctlPtpSysOffsetPrecise(fd int) (*PtpSysOffsetPrecise, error) {
 	return &value, err
 }
 
-// IoctlPtpSysOffsetExtended returns an extended description of the
+// IoctlPtpSysOffsetExtended returns an extended desc of the
 // clock offset compared to the system clock. The samples parameter
 // specifies the desired number of measurements.
 func IoctlPtpSysOffsetExtended(fd int, samples uint) (*PtpSysOffsetExtended, error) {
@@ -179,7 +179,7 @@ func IoctlFileCloneRange(destFd int, value *FileCloneRange) error {
 }
 
 // IoctlFileClone performs an FICLONE ioctl operation to clone the entire file
-// associated with the file description srcFd to the file associated with the
+// associated with the file desc srcFd to the file associated with the
 // file descriptor destFd. See the ioctl_ficlone(2) man page for details.
 func IoctlFileClone(destFd, srcFd int) error {
 	return ioctl(destFd, FICLONE, uintptr(srcFd))

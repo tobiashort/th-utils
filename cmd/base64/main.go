@@ -10,9 +10,9 @@ import (
 )
 
 type Args struct {
-	Raw    bool `clap:"description='no padding'"`
-	Url    bool `clap:"description='url and file safe'"`
-	Decode bool `clap:"description='decode otherwise encode'"`
+	Raw    bool `clap:"desc='no padding'"`
+	Url    bool `clap:"desc='url and file safe'"`
+	Decode bool `clap:"desc='decode otherwise encode'"`
 }
 
 func main() {

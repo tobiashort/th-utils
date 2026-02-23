@@ -10,10 +10,10 @@ import (
 )
 
 type Args struct {
-	PathEscape  bool   `clap:"long=path,conflicts-with='QueryEscape,EscapeAll',description='Escapes the string so it can be safely placed inside a URL path segment'"`
-	QueryEscape bool   `clap:"long=query,conflicts-with='PathEscape,EscapeAll',description='Escapes the string so it can be safely placed inside a URL query'"`
-	EscapeAll   bool   `clap:"short=a,long=all,conflicts-with='PathEscape,QueryEscape',description='Escape all characters'"`
-	String      string `clap:"positional,description='The string to encode. Reads from Stdin if not specified.'"`
+	PathEscape  bool   `clap:"long=path,conflicts='QueryEscape,EscapeAll',desc='Escapes the string so it can be safely placed inside a URL path segment'"`
+	QueryEscape bool   `clap:"long=query,conflicts='PathEscape,EscapeAll',desc='Escapes the string so it can be safely placed inside a URL query'"`
+	EscapeAll   bool   `clap:"short=a,long=all,conflicts='PathEscape,QueryEscape',desc='Escape all characters'"`
+	String      string `clap:"positional,desc='The string to encode. Reads from Stdin if not specified.'"`
 }
 
 func main() {

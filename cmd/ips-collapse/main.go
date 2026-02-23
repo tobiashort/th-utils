@@ -15,7 +15,7 @@ import (
 )
 
 type Args struct {
-	File string `clap:"positional,description='File with IP addresses or CIDRs separated by newlines. Reads from Stdin if not specified.'"`
+	File string `clap:"positional,desc='File with IP addresses or CIDRs separated by newlines. Reads from Stdin if not specified.'"`
 }
 
 func main() {

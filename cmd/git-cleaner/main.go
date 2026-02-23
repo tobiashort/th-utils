@@ -15,7 +15,7 @@ import (
 )
 
 type Args struct {
-	RemoveLocalBranches bool `clap:"description='Removes all local branches'"`
+	RemoveLocalBranches bool `clap:"desc='Removes all local branches'"`
 }
 
 var args Args

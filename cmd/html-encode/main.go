@@ -10,7 +10,7 @@ import (
 )
 
 type Args struct {
-	String string `clap:"positional,description='The string do encode. Reads from Stdin if not specified.'"`
+	String string `clap:"positional,desc='The string do encode. Reads from Stdin if not specified.'"`
 }
 
 func main() {

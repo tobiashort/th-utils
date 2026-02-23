@@ -13,8 +13,8 @@ import (
 )
 
 type Args struct {
-	Delimiter string `clap:"positional,mandatory,description='The delimiter where a given line from Stdin shall be cut.'"`
-	Format    string `clap:"positional,mandatory,description='The format how the cut line shall be stitched together'"`
+	Delimiter string `clap:"positional,mandatory,desc='The delimiter where a given line from Stdin shall be cut.'"`
+	Format    string `clap:"positional,mandatory,desc='The format how the cut line shall be stitched together'"`
 }
 
 func main() {

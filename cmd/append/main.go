@@ -12,7 +12,7 @@ import (
 )
 
 type Args struct {
-	Suffix string `clap:"positional,mandatory,description='the string that should be appended'"`
+	Suffix string `clap:"positional,mandatory,desc='the string that should be appended'"`
 }
 
 func main() {

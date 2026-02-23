@@ -19,8 +19,8 @@ import (
 )
 
 type Args struct {
-	Editor string   `clap:"description='The path to the editor program to be opened'"`
-	RgArgs []string `clap:"positional,description='Additional rg command line arguments'"`
+	Editor string   `clap:"desc='The path to the editor program to be opened'"`
+	RgArgs []string `clap:"positional,desc='Additional rg command line arguments'"`
 }
 
 func main() {

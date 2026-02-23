@@ -10,7 +10,7 @@ import (
 )
 
 type Args struct {
-	String string `clap:"positional,description='The string to decode. Reads from Stdin if not specified.'"`
+	String string `clap:"positional,desc='The string to decode. Reads from Stdin if not specified.'"`
 }
 
 func main() {

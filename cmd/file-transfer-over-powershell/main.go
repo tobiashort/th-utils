@@ -13,7 +13,7 @@ import (
 )
 
 type Args struct {
-	File string `clap:"positional,mandatory,description='The file.'"`
+	File string `clap:"positional,mandatory,desc='The file.'"`
 }
 
 func main() {

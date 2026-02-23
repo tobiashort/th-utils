@@ -12,7 +12,7 @@ import (
 )
 
 type Args struct {
-	File string `clap:"positional,description='JSON file to convert. Reads from Stdin if not specified'"`
+	File string `clap:"positional,desc='JSON file to convert. Reads from Stdin if not specified'"`
 }
 
 func main() {

@@ -14,7 +14,7 @@ import (
 )
 
 type Args struct {
-	WD string `clap:"positional,description='The working directory'"`
+	WD string `clap:"positional,desc='The working directory'"`
 }
 
 func main() {

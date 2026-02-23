@@ -14,7 +14,7 @@ import (
 )
 
 type Args struct {
-	File string `clap:"mandatory,positional,description='The markdown file to preview'"`
+	File string `clap:"mandatory,positional,desc='The markdown file to preview'"`
 }
 
 func openBrowser(url string) error {

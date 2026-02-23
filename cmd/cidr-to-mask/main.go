@@ -8,7 +8,7 @@ import (
 )
 
 type Args struct {
-	CIDR int `clap:"positional,mandatory,description='The CIDR to be converted to subnet mask'"`
+	CIDR int `clap:"positional,mandatory,desc='The CIDR to be converted to subnet mask'"`
 }
 
 func printInvalid(input string) {

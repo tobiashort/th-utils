@@ -13,7 +13,7 @@ import (
 )
 
 type Args struct {
-	Length int `clap:"default-value=20,description='Max length of the string including the three dots'"`
+	Length int `clap:"default=20,desc='Max length of the string including the three dots'"`
 }
 
 func main() {

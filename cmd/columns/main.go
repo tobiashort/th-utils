@@ -11,8 +11,8 @@ import (
 )
 
 type Args struct {
-	File   string `clap:"positional,description='The file to be loaded otherwise Stdin is used'"`
-	Number int    `clap:"default-value=4,description='The number of columns'"`
+	File   string `clap:"positional,desc='The file to be loaded otherwise Stdin is used'"`
+	Number int    `clap:"default=4,desc='The number of columns'"`
 }
 
 func textToCols(in string, nCols int) string {

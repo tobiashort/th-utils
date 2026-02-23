@@ -11,7 +11,7 @@ import (
 )
 
 type Args struct {
-	Reverse bool `clap:"description='Reverses the sort order'"`
+	Reverse bool `clap:"desc='Reverses the sort order'"`
 }
 
 func main() {

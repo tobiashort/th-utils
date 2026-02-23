@@ -10,7 +10,7 @@ import (
 )
 
 type Args struct {
-	CIDR string `clap:"positional,mandatory,description='E.g. 192.168.1.0/24'"`
+	CIDR string `clap:"positional,mandatory,desc='E.g. 192.168.1.0/24'"`
 }
 
 func main() {

@@ -11,7 +11,7 @@ import (
 )
 
 type Args struct {
-	Hex string `clap:"positional,description='The hex code to decode. Reads from Stdin if not specified.'"`
+	Hex string `clap:"positional,desc='The hex code to decode. Reads from Stdin if not specified.'"`
 }
 
 func main() {

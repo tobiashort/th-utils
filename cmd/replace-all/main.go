@@ -12,8 +12,8 @@ import (
 )
 
 type Args struct {
-	OldString string `clap:"positional,mandatory,description='The string to replace'"`
-	NewString string `clap:"positional,mandatory,description='The strint that replaces OldString'"`
+	OldString string `clap:"positional,mandatory,desc='The string to replace'"`
+	NewString string `clap:"positional,mandatory,desc='The strint that replaces OldString'"`
 }
 
 func main() {

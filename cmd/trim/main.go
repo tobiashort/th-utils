@@ -14,10 +14,10 @@ import (
 )
 
 type Args struct {
-	Left   bool   `clap:"conflicts-with='Right,Prefix,Suffix',description='Only trim leading whitespace.'"`
-	Right  bool   `clap:"conflicts-with='Left,Prefix,Suffix',description='Only trim trailing whitespace.'"`
-	Prefix string `clap:"conflicts-with='Right,Left,Suffix',description='Trims the specified prefix.'"`
-	Suffix string `clap:"conflicts-with='Right,Left,Prefix',description='Trims the specified suffix.'"`
+	Left   bool   `clap:"conflicts='Right,Prefix,Suffix',desc='Only trim leading whitespace.'"`
+	Right  bool   `clap:"conflicts='Left,Prefix,Suffix',desc='Only trim trailing whitespace.'"`
+	Prefix string `clap:"conflicts='Right,Left,Suffix',desc='Trims the specified prefix.'"`
+	Suffix string `clap:"conflicts='Right,Left,Prefix',desc='Trims the specified suffix.'"`
 }
 
 func main() {

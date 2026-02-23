@@ -15,8 +15,8 @@ import (
 )
 
 type Args struct {
-	Expr string `clap:"mandatory,positional,description='The expression (see https://expr-lang.org/docs/language-definition)'"`
-	File string `clap:"positional,description='The json file to read. Reads from Stdin if not specified.'"`
+	Expr string `clap:"mandatory,positional,desc='The expression (see https://expr-lang.org/docs/language-definition)'"`
+	File string `clap:"positional,desc='The json file to read. Reads from Stdin if not specified.'"`
 }
 
 func main() {

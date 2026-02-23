@@ -18,7 +18,7 @@ import (
 
 var (
 	prog        string
-	description string
+	desc        string
 	example     string
 	parseCalled bool
 )
@@ -37,8 +37,9 @@ type arg struct {
 	conflictsWith []string
 	mandatory     bool
 	positional    bool
-	command       bool
-	description   string
+	cmd           bool
+	cmdopt        bool
+	desc          string
 	defaultValue  string
 }
 
@@ -86,7 +87,7 @@ func Description(s string) {
 	if parseCalled {
 		userErr("Description must be called before Parse", nil)
 	}
-	description = s
+	desc = s
 }
 
 func Example(s string) {
@@ -136,8 +137,9 @@ func parse(osArgs []string, strct any) {
 			conflictsWith = make([]string, 0)
 			mandatory     = false
 			positional    = false
-			command       = false
-			description   = ""
+			cmd           = false
+			cmdopt        = false
+			desc          = ""
 			defaultValue  = ""
 		)
 
@@ -150,21 +152,24 @@ func parse(osArgs []string, strct any) {
 					short = strings.Split(tagValue, "=")[1]
 				} else if strings.HasPrefix(tagValue, "long=") {
 					long = strings.Split(tagValue, "=")[1]
-				} else if strings.HasPrefix(tagValue, "conflicts-with=") {
+				} else if strings.HasPrefix(tagValue, "conflicts=") {
 					conflictsWith = strings.Split(strings.Split(tagValue, "=")[1], ",")
-				} else if strings.HasPrefix(tagValue, "default-value=") {
+				} else if strings.HasPrefix(tagValue, "default=") {
 					defaultValue = strings.Split(tagValue, "=")[1]
-				} else if strings.HasPrefix(tagValue, "description=") {
-					description = strings.Split(tagValue, "=")[1]
+				} else if strings.HasPrefix(tagValue, "desc=") {
+					desc = strings.Split(tagValue, "=")[1]
 				} else if tagValue == "mandatory" {
 					mandatory = true
 				} else if tagValue == "positional" {
 					positional = true
-				} else if tagValue == "command" {
-					command = true
+				} else if tagValue == "cmd" {
+					cmd = true
+					positional = true
+				} else if tagValue == "cmdopt" {
+					cmdopt = true
 					positional = true
 				} else {
-					developerErr(fmt.Sprintf("unknown tag value: %s. Valid tage values are: short, long, conflicts-with, default-value, description, mandatory, positional, command.", tagValue))
+					developerErr(fmt.Sprintf("unknown tag value: %s. Valid tage values are: short, long, conflicts, default, desc, mandatory, positional, cmd, cmdopt.", tagValue))
 				}
 			}
 		}
@@ -183,19 +188,20 @@ func parse(osArgs []string, strct any) {
 			conflictsWith: conflictsWith,
 			mandatory:     mandatory,
 			positional:    positional,
-			command:       command,
-			description:   description,
+			cmd:           cmd,
+			cmdopt:        cmdopt,
+			desc:          desc,
 			defaultValue:  defaultValue,
 		})
 	}
 
 	implicitHelpArg := arg{
-		name:        "Help",
-		type_:       reflect.TypeOf(true),
-		kind:        reflect.Bool,
-		long:        "help",
-		short:       "h",
-		description: "Show this help message and exit",
+		name:  "Help",
+		type_: reflect.TypeOf(true),
+		kind:  reflect.Bool,
+		long:  "help",
+		short: "h",
+		desc:  "Show this help message and exit",
 	}
 
 	programArgs = append(programArgs, implicitHelpArg)
@@ -259,20 +265,23 @@ osArgsLoop:
 				positionalArg := programPositionalArgs[positionalArgIndex]
 				givenPositionalArgs = append(givenPositionalArgs, positionalArg)
 				parsePositionalAtIndex(osArgs, positionalArg, strct, i)
-				if positionalArg.command {
-					for fi := range strctType.NumField() {
-						field := strctType.Field(fi)
-						if toKebabCase(field.Name) == osArgs[i] {
+				if positionalArg.cmd {
+					for _, arg := range programPositionalArgs {
+						if arg.cmdopt && osArgs[i] == toKebabCase(arg.name) {
 							prog = prog + " " + osArgs[i]
-							description = ""
+							desc = ""
 							example = ""
-							inst := reflect.New(field.Type)
-							parse(osArgs[i:], inst.Interface())
-							setStruct(strct, field.Name, inst.Elem().Interface())
+							if arg.kind == reflect.Struct {
+								inst := reflect.New(arg.type_)
+								parse(osArgs[i:], inst.Interface())
+								setStruct(strct, arg.name, inst.Elem().Interface())
+							} else if arg.kind == reflect.Interface {
+								parse(osArgs[i:], new(struct{}))
+							}
 							break osArgsLoop
 						}
 					}
-					userErr("unknown command: "+osArgs[i], programArgs)
+					userErr("unknown cmd: "+osArgs[i], programArgs)
 				} else if positionalArgIndex+1 < len(programPositionalArgs) {
 					positionalArgIndex++
 				}
@@ -376,7 +385,7 @@ func parsePositional(arg arg, strct any, value string) {
 			developerErr("not implemented argument kind []" + innerKind.String())
 		}
 		addToSlice(strct, arg.name, parsed)
-	} else if arg.kind == reflect.Interface && arg.command {
+	} else if arg.kind == reflect.Interface && arg.cmd {
 		setPointerTo(strct, arg.name, value)
 	} else if arg.type_ == reflect.TypeOf(time.Duration(0)) {
 		setDuration(strct, arg.name, parseDuration(value))
@@ -453,9 +462,9 @@ func setDuration(strct any, name string, val time.Duration) {
 }
 
 func setPointerTo(strct any, name string, val string) {
-	command := reflect.ValueOf(strct).Elem().FieldByName(kebabToPascalCase(val))
-	if command.IsValid() {
-		reflect.ValueOf(strct).Elem().FieldByName(name).Set(command.Addr())
+	cmd := reflect.ValueOf(strct).Elem().FieldByName(kebabToPascalCase(val))
+	if cmd.IsValid() {
+		reflect.ValueOf(strct).Elem().FieldByName(name).Set(cmd.Addr())
 	}
 }
 
@@ -476,7 +485,7 @@ func checkForNameCollisions(args []arg) {
 	seenLong := make(map[string]arg)
 	seenShort := make(map[string]arg)
 	for _, arg := range args {
-		if arg.positional || arg.kind == reflect.Struct {
+		if arg.positional {
 			continue
 		}
 		if arg.long != "" {
@@ -525,7 +534,7 @@ func checkForEitherLongOrShortGiven(programNonPositionalArgs []arg) {
 func checkForInvalidPositionalArguments(programPositionalArgs []arg) {
 	sliceSeen := false
 	optionalSeen := false
-	commandSeen := false
+	cmdSeen := false
 
 	for _, arg := range programPositionalArgs {
 		if arg.kind != reflect.Slice && sliceSeen {
@@ -537,17 +546,30 @@ func checkForInvalidPositionalArguments(programPositionalArgs []arg) {
 		if arg.mandatory && optionalSeen {
 			developerErr("you cannot have mandatory positional arguments after optional ones: " + arg.name)
 		}
-		if arg.command && commandSeen {
-			developerErr("you cannot have multiple commands on the same level: " + arg.name)
+		if arg.cmd && arg.kind != reflect.Interface {
+			developerErr("cmd must be of type any: " + arg.name)
 		}
+		if arg.cmd && cmdSeen {
+			developerErr("you cannot have multiple cmds on the same level: " + arg.name)
+		}
+		if arg.cmd && arg.cmdopt {
+			developerErr("you cannot declare a field as a cmd and a cmdopt: " + arg.name)
+		}
+		if arg.cmdopt && arg.kind != reflect.Interface && arg.kind != reflect.Struct {
+			developerErr("cmdopt must be of type any or struct: " + arg.name)
+		}
+		if arg.cmdopt && arg.kind == reflect.Struct && arg.type_.NumField() == 0 {
+			developerErr("empty struct not allowed for cmdopt, use any type: " + arg.name)
+		}
+		// TODO cmd must be any, cmdopt any or struct, but not empty struct!
 		if arg.kind == reflect.Slice {
 			sliceSeen = true
 		}
 		if !arg.mandatory {
 			optionalSeen = true
 		}
-		if arg.command {
-			commandSeen = true
+		if arg.cmd {
+			cmdSeen = true
 		}
 	}
 }
@@ -643,8 +665,8 @@ func parseTagValues(tag string) []string {
 func printHelp(args []arg, w io.Writer) {
 	buf := bytes.Buffer{}
 
-	if description != "" {
-		fmt.Fprintf(&buf, "%s\n\n", description)
+	if desc != "" {
+		fmt.Fprintf(&buf, "%s\n\n", desc)
 	}
 
 	var usageParts []string
@@ -730,12 +752,12 @@ func printHelp(args []arg, w io.Writer) {
 	// Required options
 	hasRequired := false
 	for _, arg := range args {
-		if !arg.positional && arg.mandatory && arg.kind != reflect.Struct {
+		if !arg.positional && arg.mandatory {
 			if !hasRequired {
 				cfmt.Fprintln(&buf, "#B{Required options:}")
 				hasRequired = true
 			}
-			desc := arg.description
+			desc := arg.desc
 			if arg.kind == reflect.Slice {
 				desc += " (can be specified multiple times)"
 			}
@@ -752,7 +774,7 @@ func printHelp(args []arg, w io.Writer) {
 	// Optional options
 	hasOptional := false
 	for _, arg := range args {
-		if !arg.positional && !arg.mandatory && arg.kind != reflect.Struct {
+		if !arg.positional && !arg.mandatory {
 			if !hasOptional {
 				cfmt.Fprintln(&buf, "#B{Options:}")
 				hasOptional = true
@@ -764,13 +786,13 @@ func printHelp(args []arg, w io.Writer) {
 			if arg.defaultValue != "" {
 				additionalDesciptions = append(additionalDesciptions, "default: "+arg.defaultValue)
 			}
-			var description string
+			var desc string
 			if len(additionalDesciptions) > 0 {
-				description = fmt.Sprintf("%s (%s)", arg.description, strings.Join(additionalDesciptions, ", "))
+				desc = fmt.Sprintf("%s (%s)", arg.desc, strings.Join(additionalDesciptions, ", "))
 			} else {
-				description = arg.description
+				desc = arg.desc
 			}
-			fmt.Fprintf(&buf, "  %-*s  %s\n", maxLabelLen, labels[arg.name], description)
+			fmt.Fprintf(&buf, "  %-*s  %s\n", maxLabelLen, labels[arg.name], desc)
 		}
 	}
 	if hasOptional {
@@ -780,7 +802,7 @@ func printHelp(args []arg, w io.Writer) {
 	// Positional arguments
 	hasPositional := false
 	for _, arg := range args {
-		if arg.positional {
+		if arg.positional && !arg.cmdopt {
 			if !hasPositional {
 				cfmt.Fprintln(&buf, "#B{Positional arguments:}")
 				hasPositional = true
@@ -795,13 +817,13 @@ func printHelp(args []arg, w io.Writer) {
 			if arg.defaultValue != "" {
 				additionalDesciptions = append(additionalDesciptions, "default: "+arg.defaultValue)
 			}
-			var description string
+			var desc string
 			if len(additionalDesciptions) > 0 {
-				description = fmt.Sprintf("%s (%s)", arg.description, strings.Join(additionalDesciptions, ", "))
+				desc = fmt.Sprintf("%s (%s)", arg.desc, strings.Join(additionalDesciptions, ", "))
 			} else {
-				description = arg.description
+				desc = arg.desc
 			}
-			fmt.Fprintf(&buf, "  %-*s  %s\n", maxLabelLen, arg.name, description)
+			fmt.Fprintf(&buf, "  %-*s  %s\n", maxLabelLen, arg.name, desc)
 		}
 	}
 	if hasPositional {
@@ -810,14 +832,14 @@ func printHelp(args []arg, w io.Writer) {
 
 	hasCommand := false
 	for _, arg := range args {
-		if arg.command {
+		if arg.cmd {
 			if !hasCommand {
 				cfmt.Fprintln(&buf, "#B{Commands:}")
 				hasCommand = true
 			}
 		}
-		if arg.kind == reflect.Struct {
-			fmt.Fprintf(&buf, "  %-*s  %s\n", maxLabelLen, toKebabCase(arg.name), arg.description)
+		if arg.cmdopt {
+			fmt.Fprintf(&buf, "  %-*s  %s\n", maxLabelLen, toKebabCase(arg.name), arg.desc)
 		}
 	}
 	if hasCommand {

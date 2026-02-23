@@ -10,9 +10,9 @@ import (
 )
 
 type Args struct {
-	PathUnescape  bool   `clap:"long=path,conflicts-with='QueryUnescape',description='Unescapes the string from inside a URL path segment'"`
-	QueryUnescape bool   `clap:"long=query,conflicts-with='PathUnescape',description='Unescapes the string from inside a URL query'"`
-	String        string `clap:"positional,description='The string to dencode. Reads from Stdin if not specified.'"`
+	PathUnescape  bool   `clap:"long=path,conflicts='QueryUnescape',desc='Unescapes the string from inside a URL path segment'"`
+	QueryUnescape bool   `clap:"long=query,conflicts='PathUnescape',desc='Unescapes the string from inside a URL query'"`
+	String        string `clap:"positional,desc='The string to dencode. Reads from Stdin if not specified.'"`
 }
 
 func main() {

@@ -12,7 +12,7 @@ import (
 )
 
 type Args struct {
-	JWT string `clap:"positional,description='The JWT string. Reads from Stdin if not specified.'"`
+	JWT string `clap:"positional,desc='The JWT string. Reads from Stdin if not specified.'"`
 }
 
 func main() {

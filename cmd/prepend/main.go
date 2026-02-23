@@ -12,7 +12,7 @@ import (
 )
 
 type Args struct {
-	Prefix string `clap:"positional,mandatory,description='The prefix to append'"`
+	Prefix string `clap:"positional,mandatory,desc='The prefix to append'"`
 }
 
 func main() {

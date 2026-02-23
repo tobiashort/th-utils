@@ -15,10 +15,10 @@ import (
 )
 
 type Args struct {
-	Count           bool `clap:"description='The count of the number of times the line occurred'"`
-	Plot            bool `clap:"conflicts-with=Count,description='Plot as horizontal ascii bar chart'"`
-	PlotLabelWidth  int  `clap:"short=,default-value=10,description='The label width when plotting.'"`
-	PlotMaxBarWidth int  `clap:"short=,default-value=80,description='The max bar width when plotting.'"`
+	Count           bool `clap:"desc='The count of the number of times the line occurred'"`
+	Plot            bool `clap:"conflicts=Count,desc='Plot as horizontal ascii bar chart'"`
+	PlotLabelWidth  int  `clap:"short=,default=10,desc='The label width when plotting.'"`
+	PlotMaxBarWidth int  `clap:"short=,default=80,desc='The max bar width when plotting.'"`
 }
 
 func main() {

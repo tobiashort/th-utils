@@ -10,9 +10,9 @@ import (
 )
 
 type Args struct {
-	String string `clap:"positional,description='The input string. Reads from Stdin if not specified.'"`
-	Start  int    `clap:"default-value=0,description='Start of the substring.'"`
-	End    int    `clap:"mandatory,description='End of the substring (exclusive).'"`
+	String string `clap:"positional,desc='The input string. Reads from Stdin if not specified.'"`
+	Start  int    `clap:"default=0,desc='Start of the substring.'"`
+	End    int    `clap:"mandatory,desc='End of the substring (exclusive).'"`
 }
 
 func main() {
