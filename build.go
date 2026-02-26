@@ -62,12 +62,34 @@ func main() {
 
 	runTests()
 
+	utils := make([]string, 0)
+
+	if args.Util != "" {
+		utils = append(utils, args.Util)
+	} else {
+		entries, err := os.ReadDir("cmd")
+		if err != nil {
+			panic(err)
+		}
+
+		for _, entry := range entries {
+			if entry.IsDir() {
+				utils = append(utils, entry.Name())
+			}
+		}
+	}
+
 	buildUtil := func(util string) error {
 		executable := filepath.Join("build", prefix+util)
 		if runtime.GOOS == "windows" {
 			executable += ".exe"
 		}
-		cmd := exec.Command("go", "build", "-o", executable, filepathJoinUncleaned(".", "cmd", util))
+		cmd := exec.Command("go", "build")
+		if util == "utils" {
+			cmd.Args = append(cmd.Args, "-ldflags", "-X main.Utils="+strings.Join(utils, ",")+" -X main.Prefix="+prefix)
+		}
+		cmd.Args = append(cmd.Args, "-o", executable)
+		cmd.Args = append(cmd.Args, filepathJoinUncleaned(".", "cmd", util))
 		cmd.Env = os.Environ()
 		if runtime.GOOS == "windows" {
 			cmd.Env = append(cmd.Env, "CC=zig cc")
@@ -94,23 +116,6 @@ func main() {
 			}
 		}
 		return nil
-	}
-
-	utils := make([]string, 0)
-
-	if args.Util != "" {
-		utils = append(utils, args.Util)
-	} else {
-		entries, err := os.ReadDir("cmd")
-		if err != nil {
-			panic(err)
-		}
-
-		for _, entry := range entries {
-			if entry.IsDir() {
-				utils = append(utils, entry.Name())
-			}
-		}
 	}
 
 	cfmt.Println("#b{[build]}")
