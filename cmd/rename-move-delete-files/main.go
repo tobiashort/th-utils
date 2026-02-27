@@ -54,7 +54,7 @@ func (a DeleteAction) Execute() error {
 	return os.Remove(a.Path)
 }
 
-func main() {
+func run() int {
 	args := Args{}
 	clap.Parse(&args)
 
@@ -69,7 +69,7 @@ func main() {
 	}
 	if editor == "" {
 		clog.Error("No editor configured. Use EDITOR environment variable or --editor argument")
-		os.Exit(1)
+		return 1
 	}
 
 	paths := make([]string, 0)
@@ -113,7 +113,7 @@ func main() {
 
 	if len(paths) != len(newPaths) {
 		clog.Errors("Expected same amount of lines.")
-		os.Exit(1)
+		return 1
 	}
 
 	actions := make([]Action, 0)
@@ -132,7 +132,7 @@ func main() {
 
 	if len(actions) == 0 {
 		clog.Info("Nothing to do.")
-		os.Exit(0)
+		return 0
 	}
 
 	for _, action := range actions {
@@ -147,4 +147,10 @@ func main() {
 			}
 		}
 	}
+
+	return 0
+}
+
+func main() {
+	os.Exit(run())
 }

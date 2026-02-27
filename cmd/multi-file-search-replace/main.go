@@ -23,7 +23,7 @@ type Args struct {
 	RgArgs []string `clap:"positional,desc='Additional rg command line arguments'"`
 }
 
-func main() {
+func run() int {
 	var editor string
 
 	args := Args{}
@@ -35,7 +35,7 @@ func main() {
 	}
 	if editor == "" {
 		fmt.Fprintf(os.Stderr, "No editor configured. Use EDITOR environment variable or --editor argument.\n")
-		os.Exit(1)
+		return 1
 	}
 
 	rgArgs := []string{"--line-number"}
@@ -45,7 +45,7 @@ func main() {
 	if err != nil {
 		if string(out) == "" {
 			fmt.Println("No matches.")
-			os.Exit(1)
+			return 1
 		}
 		fmt.Fprint(os.Stderr, string(out))
 		panic(err)
@@ -55,7 +55,7 @@ func main() {
 	stateBefore = strings.TrimSpace(stateBefore)
 	stateBeforeLines := strings.Split(stateBefore, "\n")
 
-	tmp, err := os.CreateTemp("", "riplace")
+	tmp, err := os.CreateTemp("", "*")
 	defer os.Remove(tmp.Name())
 
 	must.Do2(io.Copy(tmp, bytes.NewBufferString(stateBefore)))
@@ -121,7 +121,7 @@ func main() {
 
 	if len(changes) == 0 {
 		fmt.Println("No changes.")
-		os.Exit(0)
+		return 0
 	}
 
 	changesGroupedByFile := groupby.GroupBy(changes, func(a, b Change) bool { return a.File == b.File })
@@ -146,4 +146,10 @@ func main() {
 			must.Do(os.WriteFile(file, []byte(strings.Join(lines, "\n")), 0644))
 		}
 	}
+
+	return 0
+}
+
+func main() {
+	os.Exit(run())
 }
