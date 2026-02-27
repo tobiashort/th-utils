@@ -41,11 +41,11 @@ func keyValues(args ...any) string {
 	return sb.String()
 }
 
-func Debug(msg string) {
+func Debug(args ...any) {
 	if Level != LevelDebug {
 		return
 	}
-	cfmt.Fprintln(Output, DebugString(), msg)
+	cfmt.Fprintf(Output, "%s %s", DebugString(), cfmt.Sprintln(args...))
 }
 
 func Debugf(format string, args ...any) {
@@ -62,11 +62,11 @@ func Debugs(msg string, args ...any) {
 	cfmt.Fprintln(Output, DebugString(), msg, keyValues(args...))
 }
 
-func Info(msg string) {
+func Info(args ...any) {
 	if Level != LevelInfo && Level != LevelDebug {
 		return
 	}
-	cfmt.Fprintln(Output, InfoString(), msg)
+	cfmt.Fprintf(Output, "%s %s", InfoString(), cfmt.Sprintln(args...))
 }
 
 func Infof(format string, args ...any) {
@@ -83,11 +83,11 @@ func Infos(msg string, args ...any) {
 	cfmt.Fprintln(Output, InfoString(), msg, keyValues(args...))
 }
 
-func Warn(msg string) {
+func Warn(args ...any) {
 	if Level != LevelWarn && Level != LevelInfo && Level != LevelDebug {
 		return
 	}
-	cfmt.Fprintln(Output, WarnString(), msg)
+	cfmt.Fprintf(Output, "%s %s", WarnString(), cfmt.Sprintln(args...))
 }
 
 func Warnf(format string, args ...any) {
@@ -104,8 +104,8 @@ func Warns(msg string, args ...any) {
 	cfmt.Fprintln(Output, WarnString(), msg, keyValues(args...))
 }
 
-func Error(msg string) {
-	cfmt.Fprintln(Output, ErrorString(), msg)
+func Error(args ...any) {
+	cfmt.Fprintf(Output, "%s %s", ErrorString(), cfmt.Sprintln(args...))
 }
 
 func Errorf(format string, args ...any) {

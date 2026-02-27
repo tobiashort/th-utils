@@ -424,7 +424,7 @@ type DrvInfoData struct {
 	size          uint32
 	DriverType    uint32
 	_             uintptr
-	desc   [LINE_LEN]uint16
+	description   [LINE_LEN]uint16
 	mfgName       [LINE_LEN]uint16
 	providerName  [LINE_LEN]uint16
 	DriverDate    Filetime
@@ -432,15 +432,15 @@ type DrvInfoData struct {
 }
 
 func (data *DrvInfoData) Description() string {
-	return UTF16ToString(data.desc[:])
+	return UTF16ToString(data.description[:])
 }
 
-func (data *DrvInfoData) SetDescription(desc string) error {
-	str, err := UTF16FromString(desc)
+func (data *DrvInfoData) SetDescription(description string) error {
+	str, err := UTF16FromString(description)
 	if err != nil {
 		return err
 	}
-	copy(data.desc[:], str)
+	copy(data.description[:], str)
 	return nil
 }
 

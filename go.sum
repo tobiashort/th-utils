@@ -14,6 +14,8 @@ github.com/tobiashort/clap-go v0.0.0-20260223054944-3b992a9a3d33 h1:kTvprSFMNkvf
 github.com/tobiashort/clap-go v0.0.0-20260223054944-3b992a9a3d33/go.mod h1:ajbS7re/CEpzdtzND1cuV5UDxTKksHO7bBEZpDrUXcc=
 github.com/tobiashort/clog-go v0.0.0-20260220202143-7976e23e3ff0 h1:WKkSyFlLUa+udtQo4Mdm+BVKFebJwzPsRIJNbhSRBis=
 github.com/tobiashort/clog-go v0.0.0-20260220202143-7976e23e3ff0/go.mod h1:6nenz4pUVKKxx5SGuVCqqMXzliXFx00tX71D8uadgwc=
+github.com/tobiashort/clog-go v0.0.0-20260221210951-db23c7123722 h1:C0fnkfpi6kUOMsj+bTzWGrshSwegXloBp3G+TKijVtA=
+github.com/tobiashort/clog-go v0.0.0-20260221210951-db23c7123722/go.mod h1:6nenz4pUVKKxx5SGuVCqqMXzliXFx00tX71D8uadgwc=
 github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08 h1:Ase1ht7+p9VuvTPlqQaimmy1Fk+2h4I1lOmYNFZaQhU=
 github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08/go.mod h1:a3sv+yq3hVlvvaApeloKdr+fBWpH6STm/C6eBRpruUY=
 github.com/tobiashort/isatty-go v0.0.0-20250729193227-00bbda39413c h1:bHu0yDhCDLYWwUvEf+5KUOzb2VNX8F5E046AWbHkHeY=

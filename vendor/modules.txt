@@ -37,7 +37,7 @@ github.com/tobiashort/choose-go
 # github.com/tobiashort/clap-go v0.0.0-20260223054944-3b992a9a3d33
 ## explicit; go 1.24.3
 github.com/tobiashort/clap-go
-# github.com/tobiashort/clog-go v0.0.0-20260220202143-7976e23e3ff0
+# github.com/tobiashort/clog-go v0.0.0-20260221210951-db23c7123722
 ## explicit; go 1.25.0
 github.com/tobiashort/clog-go
 # github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08

@@ -1488,8 +1488,8 @@ func KeyctlJoinSessionKeyring(name string) (ringid int, err error) {
 // KeyctlSearch implements the KEYCTL_SEARCH command.
 // See the full documentation at:
 // http://man7.org/linux/man-pages/man3/keyctl_search.3.html
-func KeyctlSearch(ringid int, keyType, desc string, destRingid int) (id int, err error) {
-	return keyctlSearch(KEYCTL_SEARCH, ringid, keyType, desc, destRingid)
+func KeyctlSearch(ringid int, keyType, description string, destRingid int) (id int, err error) {
+	return keyctlSearch(KEYCTL_SEARCH, ringid, keyType, description, destRingid)
 }
 
 //sys	keyctlIOV(cmd int, arg2 int, payload []Iovec, arg5 int) (err error) = SYS_KEYCTL
@@ -1852,7 +1852,7 @@ func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err e
  * Direct access
  */
 //sys	Acct(path string) (err error)
-//sys	AddKey(keyType string, desc string, payload []byte, ringid int) (id int, err error)
+//sys	AddKey(keyType string, description string, payload []byte, ringid int) (id int, err error)
 //sys	Adjtimex(buf *Timex) (state int, err error)
 //sysnb	Capget(hdr *CapUserHeader, data *CapUserData) (err error)
 //sysnb	Capset(hdr *CapUserHeader, data *CapUserData) (err error)
@@ -2051,7 +2051,7 @@ func Getrandom(buf []byte, flags int) (n int, err error) {
 //sys	read(fd int, p []byte) (n int, err error)
 //sys	Removexattr(path string, attr string) (err error)
 //sys	Renameat2(olddirfd int, oldpath string, newdirfd int, newpath string, flags uint) (err error)
-//sys	RequestKey(keyType string, desc string, callback string, destRingid int) (id int, err error)
+//sys	RequestKey(keyType string, description string, callback string, destRingid int) (id int, err error)
 //sys	Setdomainname(p []byte) (err error)
 //sys	Sethostname(p []byte) (err error)
 //sysnb	Setpgid(pid int, pgid int) (err error)

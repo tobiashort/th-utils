@@ -8,7 +8,7 @@ require (
 	github.com/tobiashort/cfmt-go v0.0.0-20260219105602-04bd83f83e39
 	github.com/tobiashort/choose-go v0.0.0-20250927044005-ee0cb13aacf9
 	github.com/tobiashort/clap-go v0.0.0-20260223054944-3b992a9a3d33
-	github.com/tobiashort/clog-go v0.0.0-20260220202143-7976e23e3ff0
+	github.com/tobiashort/clog-go v0.0.0-20260221210951-db23c7123722
 	github.com/tobiashort/groupby-go v0.0.0-20250801093754-b7b096bced08
 	github.com/tobiashort/orderedmap-go v0.0.0-20251002054801-04382e46b2d2
 	github.com/tobiashort/utils-go v0.0.0-20251002054717-2fe114a3860d
