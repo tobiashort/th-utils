@@ -7,9 +7,8 @@ import (
 
 	"github.com/tobiashort/ansi-go"
 	"github.com/tobiashort/cfmt-go"
+	"github.com/tobiashort/term-go"
 	"github.com/tobiashort/utils-go/must"
-
-	"golang.org/x/term"
 )
 
 func ToOptions[T any](s []T) []string {
@@ -27,9 +26,8 @@ func ToOptionsFunc[T any](s []T, f func(v T) string) []string {
 }
 
 func One(prompt string, options []string) (int, string, bool) {
-	fd := int(os.Stdin.Fd())
-	oldState := must.Do2(term.MakeRaw(fd))
-	defer term.Restore(int(os.Stdin.Fd()), oldState)
+	must.Do(term.MakeRaw())
+	defer func() { must.Do(term.Restore()) }()
 
 	ok := false
 	selectedIndex := 0

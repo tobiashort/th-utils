@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/tobiashort/ansi-go"
-	"github.com/tobiashort/isatty-go"
+	"github.com/tobiashort/term-go"
 )
 
 type Pool interface {
@@ -27,7 +27,7 @@ func NewPool(cap int) Pool {
 	pool.workers = make([]*worker, cap)
 	pool.mutex = sync.Mutex{}
 	pool.wg = sync.WaitGroup{}
-	if isatty.IsTerminal() {
+	if term.IsTerminal() {
 		for range cap {
 			fmt.Print(ansi.EraseEntireLine)
 			fmt.Println()
@@ -60,7 +60,7 @@ func (p *pool) GetWorker() Worker {
 
 func (p *pool) Wait() {
 	p.wg.Wait()
-	if isatty.IsTerminal() {
+	if term.IsTerminal() {
 		fmt.Print(ansi.EraseFromCursorToEndOfScreen)
 	}
 }
@@ -70,7 +70,7 @@ func (p *pool) done() {
 }
 
 func (p *pool) print(w *worker) {
-	if isatty.IsTerminal() {
+	if term.IsTerminal() {
 		p.mutex.Lock()
 		defer p.mutex.Unlock()
 		fmt.Print(ansi.CursorMoveDown(w.num))
@@ -84,12 +84,12 @@ func (p *pool) print(w *worker) {
 
 func (p *pool) log(w *worker) {
 	p.mutex.Lock()
-	if isatty.IsTerminal() {
+	if term.IsTerminal() {
 		fmt.Print(ansi.EraseEntireLine)
 	}
 	fmt.Printf("%s\n", w.msg)
 	w.msg = ""
-	if isatty.IsTerminal() {
+	if term.IsTerminal() {
 		for range p.cap {
 			fmt.Print(ansi.EraseEntireLine)
 			fmt.Println()

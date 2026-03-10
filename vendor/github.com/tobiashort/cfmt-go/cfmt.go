@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/tobiashort/ansi-go"
-	"github.com/tobiashort/isatty-go"
+	"github.com/tobiashort/term-go"
 )
 
 var regexps = map[*regexp.Regexp]ansi.Decor{
@@ -143,11 +143,11 @@ func Cfprint(w io.Writer, color string, a ...any) {
 	for i := range a {
 		a[i] = clr(fmt.Sprint(a[i]), c)
 	}
-	if isatty.IsTerminal() {
+	if term.IsTerminal() {
 		fmt.Fprint(w, c)
 	}
 	fmt.Fprint(w, a...)
-	if isatty.IsTerminal() {
+	if term.IsTerminal() {
 		fmt.Fprint(w, ansi.DecorReset)
 	}
 }
@@ -158,11 +158,11 @@ func Cprintf(color string, format string, a ...any) {
 
 func Cfprintf(w io.Writer, color string, format string, a ...any) {
 	c := stoc(color)
-	if isatty.IsTerminal() {
+	if term.IsTerminal() {
 		fmt.Fprint(w, c)
 	}
 	fmt.Fprintf(w, clr(format, c), a...)
-	if isatty.IsTerminal() {
+	if term.IsTerminal() {
 		fmt.Fprint(w, ansi.DecorReset)
 	}
 }
@@ -176,11 +176,11 @@ func Cfprintln(w io.Writer, color string, a ...any) {
 	for i := range a {
 		a[i] = clr(fmt.Sprint(a[i]), c)
 	}
-	if isatty.IsTerminal() {
+	if term.IsTerminal() {
 		fmt.Fprint(w, c)
 	}
 	fmt.Fprintln(w, a...)
-	if isatty.IsTerminal() {
+	if term.IsTerminal() {
 		fmt.Fprint(w, ansi.DecorReset)
 	}
 }
@@ -189,7 +189,7 @@ func clr(str string, reset ansi.Decor) string {
 	for regex, color := range regexps {
 		matches := regex.FindAllStringSubmatch(str, -1)
 		for _, match := range matches {
-			if isatty.IsTerminal() {
+			if term.IsTerminal() {
 				str = strings.Replace(str, match[0], color+match[1]+reset, 1)
 			} else {
 				str = strings.Replace(str, match[0], match[1], 1)
@@ -200,13 +200,13 @@ func clr(str string, reset ansi.Decor) string {
 }
 
 func Begin(decor ansi.Decor) {
-	if isatty.IsTerminal() {
+	if term.IsTerminal() {
 		fmt.Print(decor)
 	}
 }
 
 func End() {
-	if isatty.IsTerminal() {
+	if term.IsTerminal() {
 		fmt.Print(ansi.DecorReset)
 	}
 }
