@@ -3,8 +3,6 @@ module github.com/tobiashort/th-utils
 go 1.25.0
 
 require (
-	github.com/expr-lang/expr v1.17.7
-	github.com/gomarkdown/markdown v0.0.0-20250810172220-2e2c11897d1a
 	github.com/tobiashort/cfmt-go v0.0.0-20260219105602-04bd83f83e39
 	github.com/tobiashort/choose-go v0.0.0-20250927044005-ee0cb13aacf9
 	github.com/tobiashort/clap-go v0.0.0-20260223054944-3b992a9a3d33
