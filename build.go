@@ -120,7 +120,7 @@ func main() {
 
 	cfmt.Println("#b{[build]}")
 
-	pool := worker.NewPool(5)
+	pool := worker.NewPool(min(len(utils), 5))
 	for _, util := range utils {
 		worker := pool.GetWorker()
 		worker.Go(
