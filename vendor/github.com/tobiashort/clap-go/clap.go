@@ -148,27 +148,28 @@ func parse(osArgs []string, strct any) {
 			tagValues := parseTagValues(tag)
 
 			for _, tagValue := range tagValues {
-				if strings.HasPrefix(tagValue, "short=") {
-					short = strings.Split(tagValue, "=")[1]
-				} else if strings.HasPrefix(tagValue, "long=") {
-					long = strings.Split(tagValue, "=")[1]
-				} else if strings.HasPrefix(tagValue, "conflicts=") {
-					conflictsWith = strings.Split(strings.Split(tagValue, "=")[1], ",")
-				} else if strings.HasPrefix(tagValue, "default=") {
-					defaultValue = strings.Split(tagValue, "=")[1]
-				} else if strings.HasPrefix(tagValue, "desc=") {
-					desc = strings.Split(tagValue, "=")[1]
-				} else if tagValue == "mandatory" {
+				switch tagValue[0] {
+				case "short":
+					short = tagValue[1]
+				case "long":
+					long = tagValue[1]
+				case "conflicts":
+					conflictsWith = strings.Split(tagValue[1], ",")
+				case "default":
+					defaultValue = tagValue[1]
+				case "desc":
+					desc = tagValue[1]
+				case "mandatory":
 					mandatory = true
-				} else if tagValue == "positional" {
+				case "positional":
 					positional = true
-				} else if tagValue == "cmd" {
+				case "cmd":
 					cmd = true
 					positional = true
-				} else if tagValue == "cmdopt" {
+				case "cmdopt":
 					cmdopt = true
 					positional = true
-				} else {
+				default:
 					developerErr(fmt.Sprintf("unknown tag value: %s. Valid tage values are: short, long, conflicts, default, desc, mandatory, positional, cmd, cmdopt.", tagValue))
 				}
 			}
@@ -622,10 +623,21 @@ func checkForMultipleUse(givenNonPositionalArgs []arg) {
 	}
 }
 
-func parseTagValues(tag string) []string {
-	var tagValues []string
-
+func parseTagValues(tag string) [][2]string {
+	var tagValues [][2]string
 	var sb strings.Builder
+
+	appendTagValue := func() {
+		equalAt := strings.Index(sb.String(), "=")
+		if equalAt > -1 {
+			key := sb.String()[:equalAt]
+			value := sb.String()[equalAt+1:]
+			tagValues = append(tagValues, [2]string{key, value})
+		} else {
+			tagValues = append(tagValues, [2]string{sb.String(), ""})
+		}
+	}
+
 	inQuotes := false
 	escapeNext := false
 
@@ -647,7 +659,7 @@ func parseTagValues(tag string) []string {
 			if inQuotes {
 				sb.WriteByte(ch)
 			} else {
-				tagValues = append(tagValues, sb.String())
+				appendTagValue()
 				sb.Reset()
 			}
 		default:
@@ -656,7 +668,7 @@ func parseTagValues(tag string) []string {
 	}
 
 	if sb.Len() > 0 {
-		tagValues = append(tagValues, sb.String())
+		appendTagValue()
 	}
 
 	return tagValues

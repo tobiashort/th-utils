@@ -1,0 +1,21 @@
+compileClasspath - Compile classpath for source set 'main'.
++--- net.portswigger.burp.extensions:montoya-api:2024.7
++--- com.google.guava:guava:33.2.1-jre
+|    +--- com.google.guava:failureaccess:1.0.2
+|    +--- com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava
+|    +--- com.google.code.findbugs:jsr305:3.0.2
+|    +--- org.checkerframework:checker-qual:3.42.0
+|    +--- com.google.errorprone:error_prone_annotations:2.26.1
+|    \--- com.google.j2objc:j2objc-annotations:3.0.0
++--- com.miglayout:miglayout:3.7.4
++--- com.sun.xml.security:xml-security-impl:1.0
++--- org.apache.santuario:xmlsec:2.1.7
+|    +--- org.slf4j:slf4j-api:1.7.30
+|    +--- com.fasterxml.woodstox:woodstox-core:5.0.3
+|    |    \--- org.codehaus.woodstox:stax2-api:3.1.4
+|    \--- commons-codec:commons-codec:1.15
++--- xerces:xercesImpl:2.12.2
+|    \--- xml-apis:xml-apis:1.4.01
++--- com.formdev:flatlaf:3.5.2
+\--- org.bouncycastle:bcpkix-jdk15on:1.52
+     \--- org.bouncycastle:bcprov-jdk15on:1.52

@@ -9,11 +9,13 @@ import (
 	"github.com/tobiashort/clap-go"
 )
 
-type Args struct{}
+type Args struct {
+	Delimiter string `clap:"default=' => ',desc='The delimiter'"`
+}
 
 func main() {
 	args := Args{}
-	clap.Description("Parses tree output (tree, cargo tree) and produces paths. Reads from Stdin.")
+	clap.Description("Parses tree outputs (tree, cargo tree, gradle dependencies) and produces paths. Reads from Stdin.")
 	clap.Parse(&args)
 
 	var path [65535]string
@@ -26,7 +28,15 @@ func main() {
 			text = after
 			depth++
 			path[depth] = text
+		} else if after, ok := strings.CutPrefix(text, "+--- "); ok {
+			text = after
+			depth++
+			path[depth] = text
 		} else if after, ok := strings.CutPrefix(text, "└── "); ok {
+			text = after
+			depth++
+			path[depth] = text
+		} else if after, ok := strings.CutPrefix(text, `\--- `); ok {
 			text = after
 			depth++
 			path[depth] = text
@@ -38,6 +48,14 @@ func main() {
 			text = after
 			depth++
 			goto parseText
+		} else if after, ok := strings.CutPrefix(text, "|    "); ok {
+			text = after
+			depth++
+			goto parseText
+		} else if after, ok := strings.CutPrefix(text, "     "); ok {
+			text = after
+			depth++
+			goto parseText
 		} else if after, ok := strings.CutPrefix(text, "    "); ok {
 			text = after
 			depth++
@@ -45,7 +63,7 @@ func main() {
 		} else {
 			path[0] = text
 		}
-		fmt.Println(strings.Join(path[:depth+1], " -> "))
+		fmt.Println(strings.Join(path[:depth+1], args.Delimiter))
 	}
 	if err := scanner.Err(); err != nil {
 		panic(err)

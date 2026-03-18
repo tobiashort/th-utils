@@ -10,21 +10,22 @@ package term
 DWORD term_mode;
 
 int term_make_raw() {
-	HANDLE stdin = GetStdHandle(STD_INPUT_HANDLE);
-	if (!GetConsoleMode(stdin, &term_mode)) {
+	HANDLE h_stdin = GetStdHandle(STD_INPUT_HANDLE);
+	if (!GetConsoleMode(h_stdin, &term_mode)) {
 		return 1;
 	}
 	DWORD raw_mode = term_mode;
 	raw_mode &= ~(ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT);
-	if (!SetConsoleMode(stdin, raw_mode)) {
+	raw_mode |= ENABLE_VIRTUAL_TERMINAL_INPUT;
+	if (!SetConsoleMode(h_stdin, raw_mode)) {
 		return 2;
 	}
 	return 0;
 }
 
 int term_restore() {
-	HANDLE stdin = GetStdHandle(STD_INPUT_HANDLE);
-	if (!SetConsoleMode(stdin, term_mode)) {
+	HANDLE h_stdin = GetStdHandle(STD_INPUT_HANDLE);
+	if (!SetConsoleMode(h_stdin, term_mode)) {
 		return 1;
 	}
 	return 0;
