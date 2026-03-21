@@ -10,9 +10,9 @@ import (
 )
 
 type Args struct {
-	Debug   bool   `clap:"desc='Print debug output'"`
-	OutFile string `clap:"desc='The name of the output file'"`
-	InFile  string `clap:"mandatory,positional,desc='The PDF to compress'"`
+	Debug bool   `clap:"desc='Print debug output'"`
+	Out   string `clap:"desc='The name of the output file'"`
+	File  string `clap:"mandatory,positional,desc='The PDF to compress'"`
 }
 
 func run() int {
@@ -26,12 +26,12 @@ func run() int {
 		clog.Infof("gs: #g{%s}", gs)
 	}
 
-	outFile := args.OutFile
-	if outFile == "" {
-		if i := strings.LastIndex(args.InFile, ".pdf"); i > 0 {
-			outFile = args.InFile[0:i]
+	out := args.Out
+	if out == "" {
+		if i := strings.LastIndex(args.File, ".pdf"); i > 0 {
+			out = args.File[0:i]
 		}
-		outFile += ".compressed.pdf"
+		out += ".compressed.pdf"
 	}
 
 	cmd := exec.Command("gs")
@@ -48,8 +48,8 @@ func run() int {
 	if args.Debug {
 		cmd.Args = append(cmd.Args, "-dDEBUG")
 	}
-	cmd.Args = append(cmd.Args, "-sOutputFile="+outFile)
-	cmd.Args = append(cmd.Args, args.InFile)
+	cmd.Args = append(cmd.Args, "-sOutputFile="+out)
+	cmd.Args = append(cmd.Args, args.File)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {

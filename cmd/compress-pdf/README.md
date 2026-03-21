@@ -1,13 +1,13 @@
 ```
 Usage:
-  compress-pdf [OPTIONS] <InFile>
+  compress-pdf [OPTIONS] <File>
 
 Options:
-  -d, --debug               Print debug output
-  -o, --out-file <OutFile>  The name of the output file
-  -h, --help                Show this help message and exit
+  -d, --debug      Print debug output
+  -o, --out <Out>  The name of the output file
+  -h, --help       Show this help message and exit
 
 Positional arguments:
-  InFile                    The PDF to compress (required)
+  File             The PDF to compress (required)
 
 ```
