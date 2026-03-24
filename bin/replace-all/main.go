@@ -6,9 +6,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/tobiashort/clap-go"
+	"github.com/tobiashort/th-utils/lib/clap"
 	"github.com/tobiashort/th-utils/lib/unescape"
-	"github.com/tobiashort/utils-go/must"
+	"github.com/tobiashort/th-utils/lib/must"
 )
 
 type Args struct {

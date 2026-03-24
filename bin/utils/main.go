@@ -5,8 +5,8 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/tobiashort/choose-go"
-	"github.com/tobiashort/clap-go"
+	"github.com/tobiashort/th-utils/lib/choose"
+	"github.com/tobiashort/th-utils/lib/clap"
 )
 
 var Utils string

@@ -11,11 +11,11 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/tobiashort/choose-go"
-	"github.com/tobiashort/clap-go"
-	"github.com/tobiashort/groupby-go"
-	"github.com/tobiashort/utils-go/assert"
-	"github.com/tobiashort/utils-go/must"
+	"github.com/tobiashort/th-utils/lib/choose"
+	"github.com/tobiashort/th-utils/lib/clap"
+	"github.com/tobiashort/th-utils/lib/groupby"
+	"github.com/tobiashort/th-utils/lib/assert"
+	"github.com/tobiashort/th-utils/lib/must"
 )
 
 type Args struct {

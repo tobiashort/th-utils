@@ -5,8 +5,8 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/tobiashort/clap-go"
-	"github.com/tobiashort/clog-go"
+	"github.com/tobiashort/th-utils/lib/clap"
+	"github.com/tobiashort/th-utils/lib/clog"
 )
 
 type Args struct {

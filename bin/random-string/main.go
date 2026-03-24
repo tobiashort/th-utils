@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/tobiashort/clap-go"
+	"github.com/tobiashort/th-utils/lib/clap"
 	"github.com/tobiashort/th-utils/lib/random"
 )
 

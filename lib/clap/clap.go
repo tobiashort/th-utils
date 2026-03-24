@@ -1,0 +1,916 @@
+package clap
+
+import (
+	"bytes"
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	"reflect"
+	"regexp"
+	"strconv"
+	"strings"
+	"time"
+	"unicode"
+
+	"github.com/tobiashort/th-utils/lib/cfmt"
+)
+
+var (
+	prog        string
+	desc        string
+	example     string
+	parseCalled bool
+)
+
+func init() {
+	prog = filepath.Base(os.Args[0])
+	prog = strings.TrimSuffix(prog, filepath.Ext(prog))
+}
+
+type arg struct {
+	name          string
+	type_         reflect.Type
+	kind          reflect.Kind
+	short         string
+	long          string
+	conflictsWith []string
+	mandatory     bool
+	positional    bool
+	cmd           bool
+	cmdopt        bool
+	desc          string
+	defaultValue  string
+}
+
+func (arg arg) String() string {
+	if arg.positional {
+		return arg.name
+	} else {
+		var s string
+		if arg.short != "" {
+			s = "-" + arg.short
+		}
+		if arg.long != "" {
+			if s != "" {
+				s += "|--" + arg.long
+			} else {
+				s = "--" + arg.long
+			}
+		}
+		return s
+	}
+}
+
+type userError struct {
+	msg  string
+	args []arg
+}
+
+func (err userError) Error() string {
+	return err.msg
+}
+
+type developerError struct {
+	msg string
+}
+
+func (err developerError) Error() string {
+	return err.msg
+}
+
+func Prog(s string) {
+	prog = s
+}
+
+func Description(s string) {
+	if parseCalled {
+		userErr("Description must be called before Parse", nil)
+	}
+	desc = s
+}
+
+func Example(s string) {
+	if parseCalled {
+		userErr("Example must be called before Parse", nil)
+	}
+	example = s
+}
+
+func Parse(strct any) {
+	defer func() {
+		r := recover()
+		if r != nil {
+			switch err := r.(type) {
+			case userError:
+				fmt.Fprintln(os.Stderr, err.Error())
+				if err.args != nil {
+					fmt.Fprint(os.Stderr, "\n")
+					printHelp(err.args, os.Stderr)
+					fmt.Fprint(os.Stderr, "\n")
+				}
+				os.Exit(1)
+			default:
+				panic(r)
+			}
+		}
+	}()
+	parseCalled = true
+	parse(os.Args, strct)
+}
+
+func parse(osArgs []string, strct any) {
+	if !isStructPointer(strct) {
+		developerErr("expected struct pointer")
+	}
+
+	strctType := reflect.TypeOf(strct).Elem()
+
+	programArgs := make([]arg, 0)
+
+	for i := range strctType.NumField() {
+		field := strctType.Field(i)
+
+		var (
+			long          = toKebabCase(field.Name)
+			short         = string(strings.ToLower(field.Name)[0])
+			conflictsWith = make([]string, 0)
+			mandatory     = false
+			positional    = false
+			cmd           = false
+			cmdopt        = false
+			desc          = ""
+			defaultValue  = ""
+		)
+
+		tag := field.Tag.Get("clap")
+		if tag != "" {
+			tagValues := parseTagValues(tag)
+
+			for _, tagValue := range tagValues {
+				switch tagValue[0] {
+				case "short":
+					short = tagValue[1]
+				case "long":
+					long = tagValue[1]
+				case "conflicts":
+					conflictsWith = strings.Split(tagValue[1], ",")
+				case "default":
+					defaultValue = tagValue[1]
+				case "desc":
+					desc = tagValue[1]
+				case "mandatory":
+					mandatory = true
+				case "positional":
+					positional = true
+				case "cmd":
+					cmd = true
+					positional = true
+				case "cmdopt":
+					cmdopt = true
+					positional = true
+				default:
+					developerErr(fmt.Sprintf("unknown tag value: %s. Valid tage values are: short, long, conflicts, default, desc, mandatory, positional, cmd, cmdopt.", tagValue))
+				}
+			}
+		}
+
+		if positional {
+			short = ""
+			long = ""
+		}
+
+		programArgs = append(programArgs, arg{
+			name:          field.Name,
+			type_:         field.Type,
+			kind:          field.Type.Kind(),
+			long:          long,
+			short:         short,
+			conflictsWith: conflictsWith,
+			mandatory:     mandatory,
+			positional:    positional,
+			cmd:           cmd,
+			cmdopt:        cmdopt,
+			desc:          desc,
+			defaultValue:  defaultValue,
+		})
+	}
+
+	implicitHelpArg := arg{
+		name:  "Help",
+		type_: reflect.TypeOf(true),
+		kind:  reflect.Bool,
+		long:  "help",
+		short: "h",
+		desc:  "Show this help message and exit",
+	}
+
+	programArgs = append(programArgs, implicitHelpArg)
+	programNonPositionalArgs := filterArgs(programArgs, func(arg arg) bool { return !arg.positional })
+	programPositionalArgs := filterArgs(programArgs, func(arg arg) bool { return arg.positional })
+
+	checkForNameCollisions(programArgs)
+	checkForMandatoryArgsWithDefaultValue(programArgs)
+	checkForSlicesWithDefaultValue(programArgs)
+	checkForEitherLongOrShortGiven(programNonPositionalArgs)
+	checkForInvalidPositionalArguments(programPositionalArgs)
+
+	givenNonPositionalArgs := make([]arg, 0)
+	givenPositionalArgs := make([]arg, 0)
+
+	positionalArgIndex := 0
+	doubleDashSeen := false
+
+osArgsLoop:
+	for i := 1; i < len(osArgs); i++ {
+		arg := osArgs[i]
+		if arg == "--" {
+			doubleDashSeen = true
+			continue
+		}
+		if !doubleDashSeen && strings.HasPrefix(arg, "--") {
+			long := arg[2:]
+			if long == "help" {
+				printHelp(programArgs, os.Stdout)
+				os.Exit(0)
+			}
+			arg, ok := getArgByLongName(programArgs, long)
+			if !ok {
+				userErr("unknown argument: --"+long, programArgs)
+			} else {
+				givenNonPositionalArgs = append(givenNonPositionalArgs, arg)
+			}
+			i = parseNonPositionalAtIndex(osArgs, arg, strct, i)
+		} else if !doubleDashSeen && strings.HasPrefix(arg, "-") {
+			shortGrouped := arg[1:]
+			for _, rune := range shortGrouped {
+				short := string(rune)
+				if short == "h" {
+					printHelp(programArgs, os.Stdout)
+					os.Exit(0)
+				}
+				arg, ok := getArgByShortName(programArgs, short)
+				if !ok {
+					userErr("unknown argument: -"+short, programArgs)
+				} else {
+					givenNonPositionalArgs = append(givenNonPositionalArgs, arg)
+				}
+				i = parseNonPositionalAtIndex(osArgs, arg, strct, i)
+			}
+		} else {
+			if len(programPositionalArgs) == 0 {
+				userErr("too many arguments", programArgs)
+			} else if positionalArgIndex >= len(programPositionalArgs) && programPositionalArgs[len(programPositionalArgs)-1].kind != reflect.Slice {
+				userErr("too many arguments", programArgs)
+			} else {
+				positionalArg := programPositionalArgs[positionalArgIndex]
+				givenPositionalArgs = append(givenPositionalArgs, positionalArg)
+				parsePositionalAtIndex(osArgs, positionalArg, strct, i)
+				if positionalArg.cmd {
+					for _, arg := range programPositionalArgs {
+						if arg.cmdopt && osArgs[i] == toKebabCase(arg.name) {
+							prog = prog + " " + osArgs[i]
+							desc = ""
+							example = ""
+							if arg.kind == reflect.Struct {
+								inst := reflect.New(arg.type_)
+								parse(osArgs[i:], inst.Interface())
+								setStruct(strct, arg.name, inst.Elem().Interface())
+							} else if arg.kind == reflect.Interface {
+								parse(osArgs[i:], new(struct{}))
+							}
+							break osArgsLoop
+						}
+					}
+					userErr("unknown cmd: "+osArgs[i], programArgs)
+				} else if positionalArgIndex+1 < len(programPositionalArgs) {
+					positionalArgIndex++
+				}
+			}
+		}
+	}
+
+	checkForConflicts(givenNonPositionalArgs)
+	checkForMissingMandatoryArgs(programArgs, givenNonPositionalArgs, givenPositionalArgs)
+	checkForMultipleUse(givenNonPositionalArgs)
+
+programArgsLoop:
+	for _, arg := range programArgs {
+		if arg.defaultValue == "" {
+			continue
+		}
+		for _, givenArg := range givenNonPositionalArgs {
+			if arg.name == givenArg.name {
+				continue programArgsLoop
+			}
+		}
+		for _, givenArg := range givenPositionalArgs {
+			if arg.name == givenArg.name {
+				continue programArgsLoop
+			}
+		}
+		if arg.positional {
+			parsePositional(arg, strct, arg.defaultValue)
+		} else {
+			parseNonPositional(arg, strct, arg.defaultValue)
+		}
+	}
+}
+
+func parseNonPositionalAtIndex(osArgs []string, arg arg, strct any, index int) int {
+	if arg.kind == reflect.Bool {
+		parseNonPositional(arg, strct, "")
+		return index
+	} else {
+		if index+1 >= len(osArgs) {
+			userErr(fmt.Sprintf("missing value for: %s", arg), nil)
+		}
+		value := osArgs[index+1]
+		parseNonPositional(arg, strct, value)
+		return index + 1
+	}
+}
+
+func parseNonPositional(arg arg, strct any, value string) {
+	if arg.kind == reflect.Bool {
+		setBool(strct, arg.name, true)
+	} else if arg.kind == reflect.String {
+		setString(strct, arg.name, value)
+	} else if arg.kind == reflect.Int {
+		setInt(strct, arg.name, parseInt(value))
+	} else if arg.kind == reflect.Float64 {
+		setFloat(strct, arg.name, parseFloat(value))
+	} else if arg.kind == reflect.Slice {
+		innerKind := arg.type_.Elem().Kind()
+		var parsed any
+		if innerKind == reflect.String {
+			parsed = value
+		} else if innerKind == reflect.Int {
+			parsed = parseInt(value)
+		} else if innerKind == reflect.Float64 {
+			parsed = parseFloat(value)
+		} else {
+			developerErr("not implemented argument kind []" + innerKind.String())
+		}
+		addToSlice(strct, arg.name, parsed)
+	} else if arg.type_ == reflect.TypeOf(time.Duration(0)) {
+		setDuration(strct, arg.name, parseDuration(value))
+	} else {
+		developerErr(fmt.Sprintf("not implemented argument kind: %v", arg.kind))
+		panic("unreachable")
+	}
+}
+
+func parsePositionalAtIndex(osArgs []string, arg arg, strct any, index int) {
+	value := osArgs[index]
+	parsePositional(arg, strct, value)
+}
+
+func parsePositional(arg arg, strct any, value string) {
+	if arg.kind == reflect.String {
+		setString(strct, arg.name, value)
+	} else if arg.kind == reflect.Int {
+		setInt(strct, arg.name, parseInt(value))
+	} else if arg.kind == reflect.Float64 {
+		setFloat(strct, arg.name, parseFloat(value))
+	} else if arg.kind == reflect.Slice {
+		innerKind := arg.type_.Elem().Kind()
+		var parsed any
+		if innerKind == reflect.String {
+			parsed = value
+		} else if innerKind == reflect.Int {
+			parsed = parseInt(value)
+		} else if innerKind == reflect.Float64 {
+			parsed = parseFloat(value)
+		} else {
+			developerErr("not implemented argument kind []" + innerKind.String())
+		}
+		addToSlice(strct, arg.name, parsed)
+	} else if arg.kind == reflect.Interface && arg.cmd {
+		setPointerTo(strct, arg.name, value)
+	} else if arg.type_ == reflect.TypeOf(time.Duration(0)) {
+		setDuration(strct, arg.name, parseDuration(value))
+	} else {
+		developerErr(fmt.Sprintf("not implemented argument kind: %v", arg.kind))
+	}
+}
+
+func parseInt(arg string) int {
+	val, err := strconv.Atoi(arg)
+	if err != nil {
+		userErr("value is not an int: "+arg, nil)
+	}
+	return val
+}
+
+func parseFloat(arg string) float64 {
+	val, err := strconv.ParseFloat(arg, 64)
+	if err != nil {
+		userErr("value is not a float: "+arg, nil)
+	}
+	return val
+}
+
+func parseDuration(arg string) time.Duration {
+	val, err := time.ParseDuration(arg)
+	if err != nil {
+		userErr("value is not a duration: "+arg, nil)
+	}
+	return val
+}
+
+func isStructPointer(strct any) bool {
+	t := reflect.TypeOf(strct)
+	return t.Kind() == reflect.Ptr && t.Elem().Kind() == reflect.Struct
+}
+
+func getArgByLongName(args []arg, name string) (arg, bool) {
+	for _, arg := range args {
+		if arg.long == name {
+			return arg, true
+		}
+	}
+	return arg{}, false
+}
+
+func getArgByShortName(args []arg, name string) (arg, bool) {
+	for _, arg := range args {
+		if arg.short == name {
+			return arg, true
+		}
+	}
+	return arg{}, false
+}
+
+func setInt(strct any, name string, val int) {
+	reflect.ValueOf(strct).Elem().FieldByName(name).SetInt(int64(val))
+}
+
+func setFloat(strct any, name string, val float64) {
+	reflect.ValueOf(strct).Elem().FieldByName(name).SetFloat(val)
+}
+
+func setBool(strct any, name string, val bool) {
+	reflect.ValueOf(strct).Elem().FieldByName(name).SetBool(val)
+}
+
+func setString(strct any, name string, val string) {
+	reflect.ValueOf(strct).Elem().FieldByName(name).SetString(val)
+}
+
+func setDuration(strct any, name string, val time.Duration) {
+	reflect.ValueOf(strct).Elem().FieldByName(name).Set(reflect.ValueOf(val))
+}
+
+func setPointerTo(strct any, name string, val string) {
+	cmd := reflect.ValueOf(strct).Elem().FieldByName(kebabToPascalCase(val))
+	if cmd.IsValid() {
+		reflect.ValueOf(strct).Elem().FieldByName(name).Set(cmd.Addr())
+	}
+}
+
+func setStruct(strct any, name string, val any) {
+	reflect.ValueOf(strct).Elem().FieldByName(name).Set(reflect.ValueOf(val))
+}
+
+func addToSlice(strct any, name string, val any) {
+	field := reflect.ValueOf(strct).Elem().FieldByName(name)
+	if field.IsNil() {
+		field.Set(reflect.MakeSlice(field.Type(), 0, 1))
+	}
+	updatedSlice := reflect.Append(field, reflect.ValueOf(val))
+	field.Set(updatedSlice)
+}
+
+func checkForNameCollisions(args []arg) {
+	seenLong := make(map[string]arg)
+	seenShort := make(map[string]arg)
+	for _, arg := range args {
+		if arg.positional {
+			continue
+		}
+		if arg.long != "" {
+			existing, exists := seenLong[arg.long]
+			if !exists {
+				seenLong[arg.long] = arg
+			} else {
+				developerErr(fmt.Sprintf("argument name collision: %s (--%s) with %s (--%s)", arg.name, arg.long, existing.name, existing.long))
+			}
+		}
+		if arg.short != "" {
+			existing, exists := seenShort[arg.short]
+			if !exists {
+				seenShort[arg.short] = arg
+			} else {
+				developerErr(fmt.Sprintf("argument name collision: %s (-%s) with %s (-%s)", arg.name, arg.short, existing.name, existing.short))
+			}
+		}
+	}
+}
+
+func checkForSlicesWithDefaultValue(programArgs []arg) {
+	for _, arg := range programArgs {
+		if arg.kind == reflect.Slice && arg.defaultValue != "" {
+			developerErr("slice arguments cannot have default values: " + arg.name)
+		}
+	}
+}
+
+func checkForMandatoryArgsWithDefaultValue(programArgs []arg) {
+	for _, arg := range programArgs {
+		if arg.mandatory && arg.defaultValue != "" {
+			developerErr("mandatory arguments cannot have default values: " + arg.name)
+		}
+	}
+}
+
+func checkForEitherLongOrShortGiven(programNonPositionalArgs []arg) {
+	for _, arg := range programNonPositionalArgs {
+		if arg.long == "" && arg.short == "" {
+			developerErr("Either long or short name must be specified: " + arg.name)
+		}
+	}
+}
+
+func checkForInvalidPositionalArguments(programPositionalArgs []arg) {
+	sliceSeen := false
+	optionalSeen := false
+	cmdSeen := false
+
+	for _, arg := range programPositionalArgs {
+		if arg.kind != reflect.Slice && sliceSeen {
+			developerErr("positional arguments of slices can only be located at the end: " + arg.name)
+		}
+		if arg.kind == reflect.Slice && optionalSeen {
+			developerErr("when slice as a positional argument is used, all preceding positional arguments must be mandatory: " + arg.name)
+		}
+		if arg.mandatory && optionalSeen {
+			developerErr("you cannot have mandatory positional arguments after optional ones: " + arg.name)
+		}
+		if arg.cmd && arg.kind != reflect.Interface {
+			developerErr("cmd must be of type any: " + arg.name)
+		}
+		if arg.cmd && cmdSeen {
+			developerErr("you cannot have multiple cmds on the same level: " + arg.name)
+		}
+		if arg.cmd && arg.cmdopt {
+			developerErr("you cannot declare a field as a cmd and a cmdopt: " + arg.name)
+		}
+		if arg.cmdopt && arg.kind != reflect.Interface && arg.kind != reflect.Struct {
+			developerErr("cmdopt must be of type any or struct: " + arg.name)
+		}
+		if arg.cmdopt && arg.kind == reflect.Struct && arg.type_.NumField() == 0 {
+			developerErr("empty struct not allowed for cmdopt, use any type: " + arg.name)
+		}
+		// TODO cmd must be any, cmdopt any or struct, but not empty struct!
+		if arg.kind == reflect.Slice {
+			sliceSeen = true
+		}
+		if !arg.mandatory {
+			optionalSeen = true
+		}
+		if arg.cmd {
+			cmdSeen = true
+		}
+	}
+}
+
+func checkForConflicts(givenNonPositionalArgs []arg) {
+	for _, outerArg := range givenNonPositionalArgs {
+		for _, inConflict := range outerArg.conflictsWith {
+			for _, innerArg := range givenNonPositionalArgs {
+				if innerArg.name == inConflict {
+					userErr(fmt.Sprintf("conflicting arguments: %s, %s", outerArg, innerArg), nil)
+				}
+			}
+		}
+	}
+}
+
+func checkForMissingMandatoryArgs(programArgs []arg, givenNonPositionalArgs []arg, givenPositionalArgs []arg) {
+	givenArgs := make([]arg, 0)
+	givenArgs = append(givenArgs, givenNonPositionalArgs...)
+	givenArgs = append(givenArgs, givenPositionalArgs...)
+
+outer:
+	for _, arg := range programArgs {
+		if arg.mandatory {
+			for _, givenArg := range givenArgs {
+				if givenArg.name == arg.name {
+					continue outer
+				}
+			}
+			if arg.positional {
+				userErr(fmt.Sprintf("missing mandatory positional argument: %s", arg.name), programArgs)
+			} else {
+				userErr(fmt.Sprintf("missing mandatory argument: %s", arg), programArgs)
+			}
+		}
+	}
+}
+
+func checkForMultipleUse(givenNonPositionalArgs []arg) {
+	seen := make(map[string]bool)
+	for _, arg := range givenNonPositionalArgs {
+		_, exists := seen[arg.name]
+		if !exists {
+			seen[arg.name] = true
+		} else {
+			if arg.kind != reflect.Slice {
+				userErr(fmt.Sprintf("multiple use of argument %s", arg), nil)
+			}
+		}
+	}
+}
+
+func parseTagValues(tag string) [][2]string {
+	var tagValues [][2]string
+	var sb strings.Builder
+
+	appendTagValue := func() {
+		equalAt := strings.Index(sb.String(), "=")
+		if equalAt > -1 {
+			key := sb.String()[:equalAt]
+			value := sb.String()[equalAt+1:]
+			tagValues = append(tagValues, [2]string{key, value})
+		} else {
+			tagValues = append(tagValues, [2]string{sb.String(), ""})
+		}
+	}
+
+	inQuotes := false
+	escapeNext := false
+
+	for i := range len(tag) {
+		ch := tag[i]
+
+		if escapeNext {
+			sb.WriteByte(ch)
+			escapeNext = false
+			continue
+		}
+
+		switch ch {
+		case '\\':
+			escapeNext = true
+		case '\'':
+			inQuotes = !inQuotes
+		case ',':
+			if inQuotes {
+				sb.WriteByte(ch)
+			} else {
+				appendTagValue()
+				sb.Reset()
+			}
+		default:
+			sb.WriteByte(ch)
+		}
+	}
+
+	if sb.Len() > 0 {
+		appendTagValue()
+	}
+
+	return tagValues
+}
+
+func printHelp(args []arg, w io.Writer) {
+	buf := bytes.Buffer{}
+
+	if desc != "" {
+		fmt.Fprintf(&buf, "%s\n\n", desc)
+	}
+
+	var usageParts []string
+	usageParts = append(usageParts, prog)
+
+	for _, arg := range args {
+		if !arg.mandatory {
+			usageParts = append(usageParts, "[OPTIONS]")
+			break
+		}
+	}
+
+	for _, arg := range args {
+		if arg.positional {
+			continue
+		}
+
+		var argSyntax string
+		if arg.long != "" {
+			argSyntax = fmt.Sprintf("--%s <%s>", arg.long, arg.name)
+		} else if arg.short != "" {
+			argSyntax = fmt.Sprintf("-%s <%s>", arg.short, arg.name)
+		} else {
+			developerErr("Either long or short name must be specified: " + arg.name)
+		}
+
+		if arg.kind == reflect.Slice {
+			argSyntax = argSyntax + "..."
+		}
+
+		if arg.mandatory {
+			usageParts = append(usageParts, argSyntax)
+		}
+	}
+
+	// Add positional arguments
+	for _, arg := range args {
+		if arg.positional {
+			usagePart := ""
+			if arg.mandatory {
+				usagePart = "<" + arg.name + ">"
+			} else {
+				usagePart = "[" + arg.name + "]"
+			}
+			if arg.kind == reflect.Slice {
+				usagePart += "..."
+			}
+			usageParts = append(usageParts, usagePart)
+		}
+	}
+
+	cfmt.Fprintf(&buf, "#B{Usage:}\n  %s\n\n", strings.Join(usageParts, " "))
+
+	// --- Format help sections ---
+
+	// Determine label width
+	maxLabelLen := 0
+	getLabel := func(arg arg) string {
+		var parts []string
+		if arg.short != "" {
+			parts = append(parts, "-"+arg.short)
+		}
+		if arg.long != "" {
+			parts = append(parts, "--"+arg.long)
+		}
+		label := strings.Join(parts, ", ")
+		if arg.kind != reflect.Bool {
+			label += fmt.Sprintf(" <%s>", arg.name)
+		}
+		if len(label) > maxLabelLen {
+			maxLabelLen = len(label)
+		}
+		return label
+	}
+
+	labels := make(map[string]string)
+	for _, arg := range args {
+		if !arg.positional {
+			labels[arg.name] = getLabel(arg)
+		}
+	}
+
+	// Required options
+	hasRequired := false
+	for _, arg := range args {
+		if !arg.positional && arg.mandatory {
+			if !hasRequired {
+				cfmt.Fprintln(&buf, "#B{Required options:}")
+				hasRequired = true
+			}
+			desc := arg.desc
+			if arg.kind == reflect.Slice {
+				desc += " (can be specified multiple times)"
+			}
+			if arg.defaultValue != "" {
+				desc += fmt.Sprintf(" (default: %s)", arg.defaultValue)
+			}
+			fmt.Fprintf(&buf, "  %-*s  %s\n", maxLabelLen, labels[arg.name], desc)
+		}
+	}
+	if hasRequired {
+		fmt.Fprintln(&buf)
+	}
+
+	// Optional options
+	hasOptional := false
+	for _, arg := range args {
+		if !arg.positional && !arg.mandatory {
+			if !hasOptional {
+				cfmt.Fprintln(&buf, "#B{Options:}")
+				hasOptional = true
+			}
+			additionalDesciptions := make([]string, 0)
+			if arg.kind == reflect.Slice {
+				additionalDesciptions = append(additionalDesciptions, "can be specified multiple times")
+			}
+			if arg.defaultValue != "" {
+				additionalDesciptions = append(additionalDesciptions, "default: "+arg.defaultValue)
+			}
+			var desc string
+			if len(additionalDesciptions) > 0 {
+				desc = fmt.Sprintf("%s (%s)", arg.desc, strings.Join(additionalDesciptions, ", "))
+			} else {
+				desc = arg.desc
+			}
+			fmt.Fprintf(&buf, "  %-*s  %s\n", maxLabelLen, labels[arg.name], desc)
+		}
+	}
+	if hasOptional {
+		fmt.Fprintln(&buf)
+	}
+
+	// Positional arguments
+	hasPositional := false
+	for _, arg := range args {
+		if arg.positional && !arg.cmdopt {
+			if !hasPositional {
+				cfmt.Fprintln(&buf, "#B{Positional arguments:}")
+				hasPositional = true
+			}
+			additionalDesciptions := make([]string, 0)
+			if arg.mandatory {
+				additionalDesciptions = append(additionalDesciptions, "required")
+			}
+			if arg.kind == reflect.Slice {
+				additionalDesciptions = append(additionalDesciptions, "can be specified multiple times")
+			}
+			if arg.defaultValue != "" {
+				additionalDesciptions = append(additionalDesciptions, "default: "+arg.defaultValue)
+			}
+			var desc string
+			if len(additionalDesciptions) > 0 {
+				desc = fmt.Sprintf("%s (%s)", arg.desc, strings.Join(additionalDesciptions, ", "))
+			} else {
+				desc = arg.desc
+			}
+			fmt.Fprintf(&buf, "  %-*s  %s\n", maxLabelLen, arg.name, desc)
+		}
+	}
+	if hasPositional {
+		fmt.Fprintln(&buf)
+	}
+
+	hasCommand := false
+	for _, arg := range args {
+		if arg.cmd {
+			if !hasCommand {
+				cfmt.Fprintln(&buf, "#B{Commands:}")
+				hasCommand = true
+			}
+		}
+		if arg.cmdopt {
+			fmt.Fprintf(&buf, "  %-*s  %s\n", maxLabelLen, toKebabCase(arg.name), arg.desc)
+		}
+	}
+	if hasCommand {
+		fmt.Fprintln(&buf)
+	}
+
+	if example != "" {
+		cfmt.Fprint(&buf, "#B{Example:}\n")
+		lines := strings.Split(example, "\n")
+		for _, line := range lines {
+			fmt.Fprintf(&buf, "  %s\n", line)
+		}
+	}
+
+	fmt.Fprint(w, strings.TrimSpace(buf.String())+"\n")
+}
+
+func developerErr(msg string) {
+	panic(developerError{msg})
+}
+
+func userErr(msg string, args []arg) {
+	panic(userError{msg: msg, args: args})
+}
+
+func toKebabCase(s string) string {
+	allUpper := true
+	for _, r := range s {
+		if unicode.IsLower(r) {
+			allUpper = false
+			break
+		}
+	}
+	if allUpper {
+		return strings.ToLower(s)
+	}
+
+	re := regexp.MustCompile(`([A-Z][a-z]*)`)
+	words := re.FindAllString(s, -1)
+	for i := range words {
+		words[i] = strings.ToLower(words[i])
+	}
+	return strings.Join(words, "-")
+}
+
+func kebabToPascalCase(s string) string {
+	words := strings.Split(s, "-")
+	for i := range words {
+		words[i] = strings.Title(strings.ToLower(words[i]))
+	}
+	return strings.Join(words, "")
+}
+
+func filterArgs(args []arg, predicate func(arg arg) bool) []arg {
+	filtered := make([]arg, 0)
+	for _, arg := range args {
+		if predicate(arg) {
+			filtered = append(filtered, arg)
+		}
+	}
+	return filtered
+}

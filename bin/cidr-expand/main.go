@@ -6,7 +6,7 @@ import (
 
 	"github.com/tobiashort/th-utils/lib/cidr"
 
-	"github.com/tobiashort/clap-go"
+	"github.com/tobiashort/th-utils/lib/clap"
 )
 
 type Args struct {

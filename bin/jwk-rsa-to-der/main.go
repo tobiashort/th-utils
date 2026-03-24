@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/tobiashort/clap-go"
+	"github.com/tobiashort/th-utils/lib/clap"
 )
 
 type JWK struct {

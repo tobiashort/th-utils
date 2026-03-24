@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/tobiashort/th-utils/lib/json"
-	"github.com/tobiashort/utils-go/strings"
+	"github.com/tobiashort/th-utils/lib/strings"
 )
 
 func TestToGoStruct(t *testing.T) {

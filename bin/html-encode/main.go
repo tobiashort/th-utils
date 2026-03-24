@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/tobiashort/clap-go"
+	"github.com/tobiashort/th-utils/lib/clap"
 )
 
 type Args struct {

@@ -7,11 +7,11 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/tobiashort/cfmt-go"
-	"github.com/tobiashort/choose-go"
-	"github.com/tobiashort/clap-go"
-	"github.com/tobiashort/clog-go"
-	"github.com/tobiashort/utils-go/must"
+	"github.com/tobiashort/th-utils/lib/cfmt"
+	"github.com/tobiashort/th-utils/lib/choose"
+	"github.com/tobiashort/th-utils/lib/clap"
+	"github.com/tobiashort/th-utils/lib/clog"
+	"github.com/tobiashort/th-utils/lib/must"
 )
 
 type Args struct {

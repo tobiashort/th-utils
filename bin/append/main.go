@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/tobiashort/clap-go"
-	"github.com/tobiashort/utils-go/assert"
+	"github.com/tobiashort/th-utils/lib/clap"
+	"github.com/tobiashort/th-utils/lib/assert"
 
 	"github.com/tobiashort/th-utils/lib/unescape"
 )

@@ -8,9 +8,9 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/tobiashort/cfmt-go"
-	"github.com/tobiashort/clap-go"
-	"github.com/tobiashort/worker-go"
+	"github.com/tobiashort/th-utils/lib/cfmt"
+	"github.com/tobiashort/th-utils/lib/clap"
+	"github.com/tobiashort/th-utils/lib/worker"
 )
 
 type Args struct {

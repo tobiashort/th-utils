@@ -9,8 +9,8 @@ import (
 
 	"github.com/tobiashort/th-utils/lib/unescape"
 
-	"github.com/tobiashort/clap-go"
-	"github.com/tobiashort/utils-go/assert"
+	"github.com/tobiashort/th-utils/lib/clap"
+	"github.com/tobiashort/th-utils/lib/assert"
 )
 
 type Args struct {

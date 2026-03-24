@@ -10,8 +10,8 @@ import (
 
 	"github.com/tobiashort/th-utils/lib/ip"
 
-	"github.com/tobiashort/clap-go"
-	"github.com/tobiashort/utils-go/must"
+	"github.com/tobiashort/th-utils/lib/clap"
+	"github.com/tobiashort/th-utils/lib/must"
 )
 
 type Args struct {
