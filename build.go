@@ -101,8 +101,8 @@ func main() {
 		return nil
 	}
 
-	generateReadme := func(util string) error {
-		cmd := exec.Command("go", "run", filepathJoinUncleaned(".", "cmd", util), "-h")
+	generateReadmePath := func(pth string) error {
+		cmd := exec.Command("go", "run", pth, "-h")
 		out, err := cmd.CombinedOutput()
 		if err != nil {
 			return fmt.Errorf("%w: %s", err, string(out))
@@ -110,12 +110,16 @@ func main() {
 		if len(out) > 0 {
 			out = append([]byte{'`', '`', '`', '\n'}, out...)
 			out = append(out, '\n', '`', '`', '`', '\n')
-			err = os.WriteFile(filepath.Join("cmd", util, "README.md"), out, 0644)
+			err = os.WriteFile(filepath.Join(pth, "README.md"), out, 0644)
 			if err != nil {
 				return err
 			}
 		}
 		return nil
+	}
+
+	generateReadmeUtil := func(util string) error {
+		return generateReadmePath(filepathJoinUncleaned(".", "cmd", util))
 	}
 
 	cfmt.Println("#b{[build]}")
@@ -131,7 +135,7 @@ func main() {
 					worker.Logf("#r{ERROR} %s: %v", util, err)
 					return
 				}
-				err = generateReadme(util)
+				err = generateReadmeUtil(util)
 				if err != nil {
 					worker.Logf("#r{ERROR} %s: %v", util, err)
 					return
@@ -141,5 +145,5 @@ func main() {
 	}
 	pool.Wait()
 
-	generateReadme(".")
+	generateReadmePath(".")
 }

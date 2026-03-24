@@ -1,10 +1,13 @@
 ```
 Usage:
-  th-utils [OPTIONS]
+  th-utils [OPTIONS] [Util]
 
 Options:
-  -p, --prefix <Prefix>          the prefix each binary will be given (default: th-)
-  -i, --installdir <InstallDir>  install directory where tool are going to be installed (default: $HOME/.th-utils/)
-  -h, --help                     Show this help message and exit
+  -p, --prefix <Prefix>  the prefix each binary will be given (default: th-)
+  -c, --clean            delete installation path
+  -h, --help             Show this help message and exit
+
+Positional arguments:
+  Util                   only compiles and installes the given utitliy
 
 ```
