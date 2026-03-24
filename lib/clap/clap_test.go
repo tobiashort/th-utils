@@ -306,7 +306,7 @@ func TestDefaultValueWithBackslash(t *testing.T) {
 	})
 }
 
-func TestSubCommands1(t *testing.T) {
+func TestCommand1(t *testing.T) {
 	withArgs([]string{"prog", "--insecure", "add", "--name", "mymodule"}, func() {
 		type Args struct {
 			Insecure bool
@@ -334,7 +334,7 @@ func TestSubCommands1(t *testing.T) {
 	})
 }
 
-func TestSubCommands2(t *testing.T) {
+func TestCommand2(t *testing.T) {
 	withArgs([]string{"prog", "--insecure", "remove", "--name", "mymodule", "--force"}, func() {
 		type Args struct {
 			Insecure bool
@@ -365,7 +365,7 @@ func TestSubCommands2(t *testing.T) {
 	})
 }
 
-func TestSubSubCommands(t *testing.T) {
+func TestCommandCommand(t *testing.T) {
 	withArgs([]string{"prog", "files", "list", "-H"}, func() {
 		type Args struct {
 			Command any `clap:"cmd,mandatory"`

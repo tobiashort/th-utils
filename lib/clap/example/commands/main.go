@@ -21,6 +21,11 @@ type Args struct {
 
 	Foo any `clap:"cmdopt,desc='The foo cmd'"`
 	Bar any `clap:"cmdopt,desc='The bar cmd'"`
+
+	Baz struct {
+		Command any `clap:"cmd,mandatory,desc='The cmd to run'"`
+		Boom    any `clap:"cmdopt,desc='The boom cmd'"`
+	} `clap:"cmdopt,desc='The baz cmd'"`
 }
 
 func main() {
@@ -40,6 +45,15 @@ func main() {
 		fmt.Println("foo")
 	case &args.Bar:
 		fmt.Println("bar")
+	case &args.Baz:
+		switch args.Baz.Command {
+		case &args.Baz.Boom:
+			fmt.Println("boom!")
+		default:
+			fmt.Printf("%v\n", &args.Baz.Command)
+			fmt.Printf("%v\n", &args.Baz.Boom)
+			panic("baz: unreachable")
+		}
 	default:
 		panic("unreachable")
 	}

@@ -32,6 +32,7 @@ type arg struct {
 	name          string
 	type_         reflect.Type
 	kind          reflect.Kind
+	value         reflect.Value
 	short         string
 	long          string
 	conflictsWith []string
@@ -125,11 +126,13 @@ func parse(osArgs []string, strct any) {
 	}
 
 	strctType := reflect.TypeOf(strct).Elem()
+	strctValue := reflect.ValueOf(strct).Elem()
 
 	programArgs := make([]arg, 0)
 
 	for i := range strctType.NumField() {
 		field := strctType.Field(i)
+		fieldValue := strctValue.Field(i)
 
 		var (
 			long          = toKebabCase(field.Name)
@@ -184,6 +187,7 @@ func parse(osArgs []string, strct any) {
 			name:          field.Name,
 			type_:         field.Type,
 			kind:          field.Type.Kind(),
+			value:         fieldValue,
 			long:          long,
 			short:         short,
 			conflictsWith: conflictsWith,
@@ -199,6 +203,7 @@ func parse(osArgs []string, strct any) {
 	implicitHelpArg := arg{
 		name:  "Help",
 		type_: reflect.TypeOf(true),
+		value: reflect.ValueOf(true),
 		kind:  reflect.Bool,
 		long:  "help",
 		short: "h",
@@ -273,9 +278,8 @@ osArgsLoop:
 							desc = ""
 							example = ""
 							if arg.kind == reflect.Struct {
-								inst := reflect.New(arg.type_)
-								parse(osArgs[i:], inst.Interface())
-								setStruct(strct, arg.name, inst.Elem().Interface())
+								parse(osArgs[i:], arg.value.Addr().Interface())
+								setStruct(strct, arg.name, arg.value.Addr().Elem().Interface())
 							} else if arg.kind == reflect.Interface {
 								parse(osArgs[i:], new(struct{}))
 							}
@@ -716,7 +720,7 @@ func printHelp(args []arg, w io.Writer) {
 
 	// Add positional arguments
 	for _, arg := range args {
-		if arg.positional {
+		if arg.positional && !arg.cmdopt {
 			usagePart := ""
 			if arg.mandatory {
 				usagePart = "<" + arg.name + ">"
