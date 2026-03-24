@@ -67,7 +67,7 @@ func main() {
 	if args.Util != "" {
 		utils = append(utils, args.Util)
 	} else {
-		entries, err := os.ReadDir("cmd")
+		entries, err := os.ReadDir("bin")
 		if err != nil {
 			panic(err)
 		}
@@ -89,7 +89,7 @@ func main() {
 			cmd.Args = append(cmd.Args, "-ldflags", "-X main.Utils="+strings.Join(utils, ",")+" -X main.Prefix="+prefix)
 		}
 		cmd.Args = append(cmd.Args, "-o", executable)
-		cmd.Args = append(cmd.Args, filepathJoinUncleaned(".", "cmd", util))
+		cmd.Args = append(cmd.Args, filepathJoinUncleaned(".", "bin", util))
 		cmd.Env = os.Environ()
 		if runtime.GOOS == "windows" {
 			cmd.Env = append(cmd.Env, "CC=zig cc")
@@ -119,7 +119,7 @@ func main() {
 	}
 
 	generateReadmeUtil := func(util string) error {
-		return generateReadmePath(filepathJoinUncleaned(".", "cmd", util))
+		return generateReadmePath(filepathJoinUncleaned(".", "bin", util))
 	}
 
 	cfmt.Println("#b{[build]}")
