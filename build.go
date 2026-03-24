@@ -10,83 +10,118 @@ import (
 
 	"github.com/tobiashort/th-utils/lib/cfmt"
 	"github.com/tobiashort/th-utils/lib/clap"
+	"github.com/tobiashort/th-utils/lib/clog"
+	"github.com/tobiashort/th-utils/lib/must"
 	"github.com/tobiashort/th-utils/lib/worker"
 )
 
+type BuildOpt struct {
+	Prefix string `clap:"default='th-',desc='The prefix each binary will be given.'"`
+	Util   string `clap:"positional,desc='Only builds the given utitliy.'"`
+}
+
 type Args struct {
-	Prefix string `clap:"default='th-',desc='the prefix each binary will be given'"`
-	Util   string `clap:"positional,desc='only compiles and installes the given utitliy'"`
-	Clean  bool   `clap:"desc='delete installation path'"`
+	Command any      `clap:"cmd,desc='The command to run.'"`
+	Clean   any      `clap:"cmdopt,desc='Deletes build path.'"`
+	Test    any      `clap:"cmdopt,desc='Runs all tests'"`
+	Build   BuildOpt `clap:"cmdopt,desc='Builds binaries.'"`
 }
 
 func cleanUp(dir string) {
-	err := os.RemoveAll(dir)
-	if err != nil {
-		panic(err)
-	}
+	must.Do(os.RemoveAll(dir))
 }
 
 func ensureDir(dir string) {
-	err := os.MkdirAll(dir, 0755)
-	if err != nil {
-		panic(err)
-	}
+	must.Do(os.MkdirAll(dir, 0755))
 }
 
 func filepathJoinUncleaned(parts ...string) string {
 	return strings.Join(parts, string(filepath.Separator))
 }
 
-func runTests() {
-	cfmt.Println("#b{[test]}")
-	cmd := exec.Command("go", "test", "./...")
-	out, err := cmd.CombinedOutput()
+func listDirs(dir string) []string {
+	dirs := make([]string, 0)
+	entries, err := os.ReadDir(dir)
 	if err != nil {
-		cfmt.Println(string(out))
-		os.Exit(1)
-	} else {
-		cfmt.Println("Tests ok.")
+		panic(err)
 	}
+
+	for _, entry := range entries {
+		if entry.IsDir() {
+			dirs = append(dirs, entry.Name())
+		}
+	}
+	return dirs
 }
 
-func main() {
-	args := Args{}
-	clap.Parse(&args)
-	prefix := args.Prefix
+func listBins() []string {
+	return listDirs("bin")
+}
 
-	if args.Clean {
-		cleanUp("build")
+func listLibs() []string {
+	return listDirs("lib")
+}
+
+func runClean() {
+	cleanUp("build")
+}
+
+func runTest() bool {
+	pass := true
+
+	testPath := func(pool worker.Pool, pth string) {
+		worker := pool.GetWorker()
+		worker.Go(func() {
+			worker.Printf("#y{%s}", pth)
+			cmd := exec.Command("go", "test", pth)
+			if err := cmd.Run(); err == nil {
+				worker.Logf("#g{PASS} %s", pth)
+			} else {
+				worker.Logf("#r{FAIL} %s", pth)
+				pass = false
+			}
+		})
 	}
+
+	cfmt.Println("#b{[test/libs]}")
+	libs := listLibs()
+	pool := worker.NewPool(min(len(libs), 5))
+	for _, lib := range libs {
+		testPath(pool, filepathJoinUncleaned(".", "lib", lib, "..."))
+	}
+	pool.Wait()
+
+	cfmt.Println("#b{[test/bins]}")
+	bins := listBins()
+	pool = worker.NewPool(min(len(bins), 5))
+	for _, bin := range bins {
+		testPath(pool, filepathJoinUncleaned(".", "bin", bin, "..."))
+	}
+	pool.Wait()
+
+	return pass
+}
+
+func runBuild(opt BuildOpt) bool {
+	success := true
 
 	ensureDir("build")
 
-	runTests()
-
-	utils := make([]string, 0)
-
-	if args.Util != "" {
-		utils = append(utils, args.Util)
+	var bins []string
+	if opt.Util != "" {
+		bins = []string{opt.Util}
 	} else {
-		entries, err := os.ReadDir("bin")
-		if err != nil {
-			panic(err)
-		}
-
-		for _, entry := range entries {
-			if entry.IsDir() {
-				utils = append(utils, entry.Name())
-			}
-		}
+		bins = listBins()
 	}
 
 	buildUtil := func(util string) error {
-		executable := filepath.Join("build", prefix+util)
+		executable := filepath.Join("build", opt.Prefix+util)
 		if runtime.GOOS == "windows" {
 			executable += ".exe"
 		}
 		cmd := exec.Command("go", "build")
 		if util == "utils" {
-			cmd.Args = append(cmd.Args, "-ldflags", "-X main.Utils="+strings.Join(utils, ",")+" -X main.Prefix="+prefix)
+			cmd.Args = append(cmd.Args, "-ldflags", "-X main.Utils="+strings.Join(bins, ",")+" -X main.Prefix="+opt.Prefix)
 		}
 		cmd.Args = append(cmd.Args, "-o", executable)
 		cmd.Args = append(cmd.Args, filepathJoinUncleaned(".", "bin", util))
@@ -124,26 +159,74 @@ func main() {
 
 	cfmt.Println("#b{[build]}")
 
-	pool := worker.NewPool(min(len(utils), 5))
-	for _, util := range utils {
+	pool := worker.NewPool(min(len(bins), 5))
+	for _, util := range bins {
 		worker := pool.GetWorker()
 		worker.Go(
 			func() {
 				worker.Printf("#y{%s}", util)
 				err := buildUtil(util)
 				if err != nil {
-					worker.Logf("#r{ERROR} %s: %v", util, err)
+					msg := cfmt.Sprintf("#r{ERROR} %s: %v", util, err)
+					worker.Logf(msg)
+					success = false
 					return
 				}
 				err = generateReadmeUtil(util)
 				if err != nil {
-					worker.Logf("#r{ERROR} %s: %v", util, err)
+					msg := cfmt.Sprintf("#r{ERROR} %s: %v", util, err)
+					worker.Logf(msg)
+					success = false
 					return
 				}
-				worker.Logf("#g{SUCCESS} %s", util)
+				worker.Logf("#g{SUCCESS} %s%s", opt.Prefix, util)
 			})
 	}
 	pool.Wait()
 
 	generateReadmePath(".")
+
+	return success
+}
+
+func main() {
+	args := Args{}
+	clap.Parse(&args)
+
+	switch args.Command {
+	case nil:
+		opt := BuildOpt{}
+		clap.Parse(&opt)
+		testOk := runTest()
+		buildOk := runBuild(opt)
+		if testOk && buildOk {
+			cfmt.Println("#y{====}")
+			cfmt.Println("#g{SUCCESS}")
+		} else {
+			cfmt.Println("#y{====}")
+			cfmt.Println("#r{ERROR}")
+		}
+	case &args.Clean:
+		runClean()
+	case &args.Test:
+		if ok := runTest(); ok {
+			cfmt.Println("#y{====}")
+			cfmt.Println("#g{PASS}")
+		} else {
+			cfmt.Println("#y{====}")
+			cfmt.Println("#r{FAIL}")
+		}
+	case &args.Build:
+		if ok := runBuild(args.Build); ok {
+			cfmt.Println("#y{====}")
+			cfmt.Println("#g{SUCCESS}")
+		} else {
+			cfmt.Println("#y{====}")
+			cfmt.Println("#r{ERROR}")
+		}
+	default:
+		clog.Errorf("Unknown command: %v", args.Command)
+		os.Exit(1)
+		return
+	}
 }

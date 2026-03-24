@@ -1,13 +1,16 @@
 ```
 Usage:
-  th-utils [OPTIONS] [Util]
+  th-utils [OPTIONS] [Command] [Clean] [Test] [Build]
 
 Options:
-  -p, --prefix <Prefix>  the prefix each binary will be given (default: th-)
-  -c, --clean            delete installation path
-  -h, --help             Show this help message and exit
+  -h, --help  Show this help message and exit
 
 Positional arguments:
-  Util                   only compiles and installes the given utitliy
+  Command     The command to run.
+
+Commands:
+  clean       Deletes build path.
+  test        Runs all tests
+  build       Builds binaries.
 
 ```
