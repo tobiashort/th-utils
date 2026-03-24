@@ -1,6 +1,6 @@
 ```
 Usage:
-  th-utils [OPTIONS] [Command] [Clean] [Test] [Build]
+  th-utils [OPTIONS] [Command]
 
 Options:
   -h, --help  Show this help message and exit
