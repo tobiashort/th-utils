@@ -8,42 +8,11 @@ import (
 	"strings"
 
 	"github.com/tobiashort/th-utils/lib/ansi"
+	"github.com/tobiashort/th-utils/lib/must"
 	"github.com/tobiashort/th-utils/lib/term"
 )
 
-var regexps = map[*regexp.Regexp]ansi.Decor{
-	makeRegexp("B"):  ansi.DecorBold,
-	makeRegexp("U"):  ansi.DecorUnderline,
-	makeRegexp("R"):  ansi.DecorReversed,
-	makeRegexp("r"):  ansi.DecorRed,
-	makeRegexp("rB"): ansi.DecorRed + ansi.DecorBold,
-	makeRegexp("rU"): ansi.DecorRed + ansi.DecorUnderline,
-	makeRegexp("rR"): ansi.DecorRed + ansi.DecorReversed,
-	makeRegexp("g"):  ansi.DecorGreen,
-	makeRegexp("gB"): ansi.DecorGreen + ansi.DecorBold,
-	makeRegexp("gU"): ansi.DecorGreen + ansi.DecorUnderline,
-	makeRegexp("gR"): ansi.DecorGreen + ansi.DecorReversed,
-	makeRegexp("y"):  ansi.DecorYellow,
-	makeRegexp("yB"): ansi.DecorYellow + ansi.DecorBold,
-	makeRegexp("yU"): ansi.DecorYellow + ansi.DecorUnderline,
-	makeRegexp("yR"): ansi.DecorYellow + ansi.DecorReversed,
-	makeRegexp("b"):  ansi.DecorBlue,
-	makeRegexp("bB"): ansi.DecorBlue + ansi.DecorBold,
-	makeRegexp("bU"): ansi.DecorBlue + ansi.DecorUnderline,
-	makeRegexp("bR"): ansi.DecorBlue + ansi.DecorReversed,
-	makeRegexp("p"):  ansi.DecorPurple,
-	makeRegexp("pB"): ansi.DecorPurple + ansi.DecorBold,
-	makeRegexp("pU"): ansi.DecorPurple + ansi.DecorUnderline,
-	makeRegexp("pR"): ansi.DecorPurple + ansi.DecorReversed,
-	makeRegexp("c"):  ansi.DecorCyan,
-	makeRegexp("cB"): ansi.DecorCyan + ansi.DecorBold,
-	makeRegexp("cU"): ansi.DecorCyan + ansi.DecorUnderline,
-	makeRegexp("cR"): ansi.DecorCyan + ansi.DecorReversed,
-}
-
-func makeRegexp(name string) *regexp.Regexp {
-	return regexp.MustCompile(fmt.Sprintf("#%s\\{([^}]*)\\}", name))
-}
+var re = regexp.MustCompile(`(?:^|[^\\])#([A-Za-z]{1,2})\{((?:\\.|[^\\}])*)\}`)
 
 func Print(a ...any) {
 	for i := range a {
@@ -99,37 +68,37 @@ func Sprintln(a ...any) string {
 	return fmt.Sprintln(a...)
 }
 
-func stoc(s string) ansi.Decor {
+func stoc(s string) (ansi.Decor, error) {
 	//nofmt:enable
 	switch s {
-	case "r":  return ansi.DecorRed
-	case "g":  return ansi.DecorGreen
-	case "y":  return ansi.DecorYellow
-	case "b":  return ansi.DecorBlue
-	case "p":  return ansi.DecorPurple
-	case "c":  return ansi.DecorCyan
-	case "B":  return ansi.DecorBold
-	case "rB": return ansi.DecorRed + ansi.DecorBold
-	case "gB": return ansi.DecorGreen + ansi.DecorBold
-	case "yB": return ansi.DecorYellow + ansi.DecorBold
-	case "bB": return ansi.DecorBlue + ansi.DecorBold
-	case "pB": return ansi.DecorPurple + ansi.DecorBold
-	case "cB": return ansi.DecorCyan + ansi.DecorBold
-	case "U":  return ansi.DecorUnderline
-	case "rU": return ansi.DecorRed + ansi.DecorUnderline
-	case "gU": return ansi.DecorGreen + ansi.DecorUnderline
-	case "yU": return ansi.DecorYellow + ansi.DecorUnderline
-	case "bU": return ansi.DecorBlue + ansi.DecorUnderline
-	case "pU": return ansi.DecorPurple + ansi.DecorUnderline
-	case "cU": return ansi.DecorCyan + ansi.DecorUnderline
-	case "R":  return ansi.DecorReversed
-	case "rR": return ansi.DecorRed + ansi.DecorReversed
-	case "gR": return ansi.DecorGreen + ansi.DecorReversed
-	case "yR": return ansi.DecorYellow + ansi.DecorReversed
-	case "bR": return ansi.DecorBlue + ansi.DecorReversed
-	case "pR": return ansi.DecorPurple + ansi.DecorReversed
-	case "cR": return ansi.DecorCyan + ansi.DecorReversed
-	default: panic(fmt.Errorf("cannot map string '%s' to ansi Decorcolor", s))
+	case "r":  return ansi.DecorRed, nil
+	case "g":  return ansi.DecorGreen, nil
+	case "y":  return ansi.DecorYellow, nil
+	case "b":  return ansi.DecorBlue, nil
+	case "p":  return ansi.DecorPurple, nil
+	case "c":  return ansi.DecorCyan, nil
+	case "B":  return ansi.DecorBold, nil
+	case "rB": return ansi.DecorRed + ansi.DecorBold, nil
+	case "gB": return ansi.DecorGreen + ansi.DecorBold, nil
+	case "yB": return ansi.DecorYellow + ansi.DecorBold, nil
+	case "bB": return ansi.DecorBlue + ansi.DecorBold, nil
+	case "pB": return ansi.DecorPurple + ansi.DecorBold, nil
+	case "cB": return ansi.DecorCyan + ansi.DecorBold, nil
+	case "U":  return ansi.DecorUnderline, nil
+	case "rU": return ansi.DecorRed + ansi.DecorUnderline, nil
+	case "gU": return ansi.DecorGreen + ansi.DecorUnderline, nil
+	case "yU": return ansi.DecorYellow + ansi.DecorUnderline, nil
+	case "bU": return ansi.DecorBlue + ansi.DecorUnderline, nil
+	case "pU": return ansi.DecorPurple + ansi.DecorUnderline, nil
+	case "cU": return ansi.DecorCyan + ansi.DecorUnderline, nil
+	case "R":  return ansi.DecorReversed, nil
+	case "rR": return ansi.DecorRed + ansi.DecorReversed, nil
+	case "gR": return ansi.DecorGreen + ansi.DecorReversed, nil
+	case "yR": return ansi.DecorYellow + ansi.DecorReversed, nil
+	case "bR": return ansi.DecorBlue + ansi.DecorReversed, nil
+	case "pR": return ansi.DecorPurple + ansi.DecorReversed, nil
+	case "cR": return ansi.DecorCyan + ansi.DecorReversed, nil
+	default: return "", fmt.Errorf("cannot map string '%s' to ansi Decorcolor", s)
 	}
 	//nofmt:disable
 }
@@ -139,7 +108,7 @@ func Cprint(color string, a ...any) {
 }
 
 func Cfprint(w io.Writer, color string, a ...any) {
-	c := stoc(color)
+	c := must.Do2(stoc(color))
 	for i := range a {
 		a[i] = clr(fmt.Sprint(a[i]), c)
 	}
@@ -157,7 +126,7 @@ func Cprintf(color string, format string, a ...any) {
 }
 
 func Cfprintf(w io.Writer, color string, format string, a ...any) {
-	c := stoc(color)
+	c := must.Do2(stoc(color))
 	if term.IsTerminal() {
 		fmt.Fprint(w, c)
 	}
@@ -172,7 +141,7 @@ func Cprintln(color string, a ...any) {
 }
 
 func Cfprintln(w io.Writer, color string, a ...any) {
-	c := stoc(color)
+	c := must.Do2(stoc(color))
 	for i := range a {
 		a[i] = clr(fmt.Sprint(a[i]), c)
 	}
@@ -186,16 +155,20 @@ func Cfprintln(w io.Writer, color string, a ...any) {
 }
 
 func clr(str string, reset ansi.Decor) string {
-	for regex, color := range regexps {
-		matches := regex.FindAllStringSubmatch(str, -1)
-		for _, match := range matches {
+	matches := re.FindAllStringSubmatch(str, -1)
+	for _, match := range matches {
+		if c, err := stoc(match[1]); err == nil {
 			if term.IsTerminal() {
-				str = strings.Replace(str, match[0], color+match[1]+reset, 1)
+				str = strings.Replace(str, match[0], c+match[2]+reset, 1)
 			} else {
 				str = strings.Replace(str, match[0], match[1], 1)
 			}
 		}
 	}
+	str = strings.ReplaceAll(str, `\}`, `}`)
+	str = strings.ReplaceAll(str, `\{`, `{`)
+	str = strings.ReplaceAll(str, `\#`, `#`)
+	str = strings.ReplaceAll(str, `\\`, `\`)
 	return str
 }
 

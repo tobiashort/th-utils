@@ -19,9 +19,9 @@ type Args struct {
 
 func main() {
 	args := Args{}
-	clap.Example(strings2.Dedent(`//no-fmt:enable
+	clap.Example(strings2.Dedent(`//nofmt:enable
                                  |[custom formatted code]
-                                 |//no-fmt:disable`))
+                                 |//nofmt:disable`))
 	clap.Parse(&args)
 
 	var replacements [][]string
@@ -38,9 +38,9 @@ func main() {
 	scanner := bufio.NewScanner(strings.NewReader(src))
 	for scanner.Scan() {
 		line := scanner.Text()
-		if strings.TrimSpace(line) == "//no-fmt:enable" {
+		if strings.TrimSpace(line) == "//nofmt:enable" {
 			enabled = true
-		} else if strings.TrimSpace(line) == "//no-fmt:disable" {
+		} else if strings.TrimSpace(line) == "//nofmt:disable" {
 			enabled = false
 			replacements = append(replacements, replacement)
 			replacement = make([]string, 0)
@@ -62,7 +62,7 @@ func main() {
 	scanner = bufio.NewScanner(strings.NewReader(goimportsOut))
 	for scanner.Scan() {
 		line := scanner.Text()
-		if strings.TrimSpace(line) == "//no-fmt:enable" {
+		if strings.TrimSpace(line) == "//nofmt:enable" {
 			fmt.Println(line)
 			enabled = true
 			replacement := replacements[replacementIndex]
@@ -70,7 +70,7 @@ func main() {
 				fmt.Println(replacementLine)
 			}
 			replacementIndex++
-		} else if strings.TrimSpace(line) == "//no-fmt:disable" {
+		} else if strings.TrimSpace(line) == "//nofmt:disable" {
 			fmt.Println(line)
 			enabled = false
 		} else {

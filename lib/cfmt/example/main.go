@@ -137,4 +137,7 @@ func main() {
 	fmt.Println("...in purple.")
 	cfmt.End()
 	fmt.Println("and now back to normal")
+
+	fmt.Printf("\n")
+	cfmt.Println(`#y{\{\{\escaped\\\}\}}`)
 }
