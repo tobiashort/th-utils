@@ -139,5 +139,5 @@ func main() {
 	fmt.Println("and now back to normal")
 
 	fmt.Printf("\n")
-	cfmt.Println(`#y{\{\{\escaped\\\}\}}`)
+	cfmt.Println(`#y{{{\escaped\\\}\}}`)
 }

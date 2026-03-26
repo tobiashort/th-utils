@@ -12,7 +12,7 @@ import (
 	"github.com/tobiashort/th-utils/lib/term"
 )
 
-var re = regexp.MustCompile(`(?:^|[^\\])#([A-Za-z]{1,2})\{((?:\\.|[^\\}])*)\}`)
+var re = regexp.MustCompile(`#([A-Za-z]{1,2})\{((?:\\.|[^\\}])*)\}`)
 
 func Print(a ...any) {
 	for i := range a {
@@ -158,17 +158,17 @@ func clr(str string, reset ansi.Decor) string {
 	matches := re.FindAllStringSubmatch(str, -1)
 	for _, match := range matches {
 		if c, err := stoc(match[1]); err == nil {
+			replace := match[0]
+			replaceWith := match[2]
+			replaceWith = strings.ReplaceAll(replaceWith, `\}`, `}`)
+			replaceWith = strings.ReplaceAll(replaceWith, `\\`, `\`)
 			if term.IsTerminal() {
-				str = strings.Replace(str, match[0], c+match[2]+reset, 1)
+				str = strings.Replace(str, replace, c+replaceWith+reset, 1)
 			} else {
-				str = strings.Replace(str, match[0], match[1], 1)
+				str = strings.Replace(str, replace, replaceWith, 1)
 			}
 		}
 	}
-	str = strings.ReplaceAll(str, `\}`, `}`)
-	str = strings.ReplaceAll(str, `\{`, `{`)
-	str = strings.ReplaceAll(str, `\#`, `#`)
-	str = strings.ReplaceAll(str, `\\`, `\`)
 	return str
 }
 
