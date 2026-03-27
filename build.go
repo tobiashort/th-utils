@@ -198,13 +198,20 @@ func main() {
 		opt := BuildOpt{}
 		clap.Parse(&opt)
 		testOk := runTest()
+		if !testOk {
+			cfmt.Println("#y{====}")
+			cfmt.Println("#r{ERROR}")
+			os.Exit(1)
+		}
 		buildOk := runBuild(opt)
-		if testOk && buildOk {
+		if buildOk {
 			cfmt.Println("#y{====}")
 			cfmt.Println("#g{SUCCESS}")
+			os.Exit(0)
 		} else {
 			cfmt.Println("#y{====}")
 			cfmt.Println("#r{ERROR}")
+			os.Exit(1)
 		}
 	case &args.Clean:
 		runClean()
@@ -212,17 +219,21 @@ func main() {
 		if ok := runTest(); ok {
 			cfmt.Println("#y{====}")
 			cfmt.Println("#g{PASS}")
+			os.Exit(0)
 		} else {
 			cfmt.Println("#y{====}")
 			cfmt.Println("#r{FAIL}")
+			os.Exit(1)
 		}
 	case &args.Build:
 		if ok := runBuild(args.Build); ok {
 			cfmt.Println("#y{====}")
 			cfmt.Println("#g{SUCCESS}")
+			os.Exit(0)
 		} else {
 			cfmt.Println("#y{====}")
 			cfmt.Println("#r{ERROR}")
+			os.Exit(1)
 		}
 	default:
 		clog.Errorf("Unknown command: %v", args.Command)
