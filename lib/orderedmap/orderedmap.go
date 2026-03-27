@@ -173,7 +173,7 @@ func (m OrderedMap[K, V]) MarshalJSON() ([]byte, error) {
 	builder.WriteString("{")
 	for idx, key := range m.keys {
 		val := m.keyValues[key]
-		builder.WriteString(fmt.Sprintf(`"%v":`, key))
+		fmt.Fprintf(&builder, `"%v":`, key)
 		err := encoder.Encode(val)
 		if err != nil {
 			return nil, err

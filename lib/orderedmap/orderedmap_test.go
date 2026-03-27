@@ -2,6 +2,7 @@ package orderedmap
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -144,17 +145,22 @@ func TestUnmarshalMarshalStringAny(t *testing.T) {
     }
   ]
 }`)
-	var m OrderedMap[string, any]
-	err := json.Unmarshal(dataIn, &m)
-	if err != nil {
-		t.Error(err)
-	}
-	dataOut, err := json.MarshalIndent(m, "", "  ")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !reflect.DeepEqual(dataOut, dataIn) {
-		t.Fatalf("Not equal:\n%s\n---\n%s\n---\n%+v", dataIn, dataOut, m)
+
+	for i := range 10 {
+		t.Run(fmt.Sprintf("Run%d", i), func(t *testing.T) {
+			var m OrderedMap[string, any]
+			err := json.Unmarshal(dataIn, &m)
+			if err != nil {
+				t.Error(err)
+			}
+			dataOut, err := json.MarshalIndent(m, "", "  ")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !reflect.DeepEqual(dataOut, dataIn) {
+				t.Fatalf("Not equal:\n%s\n---\n%s\n---\n%+v", dataIn, dataOut, m)
+			}
+		})
 	}
 }
 
@@ -164,47 +170,52 @@ func TestMarshalUnmarshalStringStruct(t *testing.T) {
 		Age  int
 	}
 
-	p1 := Person{Name: "John", Age: 70}
-	p2 := Person{Name: "Helen", Age: 55}
-	p3 := Person{Name: "Sam", Age: 56}
+	for i := range 10 {
+		t.Run(fmt.Sprintf("Run%d", i), func(t *testing.T) {
 
-	m := NewOrderedMap[string, Person]()
-	m.Put("p3", p3)
-	m.Put("p1", p1)
-	m.Put("p2", p2)
+			p1 := Person{Name: "John", Age: 70}
+			p2 := Person{Name: "Helen", Age: 55}
+			p3 := Person{Name: "Sam", Age: 56}
 
-	data, err := json.Marshal(m)
-	if err != nil {
-		t.Fatal(err)
-	}
+			m := NewOrderedMap[string, Person]()
+			m.Put("p3", p3)
+			m.Put("p1", p1)
+			m.Put("p2", p2)
 
-	if string(data) != `{"p3":{"Name":"Sam","Age":56},"p1":{"Name":"John","Age":70},"p2":{"Name":"Helen","Age":55}}` {
-		t.Fatal(string(data))
-	}
+			data, err := json.Marshal(m)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-	var mAfter OrderedMap[string, Person]
-	err = json.Unmarshal(data, &mAfter)
-	if err != nil {
-		t.Fatal(err)
-	}
+			if string(data) != `{"p3":{"Name":"Sam","Age":56},"p1":{"Name":"John","Age":70},"p2":{"Name":"Helen","Age":55}}` {
+				t.Fatal(string(data))
+			}
 
-	if !reflect.DeepEqual(mAfter.keys, []string{"p3", "p1", "p2"}) {
-		t.Fatal("Not equal", mAfter.keys)
-	}
+			var mAfter OrderedMap[string, Person]
+			err = json.Unmarshal(data, &mAfter)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-	p1After, _ := mAfter.Get("p1")
-	p2After, _ := mAfter.Get("p2")
-	p3After, _ := mAfter.Get("p3")
+			if !reflect.DeepEqual(mAfter.keys, []string{"p3", "p1", "p2"}) {
+				t.Fatal("Not equal", mAfter.keys)
+			}
 
-	if !reflect.DeepEqual(p1After, p1) {
-		t.Fatal("Not equal", p3After)
-	}
+			p1After, _ := mAfter.Get("p1")
+			p2After, _ := mAfter.Get("p2")
+			p3After, _ := mAfter.Get("p3")
 
-	if !reflect.DeepEqual(p2After, p2) {
-		t.Fatal("Not equal", p3After)
-	}
+			if !reflect.DeepEqual(p1After, p1) {
+				t.Fatal("Not equal", p3After)
+			}
 
-	if !reflect.DeepEqual(p3After, p3) {
-		t.Fatal("Not equal", p3After)
+			if !reflect.DeepEqual(p2After, p2) {
+				t.Fatal("Not equal", p3After)
+			}
+
+			if !reflect.DeepEqual(p3After, p3) {
+				t.Fatal("Not equal", p3After)
+			}
+		})
 	}
 }
