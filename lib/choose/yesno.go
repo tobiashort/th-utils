@@ -35,7 +35,7 @@ func YesNo(prompt string, default_ int) bool {
 	r := bufio.NewReader(os.Stdin)
 
 ask:
-	fmt.Print(b.String())
+	fmt.Fprint(os.Stderr, b.String())
 	ans := strings.TrimSpace(string(must.Do2(r.ReadBytes('\n'))))
 	switch ans {
 	case "":
