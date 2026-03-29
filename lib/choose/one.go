@@ -3,29 +3,46 @@ package choose
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/tobiashort/th-utils/lib/ansi"
 	"github.com/tobiashort/th-utils/lib/cfmt"
-	"github.com/tobiashort/th-utils/lib/term"
 	"github.com/tobiashort/th-utils/lib/must"
+	"github.com/tobiashort/th-utils/lib/term"
 )
 
-func ToOptions[T any](s []T) []string {
+type Option struct {
+	Index int
+	Value string
+}
+
+func ToOptions[T any](s []T) []Option {
 	return ToOptionsFunc(s, func(v T) string {
 		return fmt.Sprintf("%v", v)
 	})
 }
 
-func ToOptionsFunc[T any](s []T, f func(v T) string) []string {
-	r := make([]string, len(s))
+func ToOptionsFunc[T any](s []T, f func(v T) string) []Option {
+	r := make([]Option, len(s))
 	for i, v := range s {
-		r[i] = f(v)
+		r[i] = Option{
+			Index: i,
+			Value: f(v),
+		}
 	}
 	return r
 }
 
-func One(prompt string, options []string) (int, string, bool) {
+func One(prompt string, options []Option) (Option, bool) {
+	return OneSort(prompt, options, nil)
+}
+
+func OneSort(prompt string, options []Option, sortFunc func(o1, o2 Option, search string) int) (Option, bool) {
+	return OneSortFormatter(cfmt.DefaultFormatter, prompt, options, sortFunc)
+}
+
+func OneSortFormatter(formatter cfmt.Formatter, prompt string, options []Option, sortFunc func(o1, o2 Option, search string) int) (Option, bool) {
 	must.Do(term.MakeRaw())
 	defer func() { must.Do(term.Restore()) }()
 
@@ -35,40 +52,41 @@ func One(prompt string, options []string) (int, string, bool) {
 	selectedLine := 0
 	search := strings.Builder{}
 
-	type option struct {
-		origIndex int
-		value     string
-	}
-
 draw:
-	filtered := make([]option, 0)
+	filtered := make([]Option, 0)
 	if search.String() == "" {
-		for i, s := range options {
-			filtered = append(filtered, option{origIndex: i, value: s})
+		for _, option := range options {
+			filtered = append(filtered, option)
 		}
 	} else {
-		for i, s := range options {
+		for _, option := range options {
 			lSearch := strings.ToLower(search.String())
-			lOption := strings.ToLower(s)
+			lOption := strings.ToLower(option.Value)
 			if strings.Contains(lOption, lSearch) {
-				filtered = append(filtered, option{origIndex: i, value: s})
+				filtered = append(filtered, option)
 			}
 		}
 	}
 
-	fmt.Printf("%s\r\n", prompt)
+	if sortFunc != nil {
+		slices.SortStableFunc(filtered, func(o1, o2 Option) int {
+			return sortFunc(o1, o2, search.String())
+		})
+	}
+
+	fmt.Fprintf(os.Stderr, "%s\r\n", prompt)
 	if len(filtered) > 0 {
 		for index := selectedIndex - selectedLine; index < min(selectedIndex+(maxLines-selectedLine), len(filtered)); index++ {
 			option := filtered[index]
 			if index == selectedIndex {
-				cfmt.Printf("#yB{▌ %s}\r\n", option.value)
+				formatter.Fprintf(os.Stderr, "#yB{▌ %s}\r\n", option.Value)
 			} else {
-				fmt.Printf("  %s\r\n", option.value)
+				fmt.Fprintf(os.Stderr, "  %s\r\n", option.Value)
 			}
 		}
 	}
-	cfmt.Printf("  #b{%d/%d}\r\n", min(selectedIndex+1, len(filtered)), len(filtered))
-	cfmt.Printf("#bB{>} %s", search.String())
+	formatter.Fprintf(os.Stderr, "  #b{%d/%d}\r\n", min(selectedIndex+1, len(filtered)), len(filtered))
+	formatter.Fprintf(os.Stderr, "#bB{>} %s", search.String())
 
 	buf := make([]byte, 3)
 	for {
@@ -134,21 +152,21 @@ draw:
 	}
 
 redraw:
-	fmt.Print("\r")
+	fmt.Fprint(os.Stderr, "\r")
 	for range min(maxLines, len(filtered)) + 2 {
-		fmt.Print(ansi.EraseEntireLine)
-		fmt.Print(ansi.CursorMoveUp(1))
+		fmt.Fprint(os.Stderr, ansi.EraseEntireLine)
+		fmt.Fprint(os.Stderr, ansi.CursorMoveUp(1))
 	}
 	goto draw
 
 done:
-	fmt.Print("\r")
+	fmt.Fprint(os.Stderr, "\r")
 	for range min(maxLines, len(filtered)) + 2 {
-		fmt.Print(ansi.EraseEntireLine)
-		fmt.Print(ansi.CursorMoveUp(1))
+		fmt.Fprint(os.Stderr, ansi.EraseEntireLine)
+		fmt.Fprint(os.Stderr, ansi.CursorMoveUp(1))
 	}
 	if selectedIndex >= 0 && selectedIndex < len(filtered) {
-		return filtered[selectedIndex].origIndex, filtered[selectedIndex].value, ok
+		return filtered[selectedIndex], ok
 	}
-	return -1, "", false
+	return Option{Index: -1, Value: ""}, false
 }

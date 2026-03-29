@@ -110,11 +110,11 @@ func main() {
 		"Option 100",
 	}
 
-	idx, option, ok := choose.One("Please choose one:", options)
+	option, ok := choose.One("Please choose one:", choose.ToOptions(options))
 
 	if !ok {
 		fmt.Println("Abort.")
 	} else {
-		fmt.Printf("You have chosen: %s (index %d)\n", option, idx)
+		fmt.Printf("You have chosen: %s (index %d)\n", option.Value, option.Index)
 	}
 }
