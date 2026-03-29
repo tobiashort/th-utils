@@ -125,6 +125,118 @@ func parse(osArgs []string, strct any) {
 		developerErr("expected struct pointer")
 	}
 
+	programArgs := parseProgramArgs(strct)
+	programNonPositionalArgs := filterArgs(programArgs, func(arg arg) bool { return !arg.positional })
+	programPositionalArgs := filterArgs(programArgs, func(arg arg) bool { return arg.positional })
+
+	checkForNameCollisions(programArgs)
+	checkForMandatoryArgsWithDefaultValue(programArgs)
+	checkForSlicesWithDefaultValue(programArgs)
+	checkForEitherLongOrShortGiven(programNonPositionalArgs)
+	checkForInvalidPositionalArguments(programPositionalArgs)
+
+	givenNonPositionalArgs := make([]arg, 0)
+	givenPositionalArgs := make([]arg, 0)
+
+	positionalArgIndex := 0
+	doubleDashSeen := false
+
+osArgsLoop:
+	for i := 1; i < len(osArgs); i++ {
+		arg := osArgs[i]
+		if arg == "--" {
+			doubleDashSeen = true
+			continue
+		}
+		if !doubleDashSeen && strings.HasPrefix(arg, "--") {
+			long := arg[2:]
+			if long == "help" {
+				printHelp(programArgs, os.Stdout)
+				os.Exit(0)
+			}
+			arg, ok := getArgByLongName(programArgs, long)
+			if !ok {
+				userErr("unknown argument: --"+long, programArgs)
+			} else {
+				givenNonPositionalArgs = append(givenNonPositionalArgs, arg)
+			}
+			i = parseNonPositionalAtIndex(osArgs, arg, strct, i)
+		} else if !doubleDashSeen && strings.HasPrefix(arg, "-") {
+			shortGrouped := arg[1:]
+			for _, rune := range shortGrouped {
+				short := string(rune)
+				if short == "h" {
+					printHelp(programArgs, os.Stdout)
+					os.Exit(0)
+				}
+				arg, ok := getArgByShortName(programArgs, short)
+				if !ok {
+					userErr("unknown argument: -"+short, programArgs)
+				} else {
+					givenNonPositionalArgs = append(givenNonPositionalArgs, arg)
+				}
+				i = parseNonPositionalAtIndex(osArgs, arg, strct, i)
+			}
+		} else {
+			if len(programPositionalArgs) == 0 {
+				userErr("too many arguments", programArgs)
+			} else if positionalArgIndex >= len(programPositionalArgs) && programPositionalArgs[len(programPositionalArgs)-1].kind != reflect.Slice {
+				userErr("too many arguments", programArgs)
+			} else {
+				positionalArg := programPositionalArgs[positionalArgIndex]
+				givenPositionalArgs = append(givenPositionalArgs, positionalArg)
+				parsePositionalAtIndex(osArgs, positionalArg, strct, i)
+				if positionalArg.cmd {
+					for _, arg := range programPositionalArgs {
+						if arg.cmdopt && osArgs[i] == toKebabCase(arg.name) {
+							prog = prog + " " + osArgs[i]
+							desc = ""
+							example = ""
+							if arg.kind == reflect.Struct {
+								parse(osArgs[i:], arg.value.Addr().Interface())
+								setStruct(strct, arg.name, arg.value.Addr().Elem().Interface())
+							} else if arg.kind == reflect.Interface {
+								parse(osArgs[i:], new(struct{}))
+							}
+							break osArgsLoop
+						}
+					}
+					userErr("unknown cmd: "+osArgs[i], programArgs)
+				} else if positionalArgIndex+1 < len(programPositionalArgs) {
+					positionalArgIndex++
+				}
+			}
+		}
+	}
+
+	checkForConflicts(givenNonPositionalArgs, givenPositionalArgs)
+	checkForMissingMandatoryArgs(programArgs, givenNonPositionalArgs, givenPositionalArgs)
+	checkForMultipleUse(givenNonPositionalArgs)
+
+programArgsLoop:
+	for _, arg := range programArgs {
+		if arg.defaultValue == "" {
+			continue
+		}
+		for _, givenArg := range givenNonPositionalArgs {
+			if arg.name == givenArg.name {
+				continue programArgsLoop
+			}
+		}
+		for _, givenArg := range givenPositionalArgs {
+			if arg.name == givenArg.name {
+				continue programArgsLoop
+			}
+		}
+		if arg.positional {
+			parsePositional(arg, strct, arg.defaultValue)
+		} else {
+			parseNonPositional(arg, strct, arg.defaultValue)
+		}
+	}
+}
+
+func parseProgramArgs(strct any) []arg {
 	strctType := reflect.TypeOf(strct).Elem()
 	strctValue := reflect.ValueOf(strct).Elem()
 
@@ -211,114 +323,8 @@ func parse(osArgs []string, strct any) {
 	}
 
 	programArgs = append(programArgs, implicitHelpArg)
-	programNonPositionalArgs := filterArgs(programArgs, func(arg arg) bool { return !arg.positional })
-	programPositionalArgs := filterArgs(programArgs, func(arg arg) bool { return arg.positional })
 
-	checkForNameCollisions(programArgs)
-	checkForMandatoryArgsWithDefaultValue(programArgs)
-	checkForSlicesWithDefaultValue(programArgs)
-	checkForEitherLongOrShortGiven(programNonPositionalArgs)
-	checkForInvalidPositionalArguments(programPositionalArgs)
-
-	givenNonPositionalArgs := make([]arg, 0)
-	givenPositionalArgs := make([]arg, 0)
-
-	positionalArgIndex := 0
-	doubleDashSeen := false
-
-osArgsLoop:
-	for i := 1; i < len(osArgs); i++ {
-		arg := osArgs[i]
-		if arg == "--" {
-			doubleDashSeen = true
-			continue
-		}
-		if !doubleDashSeen && strings.HasPrefix(arg, "--") {
-			long := arg[2:]
-			if long == "help" {
-				printHelp(programArgs, os.Stdout)
-				os.Exit(0)
-			}
-			arg, ok := getArgByLongName(programArgs, long)
-			if !ok {
-				userErr("unknown argument: --"+long, programArgs)
-			} else {
-				givenNonPositionalArgs = append(givenNonPositionalArgs, arg)
-			}
-			i = parseNonPositionalAtIndex(osArgs, arg, strct, i)
-		} else if !doubleDashSeen && strings.HasPrefix(arg, "-") {
-			shortGrouped := arg[1:]
-			for _, rune := range shortGrouped {
-				short := string(rune)
-				if short == "h" {
-					printHelp(programArgs, os.Stdout)
-					os.Exit(0)
-				}
-				arg, ok := getArgByShortName(programArgs, short)
-				if !ok {
-					userErr("unknown argument: -"+short, programArgs)
-				} else {
-					givenNonPositionalArgs = append(givenNonPositionalArgs, arg)
-				}
-				i = parseNonPositionalAtIndex(osArgs, arg, strct, i)
-			}
-		} else {
-			if len(programPositionalArgs) == 0 {
-				userErr("too many arguments", programArgs)
-			} else if positionalArgIndex >= len(programPositionalArgs) && programPositionalArgs[len(programPositionalArgs)-1].kind != reflect.Slice {
-				userErr("too many arguments", programArgs)
-			} else {
-				positionalArg := programPositionalArgs[positionalArgIndex]
-				givenPositionalArgs = append(givenPositionalArgs, positionalArg)
-				parsePositionalAtIndex(osArgs, positionalArg, strct, i)
-				if positionalArg.cmd {
-					for _, arg := range programPositionalArgs {
-						if arg.cmdopt && osArgs[i] == toKebabCase(arg.name) {
-							prog = prog + " " + osArgs[i]
-							desc = ""
-							example = ""
-							if arg.kind == reflect.Struct {
-								parse(osArgs[i:], arg.value.Addr().Interface())
-								setStruct(strct, arg.name, arg.value.Addr().Elem().Interface())
-							} else if arg.kind == reflect.Interface {
-								parse(osArgs[i:], new(struct{}))
-							}
-							break osArgsLoop
-						}
-					}
-					userErr("unknown cmd: "+osArgs[i], programArgs)
-				} else if positionalArgIndex+1 < len(programPositionalArgs) {
-					positionalArgIndex++
-				}
-			}
-		}
-	}
-
-	checkForConflicts(givenNonPositionalArgs)
-	checkForMissingMandatoryArgs(programArgs, givenNonPositionalArgs, givenPositionalArgs)
-	checkForMultipleUse(givenNonPositionalArgs)
-
-programArgsLoop:
-	for _, arg := range programArgs {
-		if arg.defaultValue == "" {
-			continue
-		}
-		for _, givenArg := range givenNonPositionalArgs {
-			if arg.name == givenArg.name {
-				continue programArgsLoop
-			}
-		}
-		for _, givenArg := range givenPositionalArgs {
-			if arg.name == givenArg.name {
-				continue programArgsLoop
-			}
-		}
-		if arg.positional {
-			parsePositional(arg, strct, arg.defaultValue)
-		} else {
-			parseNonPositional(arg, strct, arg.defaultValue)
-		}
-	}
+	return programArgs
 }
 
 func parseNonPositionalAtIndex(osArgs []string, arg arg, strct any, index int) int {
@@ -579,10 +585,13 @@ func checkForInvalidPositionalArguments(programPositionalArgs []arg) {
 	}
 }
 
-func checkForConflicts(givenNonPositionalArgs []arg) {
-	for _, outerArg := range givenNonPositionalArgs {
+func checkForConflicts(givenNonPositionalArgs []arg, givenPositionalArgs []arg) {
+	givenArgs := make([]arg, 0)
+	givenArgs = append(givenArgs, givenNonPositionalArgs...)
+	givenArgs = append(givenArgs, givenPositionalArgs...)
+	for _, outerArg := range givenArgs {
 		for _, inConflict := range outerArg.conflictsWith {
-			for _, innerArg := range givenNonPositionalArgs {
+			for _, innerArg := range givenArgs {
 				if innerArg.name == inConflict {
 					userErr(fmt.Sprintf("conflicting arguments: %s, %s", outerArg, innerArg), nil)
 				}
@@ -676,6 +685,11 @@ func parseTagValues(tag string) [][2]string {
 	}
 
 	return tagValues
+}
+
+func PrintHelp(strct any, w io.Writer) {
+	args := parseProgramArgs(strct)
+	printHelp(args, w)
 }
 
 func printHelp(args []arg, w io.Writer) {
