@@ -107,8 +107,11 @@ function global:j {
 				len2 := strings.Count(o2l, string(filepath.Separator))
 				if len1 == len2 {
 					return o1.Index - o2.Index
+				} else if o1.Index < 10 || o2.Index < 10 {
+					return o1.Index - o2.Index
+				} else {
+					return len1 - len2
 				}
-				return len1 - len2
 			} else if strings.Contains(b1, sl) {
 				return -1
 			} else if strings.Contains(b2, sl) {
@@ -122,8 +125,9 @@ function global:j {
 					} else {
 						return c
 					}
+				} else {
+					return len1 - len2
 				}
-				return len1 - len2
 			}
 		})
 		if ok {
