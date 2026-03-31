@@ -93,7 +93,7 @@ function global:j {
 		ps := paths.Keys()
 		slices.Reverse(ps)
 		formatter := cfmt.Formatter{ForceColors: true}
-		option, ok := choose.OneSortFormatter(formatter, "Change directory:", choose.ToOptions(ps), func(o1, o2 choose.Option, search string) int {
+		sortFunc := func(o1, o2 choose.Option, search string) int {
 			sl := strings.ToLower(search)
 			if sl == "" {
 				return o1.Index - o2.Index
@@ -129,7 +129,13 @@ function global:j {
 					return len1 - len2
 				}
 			}
-		})
+		}
+		chooser := choose.Chooser{
+			Writer:    os.Stderr,
+			Formatter: formatter,
+			SortFunc:  sortFunc,
+		}
+		option, ok := chooser.One("Change directory:", choose.ToOptions(ps))
 		if ok {
 			paths.Del(option.Value)
 			paths.Put(option.Value, struct{}{})

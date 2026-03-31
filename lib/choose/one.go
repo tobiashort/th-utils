@@ -2,6 +2,7 @@ package choose
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"slices"
 	"strings"
@@ -11,6 +12,18 @@ import (
 	"github.com/tobiashort/th-utils/lib/must"
 	"github.com/tobiashort/th-utils/lib/term"
 )
+
+type Chooser struct {
+	Writer    io.Writer
+	Formatter cfmt.Formatter
+	SortFunc  func(o1, o2 Option, search string) int
+}
+
+var DefaultChooser = Chooser{
+	Writer:    os.Stderr,
+	Formatter: cfmt.DefaultFormatter,
+	SortFunc:  nil,
+}
 
 type Option struct {
 	Index int
@@ -34,15 +47,7 @@ func ToOptionsFunc[T any](s []T, f func(v T) string) []Option {
 	return r
 }
 
-func One(prompt string, options []Option) (Option, bool) {
-	return OneSort(prompt, options, nil)
-}
-
-func OneSort(prompt string, options []Option, sortFunc func(o1, o2 Option, search string) int) (Option, bool) {
-	return OneSortFormatter(cfmt.DefaultFormatter, prompt, options, sortFunc)
-}
-
-func OneSortFormatter(formatter cfmt.Formatter, prompt string, options []Option, sortFunc func(o1, o2 Option, search string) int) (Option, bool) {
+func (c Chooser) One(prompt string, options []Option) (Option, bool) {
 	must.Do(term.MakeRaw())
 	defer func() { must.Do(term.Restore()) }()
 
@@ -68,25 +73,25 @@ draw:
 		}
 	}
 
-	if sortFunc != nil {
+	if c.SortFunc != nil {
 		slices.SortStableFunc(filtered, func(o1, o2 Option) int {
-			return sortFunc(o1, o2, search.String())
+			return c.SortFunc(o1, o2, search.String())
 		})
 	}
 
-	fmt.Fprintf(os.Stderr, "%s\r\n", prompt)
+	fmt.Fprintf(c.Writer, "%s\r\n", prompt)
 	if len(filtered) > 0 {
 		for index := selectedIndex - selectedLine; index < min(selectedIndex+(maxLines-selectedLine), len(filtered)); index++ {
 			option := filtered[index]
 			if index == selectedIndex {
-				formatter.Fprintf(os.Stderr, "#yB{▌ %s}\r\n", option.Value)
+				c.Formatter.Fprintf(c.Writer, "#yB{▌ %s}\r\n", option.Value)
 			} else {
-				fmt.Fprintf(os.Stderr, "  %s\r\n", option.Value)
+				fmt.Fprintf(c.Writer, "  %s\r\n", option.Value)
 			}
 		}
 	}
-	formatter.Fprintf(os.Stderr, "  #b{%d/%d}\r\n", min(selectedIndex+1, len(filtered)), len(filtered))
-	formatter.Fprintf(os.Stderr, "#bB{>} %s", search.String())
+	c.Formatter.Fprintf(c.Writer, "  #b{%d/%d}\r\n", min(selectedIndex+1, len(filtered)), len(filtered))
+	c.Formatter.Fprintf(c.Writer, "#bB{>} %s", search.String())
 
 	buf := make([]byte, 3)
 	for {
@@ -152,21 +157,25 @@ draw:
 	}
 
 redraw:
-	fmt.Fprint(os.Stderr, "\r")
+	fmt.Fprint(c.Writer, "\r")
 	for range min(maxLines, len(filtered)) + 2 {
-		fmt.Fprint(os.Stderr, ansi.EraseEntireLine)
-		fmt.Fprint(os.Stderr, ansi.CursorMoveUp(1))
+		fmt.Fprint(c.Writer, ansi.EraseEntireLine)
+		fmt.Fprint(c.Writer, ansi.CursorMoveUp(1))
 	}
 	goto draw
 
 done:
-	fmt.Fprint(os.Stderr, "\r")
+	fmt.Fprint(c.Writer, "\r")
 	for range min(maxLines, len(filtered)) + 2 {
-		fmt.Fprint(os.Stderr, ansi.EraseEntireLine)
-		fmt.Fprint(os.Stderr, ansi.CursorMoveUp(1))
+		fmt.Fprint(c.Writer, ansi.EraseEntireLine)
+		fmt.Fprint(c.Writer, ansi.CursorMoveUp(1))
 	}
 	if selectedIndex >= 0 && selectedIndex < len(filtered) {
 		return filtered[selectedIndex], ok
 	}
 	return Option{Index: -1, Value: ""}, false
+}
+
+func One(prompt string, options []Option) (Option, bool) {
+	return DefaultChooser.One(prompt, options)
 }
