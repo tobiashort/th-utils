@@ -16,8 +16,7 @@ import (
 )
 
 type BuildOpt struct {
-	Prefix string `clap:"default='th-',desc='The prefix each binary will be given.'"`
-	Util   string `clap:"positional,desc='Only builds the given utitliy.'"`
+	Util string `clap:"positional,desc='Only builds the given utitliy.'"`
 }
 
 type Args struct {
@@ -115,13 +114,13 @@ func runBuild(opt BuildOpt) bool {
 	}
 
 	buildUtil := func(util string) error {
-		executable := filepath.Join("build", opt.Prefix+util)
+		executable := filepath.Join("build", util)
 		if runtime.GOOS == "windows" {
 			executable += ".exe"
 		}
 		cmd := exec.Command("go", "build")
-		if util == "utils" {
-			cmd.Args = append(cmd.Args, "-ldflags", "-X main.Utils="+strings.Join(bins, ",")+" -X main.Prefix="+opt.Prefix)
+		if util == "th-utils" {
+			cmd.Args = append(cmd.Args, "-ldflags", "-X main.Utils="+strings.Join(bins, ","))
 		}
 		cmd.Args = append(cmd.Args, "-o", executable)
 		cmd.Args = append(cmd.Args, filepathJoinUncleaned(".", "bin", util))
@@ -179,7 +178,7 @@ func runBuild(opt BuildOpt) bool {
 					success = false
 					return
 				}
-				worker.Logf("#g{SUCCESS} %s%s", opt.Prefix, util)
+				worker.Logf("#g{SUCCESS} %s", util)
 			})
 	}
 	pool.Wait()

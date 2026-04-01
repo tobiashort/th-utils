@@ -1,0 +1,11 @@
+```
+Usage:
+  th-markdown-preview [OPTIONS] <File>
+
+Options:
+  -h, --help  Show this help message and exit
+
+Positional arguments:
+  File        The file to preview (required)
+
+```
