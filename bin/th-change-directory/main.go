@@ -8,7 +8,6 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/tobiashort/th-utils/lib/ansi"
 	"github.com/tobiashort/th-utils/lib/assert"
 	"github.com/tobiashort/th-utils/lib/cfmt"
 	"github.com/tobiashort/th-utils/lib/choose"
@@ -137,7 +136,6 @@ function global:j {
 			SortFunc:  sortFunc,
 		}
 		option, ok := chooser.One("Change directory:", choose.ToOptions(ps))
-		fmt.Fprint(chooser.Writer, ansi.EraseEntireLine)
 		if ok {
 			paths.Del(option.Value)
 			paths.Put(option.Value, struct{}{})

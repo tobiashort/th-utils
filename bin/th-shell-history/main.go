@@ -83,7 +83,6 @@ func run() int {
 	_, col := ansi.CursorGetCurrentPosition()
 	fmt.Fprintln(chooser.Writer)
 	option, ok := chooser.One("Search history:", choose.ToOptions(cmds))
-	fmt.Fprint(chooser.Writer, ansi.EraseEntireLine)
 	fmt.Fprint(chooser.Writer, ansi.CursorMoveUp(1))
 	fmt.Fprint(chooser.Writer, ansi.CursorMoveToColumn(col))
 	if ok {

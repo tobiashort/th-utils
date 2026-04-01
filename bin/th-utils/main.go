@@ -16,7 +16,7 @@ type Args struct{}
 func main() {
 	args := Args{}
 	clap.Parse(&args)
-	if option, ok := choose.One("", choose.ToOptions(strings.Split(Utils, ","))); ok {
+	if option, ok := choose.One("Utils:", choose.ToOptions(strings.Split(Utils, ","))); ok {
 		cmd := exec.Command(option.Value, "-h")
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr

@@ -170,6 +170,7 @@ done:
 		fmt.Fprint(c.Writer, ansi.EraseEntireLine)
 		fmt.Fprint(c.Writer, ansi.CursorMoveUp(1))
 	}
+	fmt.Fprint(c.Writer, ansi.EraseEntireLine)
 	if selectedIndex >= 0 && selectedIndex < len(filtered) {
 		return filtered[selectedIndex], ok
 	}
