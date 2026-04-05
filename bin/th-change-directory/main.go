@@ -68,7 +68,8 @@ function j
 end
 `)
 	} else if args.Powershell {
-		fmt.Print(`function global:cd {
+		fmt.Print(`Remove-Item Alias:cd
+function global:cd {
     param([string]$Path)
     $dir = th-change-directory $Path
     if (-not $dir) { return }
