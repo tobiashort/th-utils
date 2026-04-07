@@ -1,16 +1,15 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"unicode"
 
-	"github.com/tobiashort/th-utils/lib/unescape"
-
 	"github.com/tobiashort/th-utils/lib/clap"
-	"github.com/tobiashort/th-utils/lib/assert"
+	"github.com/tobiashort/th-utils/lib/must"
+	"github.com/tobiashort/th-utils/lib/unescape"
 )
 
 type Args struct {
@@ -22,25 +21,21 @@ type Args struct {
 
 func main() {
 	args := Args{}
-	clap.Description("Reads from Stdin and removes leading and/or trailing whitespaces for each line.")
+	clap.Description("Reads from Stdin and removes leading and/or trailing whitespaces or defined strings")
 	clap.Parse(&args)
 
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		text := scanner.Text()
-		if args.Left {
-			text = strings.TrimLeftFunc(text, unicode.IsSpace)
-		} else if args.Right {
-			text = strings.TrimRightFunc(text, unicode.IsSpace)
-		} else if args.Prefix != "" {
-			text = strings.TrimPrefix(text, unescape.Unescape(args.Prefix))
-		} else if args.Suffix != "" {
-			text = strings.TrimSuffix(text, unescape.Unescape(args.Suffix))
-		} else {
-			text = strings.TrimLeftFunc(text, unicode.IsSpace)
-			text = strings.TrimRightFunc(text, unicode.IsSpace)
-		}
-		fmt.Println(text)
+	text := string(must.Do2(io.ReadAll(os.Stdin)))
+	if args.Left {
+		text = strings.TrimLeftFunc(text, unicode.IsSpace)
+	} else if args.Right {
+		text = strings.TrimRightFunc(text, unicode.IsSpace)
+	} else if args.Prefix != "" {
+		text = strings.TrimPrefix(text, unescape.Unescape(args.Prefix))
+	} else if args.Suffix != "" {
+		text = strings.TrimSuffix(text, unescape.Unescape(args.Suffix))
+	} else {
+		text = strings.TrimLeftFunc(text, unicode.IsSpace)
+		text = strings.TrimRightFunc(text, unicode.IsSpace)
 	}
-	assert.Nil(scanner.Err(), "scanner error: %w", scanner.Err())
+	fmt.Print(text)
 }

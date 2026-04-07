@@ -1,8 +1,8 @@
 ```
-Reads from Stdin and removes leading and/or trailing whitespaces or defined strings
+Reads from Stdin and removes leading and/or trailing whitespaces or defined strings for each line.
 
 Usage:
-  th-trim [OPTIONS]
+  th-trim-lines [OPTIONS]
 
 Options:
   -l, --left             Only trim leading whitespace.
