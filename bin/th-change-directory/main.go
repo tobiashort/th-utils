@@ -49,14 +49,7 @@ Powershell:
 	}
 	assert.Nil(scanner.Err(), "scanner error")
 
-	if args.Directory != "" {
-		directory := must.Do2(filepath.Abs(args.Directory))
-		paths.Del(directory)
-		if _, err := os.Stat(directory); err == nil {
-			paths.Put(directory, struct{}{})
-		}
-		fmt.Print(directory)
-	} else if args.Fish {
+	if args.Fish {
 		fmt.Print(`function cd
     set dir (th-change-directory $argv); or return
 	builtin cd $dir
@@ -145,7 +138,15 @@ function global:j {
 			return 1
 		}
 	} else {
-		return 0
+		if args.Directory == "" {
+			args.Directory = os.ExpandEnv("$HOME")
+		}
+		directory := must.Do2(filepath.Abs(args.Directory))
+		paths.Del(directory)
+		if _, err := os.Stat(directory); err == nil {
+			paths.Put(directory, struct{}{})
+		}
+		fmt.Print(directory)
 	}
 
 	must.Do(os.WriteFile(historyFilePath, []byte(strings.Join(paths.Keys(), "\n")), 0600))
