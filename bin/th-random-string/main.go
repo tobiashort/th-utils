@@ -76,9 +76,8 @@ the given alphabet.`)
 		alphabet = Lowercase + Uppercase + Numbers + Symbols
 	}
 
-	seed := time.Now().UnixNano()
-
 	for range args.Amount {
+		seed := time.Now().UnixNano()
 		fmt.Println(random.String(alphabet, args.Width, seed))
 	}
 }
