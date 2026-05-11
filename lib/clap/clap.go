@@ -2,7 +2,6 @@ package clap
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -104,11 +103,11 @@ func Parse(strct any) {
 		if r != nil {
 			switch err := r.(type) {
 			case userError:
-				fmt.Fprintln(os.Stderr, err.Error())
+				cfmt.Fprintln(os.Stderr, err.Error())
 				if err.args != nil {
-					fmt.Fprint(os.Stderr, "\n")
+					cfmt.Fprint(os.Stderr, "\n")
 					printHelp(err.args, os.Stderr)
-					fmt.Fprint(os.Stderr, "\n")
+					cfmt.Fprint(os.Stderr, "\n")
 				}
 				os.Exit(1)
 			default:
@@ -285,7 +284,7 @@ func parseProgramArgs(strct any) []arg {
 					cmdopt = true
 					positional = true
 				default:
-					developerErr(fmt.Sprintf("unknown tag value: %s. Valid tage values are: short, long, conflicts, default, desc, mandatory, positional, cmd, cmdopt.", tagValue))
+					developerErr(cfmt.Sprintf("unknown tag value: %s. Valid tage values are: short, long, conflicts, default, desc, mandatory, positional, cmd, cmdopt.", tagValue))
 				}
 			}
 		}
@@ -333,7 +332,7 @@ func parseNonPositionalAtIndex(osArgs []string, arg arg, strct any, index int) i
 		return index
 	} else {
 		if index+1 >= len(osArgs) {
-			userErr(fmt.Sprintf("missing value for: %s", arg), nil)
+			userErr(cfmt.Sprintf("missing value for: %s", arg), nil)
 		}
 		value := osArgs[index+1]
 		parseNonPositional(arg, strct, value)
@@ -366,7 +365,7 @@ func parseNonPositional(arg arg, strct any, value string) {
 	} else if arg.type_ == reflect.TypeOf(time.Duration(0)) {
 		setDuration(strct, arg.name, parseDuration(value))
 	} else {
-		developerErr(fmt.Sprintf("not implemented argument kind: %v", arg.kind))
+		developerErr(cfmt.Sprintf("not implemented argument kind: %v", arg.kind))
 		panic("unreachable")
 	}
 }
@@ -401,7 +400,7 @@ func parsePositional(arg arg, strct any, value string) {
 	} else if arg.type_ == reflect.TypeOf(time.Duration(0)) {
 		setDuration(strct, arg.name, parseDuration(value))
 	} else {
-		developerErr(fmt.Sprintf("not implemented argument kind: %v", arg.kind))
+		developerErr(cfmt.Sprintf("not implemented argument kind: %v", arg.kind))
 	}
 }
 
@@ -504,7 +503,7 @@ func checkForNameCollisions(args []arg) {
 			if !exists {
 				seenLong[arg.long] = arg
 			} else {
-				developerErr(fmt.Sprintf("argument name collision: %s (--%s) with %s (--%s)", arg.name, arg.long, existing.name, existing.long))
+				developerErr(cfmt.Sprintf("argument name collision: %s (--%s) with %s (--%s)", arg.name, arg.long, existing.name, existing.long))
 			}
 		}
 		if arg.short != "" {
@@ -512,7 +511,7 @@ func checkForNameCollisions(args []arg) {
 			if !exists {
 				seenShort[arg.short] = arg
 			} else {
-				developerErr(fmt.Sprintf("argument name collision: %s (-%s) with %s (-%s)", arg.name, arg.short, existing.name, existing.short))
+				developerErr(cfmt.Sprintf("argument name collision: %s (-%s) with %s (-%s)", arg.name, arg.short, existing.name, existing.short))
 			}
 		}
 	}
@@ -593,7 +592,7 @@ func checkForConflicts(givenNonPositionalArgs []arg, givenPositionalArgs []arg) 
 		for _, inConflict := range outerArg.conflictsWith {
 			for _, innerArg := range givenArgs {
 				if innerArg.name == inConflict {
-					userErr(fmt.Sprintf("conflicting arguments: %s, %s", outerArg, innerArg), nil)
+					userErr(cfmt.Sprintf("conflicting arguments: %s, %s", outerArg, innerArg), nil)
 				}
 			}
 		}
@@ -614,9 +613,9 @@ outer:
 				}
 			}
 			if arg.positional {
-				userErr(fmt.Sprintf("missing mandatory positional argument: %s", arg.name), programArgs)
+				userErr(cfmt.Sprintf("missing mandatory positional argument: %s", arg.name), programArgs)
 			} else {
-				userErr(fmt.Sprintf("missing mandatory argument: %s", arg), programArgs)
+				userErr(cfmt.Sprintf("missing mandatory argument: %s", arg), programArgs)
 			}
 		}
 	}
@@ -630,7 +629,7 @@ func checkForMultipleUse(givenNonPositionalArgs []arg) {
 			seen[arg.name] = true
 		} else {
 			if arg.kind != reflect.Slice {
-				userErr(fmt.Sprintf("multiple use of argument %s", arg), nil)
+				userErr(cfmt.Sprintf("multiple use of argument %s", arg), nil)
 			}
 		}
 	}
@@ -696,7 +695,7 @@ func printHelp(args []arg, w io.Writer) {
 	buf := bytes.Buffer{}
 
 	if desc != "" {
-		fmt.Fprintf(&buf, "%s\n\n", desc)
+		cfmt.Fprintf(&buf, "%s\n\n", desc)
 	}
 
 	var usageParts []string
@@ -716,9 +715,9 @@ func printHelp(args []arg, w io.Writer) {
 
 		var argSyntax string
 		if arg.long != "" {
-			argSyntax = fmt.Sprintf("--%s <%s>", arg.long, arg.name)
+			argSyntax = cfmt.Sprintf("--%s <%s>", arg.long, arg.name)
 		} else if arg.short != "" {
-			argSyntax = fmt.Sprintf("-%s <%s>", arg.short, arg.name)
+			argSyntax = cfmt.Sprintf("-%s <%s>", arg.short, arg.name)
 		} else {
 			developerErr("Either long or short name must be specified: " + arg.name)
 		}
@@ -764,7 +763,7 @@ func printHelp(args []arg, w io.Writer) {
 		}
 		label := strings.Join(parts, ", ")
 		if arg.kind != reflect.Bool {
-			label += fmt.Sprintf(" <%s>", arg.name)
+			label += cfmt.Sprintf(" <%s>", arg.name)
 		}
 		if len(label) > maxLabelLen {
 			maxLabelLen = len(label)
@@ -792,13 +791,13 @@ func printHelp(args []arg, w io.Writer) {
 				desc += " (can be specified multiple times)"
 			}
 			if arg.defaultValue != "" {
-				desc += fmt.Sprintf(" (default: %s)", arg.defaultValue)
+				desc += cfmt.Sprintf(" (default: %s)", arg.defaultValue)
 			}
-			fmt.Fprintf(&buf, "  %-*s  %s\n", maxLabelLen, labels[arg.name], desc)
+			cfmt.Fprintf(&buf, "  #y{%-*s}  %s\n", maxLabelLen, labels[arg.name], desc)
 		}
 	}
 	if hasRequired {
-		fmt.Fprintln(&buf)
+		cfmt.Fprintln(&buf)
 	}
 
 	// Optional options
@@ -818,15 +817,15 @@ func printHelp(args []arg, w io.Writer) {
 			}
 			var desc string
 			if len(additionalDesciptions) > 0 {
-				desc = fmt.Sprintf("%s (%s)", arg.desc, strings.Join(additionalDesciptions, ", "))
+				desc = cfmt.Sprintf("%s (%s)", arg.desc, strings.Join(additionalDesciptions, ", "))
 			} else {
 				desc = arg.desc
 			}
-			fmt.Fprintf(&buf, "  %-*s  %s\n", maxLabelLen, labels[arg.name], desc)
+			cfmt.Fprintf(&buf, "  #y{%-*s}  %s\n", maxLabelLen, labels[arg.name], desc)
 		}
 	}
 	if hasOptional {
-		fmt.Fprintln(&buf)
+		cfmt.Fprintln(&buf)
 	}
 
 	// Positional arguments
@@ -849,15 +848,15 @@ func printHelp(args []arg, w io.Writer) {
 			}
 			var desc string
 			if len(additionalDesciptions) > 0 {
-				desc = fmt.Sprintf("%s (%s)", arg.desc, strings.Join(additionalDesciptions, ", "))
+				desc = cfmt.Sprintf("%s (%s)", arg.desc, strings.Join(additionalDesciptions, ", "))
 			} else {
 				desc = arg.desc
 			}
-			fmt.Fprintf(&buf, "  %-*s  %s\n", maxLabelLen, arg.name, desc)
+			cfmt.Fprintf(&buf, "  #y{%-*s}  %s\n", maxLabelLen, arg.name, desc)
 		}
 	}
 	if hasPositional {
-		fmt.Fprintln(&buf)
+		cfmt.Fprintln(&buf)
 	}
 
 	hasCommand := false
@@ -869,22 +868,22 @@ func printHelp(args []arg, w io.Writer) {
 			}
 		}
 		if arg.cmdopt {
-			fmt.Fprintf(&buf, "  %-*s  %s\n", maxLabelLen, toKebabCase(arg.name), arg.desc)
+			cfmt.Fprintf(&buf, "  #y{%-*s}  %s\n", maxLabelLen, toKebabCase(arg.name), arg.desc)
 		}
 	}
 	if hasCommand {
-		fmt.Fprintln(&buf)
+		cfmt.Fprintln(&buf)
 	}
 
 	if example != "" {
 		cfmt.Fprint(&buf, "#B{Example:}\n")
 		lines := strings.Split(example, "\n")
 		for _, line := range lines {
-			fmt.Fprintf(&buf, "  %s\n", line)
+			cfmt.Fprintf(&buf, "  %s\n", line)
 		}
 	}
 
-	fmt.Fprint(w, strings.TrimSpace(buf.String())+"\n")
+	cfmt.Fprint(w, strings.TrimSpace(buf.String())+"\n")
 }
 
 func developerErr(msg string) {
