@@ -3,6 +3,8 @@ package main
 import "github.com/tobiashort/th-utils/lib/clog"
 
 func main() {
+	clog.TimestampEnable = true
+	clog.InfoString = clog.EmptyString
 	clog.Level = clog.LevelDebug
 	clog.Debug("Hey", "world")
 	clog.Debugf("Hey %s", "you")
