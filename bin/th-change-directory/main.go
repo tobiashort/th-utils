@@ -132,7 +132,9 @@ function global:j {
 		option, ok := chooser.One("Change directory:", choose.ToOptions(ps))
 		if ok {
 			paths.Del(option.Value)
-			paths.Put(option.Value, struct{}{})
+			if _, err := os.Stat(option.Value); err == nil {
+				paths.Put(option.Value, struct{}{})
+			}
 			fmt.Print(option.Value)
 		} else {
 			return 1
