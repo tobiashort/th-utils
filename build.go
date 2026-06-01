@@ -84,7 +84,7 @@ func runTest() bool {
 		})
 	}
 
-	cfmt.Println("#b{[test/libs]}")
+	cfmt.Println("#b{[test lib/...]}")
 	libs := listLibs()
 	pool := worker.NewPool(min(len(libs), 5))
 	for _, lib := range libs {
@@ -92,7 +92,7 @@ func runTest() bool {
 	}
 	pool.Wait()
 
-	cfmt.Println("#b{[test/bins]}")
+	cfmt.Println("#b{[test bin/...]}")
 	bins := listBins()
 	pool = worker.NewPool(min(len(bins), 5))
 	for _, bin := range bins {
