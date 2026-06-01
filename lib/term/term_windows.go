@@ -30,6 +30,24 @@ int term_restore() {
 	}
 	return 0;
 }
+
+int term_size(int *cols, int *rows) {
+    CONSOLE_SCREEN_BUFFER_INFO info;
+
+    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (h == INVALID_HANDLE_VALUE) {
+        return 1;
+    }
+
+    if (!GetConsoleScreenBufferInfo(h, &info)) {
+        return 2;
+    }
+
+    *cols = info.srWindow.Right - info.srWindow.Left + 1;
+    *rows = info.srWindow.Bottom - info.srWindow.Top + 1;
+
+    return 0;
+}
 */
 import "C"
 
@@ -64,4 +82,13 @@ func Restore() error {
 	default:
 		panic("unreachable")
 	}
+}
+
+func Size() (int, int, error) {
+	var cols, rows C.int
+	ret := C.get_term_size(&cols, &rows)
+	if ret != 0 {
+		return 0, 0, fmt.Errorf("failed to get terminal size (code %d)", int(ret))
+	}
+	return int(cols), int(rows), nil
 }

@@ -3,8 +3,10 @@
 package term
 
 /*
+#include <stdio.h>
 #include <unistd.h>
 #include <termios.h>
+#include <sys/ioctl.h>
 
 struct termios oldt, rawt;
 
@@ -25,6 +27,19 @@ int term_restore() {
 		return 1;
 	}
 	return 0;
+}
+
+int term_size(int fd, int *cols, int *rows) {
+    struct winsize ws;
+
+    if (ioctl(fd, TIOCGWINSZ, &ws) != 0) {
+        return 1;
+    }
+
+    *cols = ws.ws_col;
+    *rows = ws.ws_row;
+
+    return 0;
 }
 */
 import "C"
@@ -63,4 +78,14 @@ func Restore() error {
 	default:
 		panic("unreachable")
 	}
+}
+
+func Size() (int, int, error) {
+	var cols, rows C.int
+	fd := C.int(os.Stdout.Fd())
+	if ret := C.term_size(fd, &cols, &rows); ret != 0 {
+		C.perror(C.CString("ioctl"))
+		return 0, 0, fmt.Errorf("failed to get terminal size (code %d)", int(ret))
+	}
+	return int(cols), int(rows), nil
 }
