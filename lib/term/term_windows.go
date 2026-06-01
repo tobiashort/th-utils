@@ -86,7 +86,7 @@ func Restore() error {
 
 func Size() (int, int, error) {
 	var cols, rows C.int
-	ret := C.get_term_size(&cols, &rows)
+	ret := C.term_size(&cols, &rows)
 	if ret != 0 {
 		return 0, 0, fmt.Errorf("failed to get terminal size (code %d)", int(ret))
 	}
