@@ -2,6 +2,8 @@ package ansi
 
 const (
 	InputCtrlC     = "\x03"
+	InputCtrlD     = "\x04"
+	InputCtrlU     = "\x15"
 	InputEscape    = "\033"
 	InputCR        = "\x0A"
 	InputLF        = "\x0D"
