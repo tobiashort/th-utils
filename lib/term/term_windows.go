@@ -9,8 +9,8 @@ package term
 
 DWORD term_mode;
 
-int term_make_raw() {
-	HANDLE h_stdin = GetStdHandle(STD_INPUT_HANDLE);
+int term_make_raw(HANDLE h_stdin) {
+	//HANDLE h_stdin = GetStdHandle(STD_INPUT_HANDLE);
 	if (!GetConsoleMode(h_stdin, &term_mode)) {
 		return 1;
 	}
@@ -23,8 +23,8 @@ int term_make_raw() {
 	return 0;
 }
 
-int term_restore() {
-	HANDLE h_stdin = GetStdHandle(STD_INPUT_HANDLE);
+int term_restore(HANDLE h_stdin) {
+	//HANDLE h_stdin = GetStdHandle(STD_INPUT_HANDLE);
 	if (!SetConsoleMode(h_stdin, term_mode)) {
 		return 1;
 	}
@@ -51,15 +51,25 @@ int term_size(int *cols, int *rows) {
 */
 import "C"
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+	"syscall"
+	"unsafe"
+)
 
 // Checks whether stdout is a terminal or not
 func IsTerminal() bool {
 	return C._isatty(C.int(1)) != 0
 }
 
-func MakeRaw() error {
-	ret := int(C.term_make_raw())
+func OpenTTY() (*os.File, error) {
+	return os.OpenFile("CONIN$", os.O_RDWR, 0)
+}
+
+func MakeRaw(tty *os.File) error {
+	h := syscall.Handle(tty.Fd())
+	ret := int(C.term_make_raw(C.HANDLE(unsafe.Pointer(h))))
 	switch ret {
 	case 0:
 		return nil
@@ -72,8 +82,9 @@ func MakeRaw() error {
 	}
 }
 
-func Restore() error {
-	ret := int(C.term_restore())
+func Restore(tty *os.File) error {
+	h := syscall.Handle(tty.Fd())
+	ret := int(C.term_restore(C.HANDLE(unsafe.Pointer(h))))
 	switch ret {
 	case 0:
 		return nil
@@ -84,7 +95,7 @@ func Restore() error {
 	}
 }
 
-func Size() (int, int, error) {
+func Size(tty *os.File) (int, int, error) {
 	var cols, rows C.int
 	ret := C.term_size(&cols, &rows)
 	if ret != 0 {

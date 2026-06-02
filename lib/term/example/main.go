@@ -3,27 +3,25 @@ package main
 import (
 	"fmt"
 
+	"github.com/tobiashort/th-utils/lib/ansi"
+	"github.com/tobiashort/th-utils/lib/clog"
+	"github.com/tobiashort/th-utils/lib/must"
 	"github.com/tobiashort/th-utils/lib/term"
 )
 
 func main() {
-	fmt.Println("Is a tty:", term.IsTerminal())
+	clog.Infof("isTerminal=%v", term.IsTerminal())
 
-	err := term.MakeRaw()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("Switched to raw mode")
+	tty := must.Do2(term.OpenTTY())
+	defer tty.Close()
 
-	err = term.Restore()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("Restored to original mode")
+	must.Do(term.MakeRaw(tty))
+	clog.Info("Switched to raw mode")
+	fmt.Print(ansi.CursorMoveToColumn(0))
 
-	cols, lines, err := term.Size()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("cols:%d,lines:%d\n", cols, lines)
+	must.Do(term.Restore(tty))
+	clog.Info("Restored to original mode")
+
+	cols, lines := must.Do3(term.Size(tty))
+	clog.Infof("cols=%d lines=%d", cols, lines)
 }

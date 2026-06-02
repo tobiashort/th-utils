@@ -13,7 +13,7 @@ import (
 )
 
 type Args struct {
-	File string `clap:"desc='The file to open. Reads from Stdin if not specified'"`
+	File string `clap:"positional,desc='The file to open. Reads from Stdin if not specified'"`
 }
 
 func main() {
@@ -33,10 +33,13 @@ func main() {
 	defer fmt.Print(ansi.ScreenAlternativeLeave)
 	fmt.Print(ansi.ScreenAlternativeEnter)
 
-	defer term.Restore()
-	must.Do(term.MakeRaw())
+	tty := must.Do2(term.OpenTTY())
+	defer tty.Close()
 
-	cols, lines := must.Do3(term.Size())
+	must.Do(term.MakeRaw(tty))
+	defer term.Restore(tty)
+
+	cols, lines := must.Do3(term.Size(tty))
 	fmt.Print(ansi.CursorMoveToHomePosition)
 	fmt.Print("┌")
 	for range cols - 2 {
@@ -63,7 +66,7 @@ func main() {
 	buf := make([]byte, 1)
 eventLoop:
 	for {
-		must.Do2(os.Stdin.Read(buf))
+		must.Do2(tty.Read(buf))
 		switch string(buf[0]) {
 		case ansi.InputCtrlC:
 			break eventLoop

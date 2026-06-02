@@ -10,20 +10,20 @@ package term
 
 struct termios oldt, rawt;
 
-int term_make_raw() {
-	if (tcgetattr(STDIN_FILENO, &oldt) != 0) {
+int term_make_raw(int fd) {
+	if (tcgetattr(fd, &oldt) != 0) {
 		return 1;
 	}
 	rawt = oldt;
 	cfmakeraw(&rawt);
-	if (tcsetattr(STDIN_FILENO, TCSANOW, &rawt) != 0) {
+	if (tcsetattr(fd, TCSANOW, &rawt) != 0) {
 		return 2;
 	}
 	return 0;
 }
 
-int term_restore() {
-	if (tcsetattr(STDIN_FILENO, TCSANOW, &oldt) != 0) {
+int term_restore(int fd) {
+	if (tcsetattr(fd, TCSANOW, &oldt) != 0) {
 		return 1;
 	}
 	return 0;
@@ -54,8 +54,12 @@ func IsTerminal() bool {
 	return int(C.isatty(C.int(os.Stdout.Fd()))) == 1
 }
 
-func MakeRaw() error {
-	ret := int(C.term_make_raw())
+func OpenTTY() (*os.File, error) {
+	return os.OpenFile("/dev/tty", os.O_RDWR, 0)
+}
+
+func MakeRaw(tty *os.File) error {
+	ret := int(C.term_make_raw(C.int(tty.Fd())))
 	switch ret {
 	case 0:
 		return nil
@@ -68,8 +72,8 @@ func MakeRaw() error {
 	}
 }
 
-func Restore() error {
-	ret := int(C.term_restore())
+func Restore(tty *os.File) error {
+	ret := int(C.term_restore(C.int(tty.Fd())))
 	switch ret {
 	case 0:
 		return nil
@@ -80,9 +84,9 @@ func Restore() error {
 	}
 }
 
-func Size() (int, int, error) {
+func Size(tty *os.File) (int, int, error) {
 	var cols, rows C.int
-	fd := C.int(os.Stdout.Fd())
+	fd := C.int(tty.Fd())
 	if ret := C.term_size(fd, &cols, &rows); ret != 0 {
 		C.perror(C.CString("ioctl"))
 		return 0, 0, fmt.Errorf("failed to get terminal size (code %d)", int(ret))
