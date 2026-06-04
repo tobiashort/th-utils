@@ -52,8 +52,6 @@ func main() {
 	startCol := 0
 	startLine := 0
 
-	composedKeys := ""
-
 draw:
 	fmt.Print(ansi.EraseEntireScreen)
 	fmt.Print(ansi.CursorMoveToHomePosition)
@@ -93,11 +91,7 @@ draw:
 	fmt.Print("┘")
 	fmt.Print(ansi.CursorMoveDown(1))
 	fmt.Print(ansi.CursorMoveToColumn(0))
-	if composedKeys != "" {
-		fmt.Printf(" %s", composedKeys)
-	} else {
-		fmt.Printf(" %d%%, %dl", 100*min(maxTextLines, (startLine+lines-3))/maxTextLines, maxTextLines)
-	}
+	fmt.Printf(" %d%%, %dl", 100*min(maxTextLines, (startLine+lines-3))/maxTextLines, maxTextLines)
 
 	buf := make([]byte, 1)
 eventLoop:
@@ -135,22 +129,18 @@ eventLoop:
 			startLine = max(startLine, 0)
 			goto draw
 		case "g":
-			switch composedKeys {
-			case "":
-				composedKeys = "g"
+			fmt.Print(ansi.CursorMoveTo(lines, 0))
+			fmt.Print(ansi.EraseEntireLine)
+			fmt.Print(" g")
+			must.Do2(tty.Read(buf))
+			switch string(buf[0]) {
+			case "e":
+				startLine = maxTextLines - lines + 3
 			case "g":
-				composedKeys = ""
 				startLine = 0
 			}
 			goto draw
-		case "e":
-			if composedKeys == "g" {
-				composedKeys = ""
-				startLine = maxTextLines - lines + 3
-			}
-			goto draw
 		case ansi.InputEscape:
-			composedKeys = ""
 			goto draw
 		case "q":
 			fallthrough
