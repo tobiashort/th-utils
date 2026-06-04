@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"strings"
 	"unicode/utf8"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/tobiashort/th-utils/lib/clog"
 	"github.com/tobiashort/th-utils/lib/ellipsis"
 	"github.com/tobiashort/th-utils/lib/must"
+	slices2 "github.com/tobiashort/th-utils/lib/slices"
 	strings2 "github.com/tobiashort/th-utils/lib/strings"
 	"github.com/tobiashort/th-utils/lib/term"
 )
@@ -25,6 +27,10 @@ type Occurrence struct {
 	Line int
 	Col  int
 }
+
+var (
+	textLines []string
+)
 
 func main() {
 	clog.Level = clog.LevelDebug
@@ -40,14 +46,13 @@ func main() {
 	}
 
 	text := string(must.Do2(io.ReadAll(reader)))
+	text = ansi.Strip(text)
+	text = strings.ReplaceAll(text, "\r", "")
 	text = strings.TrimSuffix(text, "\n")
 	text = strings.ReplaceAll(text, "\t", "    ")
-	textLines := strings.Split(text, "\n")
+	textLines = strings.Split(text, "\n")
 	maxTextLines := len(textLines)
-	maxTextCols := 0
-	for _, textLine := range textLines {
-		maxTextCols = max(maxTextCols, utf8.RuneCountInString(textLine))
-	}
+	maxTextCols := slices.Max(slices2.Map(textLines, func(line string) int { return utf8.RuneCountInString(line) }))
 
 	defer fmt.Print(ansi.ScreenAlternativeLeave)
 	fmt.Print(ansi.ScreenAlternativeEnter)
@@ -81,14 +86,14 @@ draw:
 		line := textLines[startLine+i]
 		line = fmt.Sprintf("%-*s", maxTextCols, line)
 		line = line[startCol:]
-		if searchTerm != "" {
-			line = strings.ReplaceAll(line, searchTerm, cfmt.Sprintf("#R{%s}", searchTerm))
-		}
 		if lineNumbers {
 			line = cfmt.Sprintf("#R{ %3d } %s", startLine+i+1, line)
 		}
 		line = strings.TrimRight(line, " ")
-		line = ellipsis.EllipsisSuffix(line, cols, ">>>")
+		line = ellipsis.EllipsisSuffix(line, cols, cfmt.Sprintf("#R{>>>}"))
+		if searchTerm != "" {
+			line = strings.ReplaceAll(line, searchTerm, cfmt.Sprintf("#R{%s}", searchTerm))
+		}
 		fmt.Print(line)
 		fmt.Print(ansi.CursorMoveDown(1))
 		fmt.Print(ansi.CursorMoveToColumn(0))
@@ -140,7 +145,7 @@ eventLoop:
 		case "g":
 			fmt.Print(ansi.CursorMoveTo(lines, 0))
 			fmt.Print(ansi.EraseEntireLine)
-			cfmt.Print(" #R{g} ")
+			cfmt.Print("#R{ g }")
 			must.Do2(tty.Read(buf))
 			switch string(buf[0]) {
 			case "e":
@@ -166,8 +171,9 @@ eventLoop:
 			} else {
 				occurrenceIndex = 0
 			}
-			startLine = occurrences[occurrenceIndex].Line
-			startCol = occurrences[occurrenceIndex].Col
+			startLine = min(maxTextLines-lines+2, occurrences[occurrenceIndex].Line)
+			startCol = max(0, occurrences[occurrenceIndex].Col+10-cols)
+			startCol = min(startCol, maxTextCols-cols)
 			goto draw
 		case "p":
 			if occurrenceIndex-1 >= 0 {
@@ -175,8 +181,9 @@ eventLoop:
 			} else {
 				occurrenceIndex = len(occurrences) - 1
 			}
-			startLine = occurrences[occurrenceIndex].Line
-			startCol = occurrences[occurrenceIndex].Col
+			startLine = min(maxTextLines-lines+2, occurrences[occurrenceIndex].Line)
+			startCol = max(0, occurrences[occurrenceIndex].Col+10-cols)
+			startCol = min(startCol, maxTextCols-cols)
 			goto draw
 		case "/":
 			fmt.Print(ansi.CursorMoveTo(lines, 0))
@@ -189,20 +196,18 @@ eventLoop:
 				case ansi.InputCR:
 					fallthrough
 				case ansi.InputLF:
-					fallthrough
-				case ansi.InputCRLF:
 					searchTerm = searchTermNew
 					occurrences = []Occurrence{}
 					occurrenceIndex = 0
 					for i := startLine; i < len(textLines); i++ {
 						line := textLines[i]
-						for index := range strings2.AllIndexes(line, searchTerm) {
+						for _, index := range strings2.AllIndexes(line, searchTerm) {
 							occurrences = append(occurrences, Occurrence{Line: i, Col: index})
 						}
 					}
 					for i := 0; i < startLine; i++ {
 						line := textLines[i]
-						for index := range strings2.AllIndexes(line, searchTerm) {
+						for _, index := range strings2.AllIndexes(line, searchTerm) {
 							occurrences = append(occurrences, Occurrence{Line: i, Col: index})
 						}
 					}
@@ -211,17 +216,25 @@ eventLoop:
 						fmt.Print(ansi.EraseEntireLine)
 						cfmt.Print("#R{ not found }")
 					} else {
-						startLine = occurrences[occurrenceIndex].Line
-						startCol = occurrences[occurrenceIndex].Col
+						startLine = min(maxTextLines-lines+2, occurrences[occurrenceIndex].Line)
+						startCol = max(0, occurrences[occurrenceIndex].Col+10-cols)
+						startCol = min(startCol, maxTextCols-cols)
+						goto draw
+					}
+				case ansi.InputDelete:
+					fallthrough
+				case ansi.InputBackSpace:
+					if searchTermNew != "" {
+						searchTermNew = searchTermNew[:len(searchTermNew)-1]
 					}
 				case ansi.InputEscape:
 					goto draw
 				default:
 					searchTermNew += string(buf[0])
-					fmt.Print(ansi.CursorMoveTo(lines, 0))
-					fmt.Print(ansi.EraseEntireLine)
-					cfmt.Printf("#R{ /%s }", searchTermNew)
 				}
+				fmt.Print(ansi.CursorMoveTo(lines, 0))
+				fmt.Print(ansi.EraseEntireLine)
+				cfmt.Printf("#R{ /%s }", searchTermNew)
 			}
 		case "q":
 			fallthrough
