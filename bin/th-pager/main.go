@@ -63,9 +63,9 @@ draw:
 	fmt.Print(ansi.CursorMoveToColumn(0))
 	for i := 0; i < min(maxTextLines, lines-2); i++ {
 		line := textLines[startLine+i]
-		line = fmt.Sprintf("%-*s", cols, line)
+		line = fmt.Sprintf("%-*s", maxTextCols, line)
 		line = line[startCol:]
-		line = fmt.Sprintf("%-*s", cols, line)
+		line = strings.TrimRight(line, " ")
 		line = ellipsis.EllipsisSuffix(line, cols, ">>>")
 		fmt.Print(line)
 		fmt.Print(ansi.CursorMoveDown(1))
@@ -108,7 +108,7 @@ eventLoop:
 		case ansi.InputCtrlD:
 			if maxTextLines > lines-2 {
 				startLine += lines / 2
-				startLine = min(startLine, maxTextLines-lines+3)
+				startLine = min(startLine, maxTextLines-lines+2)
 				goto draw
 			}
 		case ansi.InputCtrlU:
@@ -125,6 +125,12 @@ eventLoop:
 				if maxTextLines > lines-2 {
 					startLine = maxTextLines - lines + 2
 				}
+			case "l":
+				if maxTextCols > cols {
+					startCol = maxTextCols - cols
+				}
+			case "h":
+				startCol = 0
 			case "g":
 				startLine = 0
 			}
