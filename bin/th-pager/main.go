@@ -61,19 +61,19 @@ draw:
 	fmt.Print(ansi.CursorMoveToHomePosition)
 	fmt.Print(ansi.CursorHide)
 	if args.File != "" {
-		cfmt.Printf("#R{%s}", ellipsis.Ellipsis(args.File, cols))
+		cfmt.Printf("#R{ %s }", ellipsis.Ellipsis(args.File, cols))
 	} else {
-		cfmt.Print("#R{th-pager}")
+		cfmt.Print("#R{ th-pager }")
 	}
 	fmt.Print(ansi.CursorMoveDown(1))
 	fmt.Print(ansi.CursorMoveToColumn(0))
 	for i := 0; i < min(maxTextLines, lines-2); i++ {
 		line := textLines[startLine+i]
-		if lineNumbers {
-			line = cfmt.Sprintf("#R{%3d} %s", startLine+i+1, line)
-		}
 		line = fmt.Sprintf("%-*s", maxTextCols, line)
 		line = line[startCol:]
+		if lineNumbers {
+			line = cfmt.Sprintf("#R{ %3d } %s", startLine+i+1, line)
+		}
 		line = strings.TrimRight(line, " ")
 		line = ellipsis.EllipsisSuffix(line, cols, ">>>")
 		fmt.Print(line)
@@ -87,7 +87,7 @@ draw:
 	}
 	fmt.Print(ansi.CursorMoveDown(1))
 	fmt.Print(ansi.CursorMoveToColumn(0))
-	cfmt.Printf("#R{ %dl, %d%%}", maxTextLines, 100*min(maxTextLines, (startLine+lines-2))/maxTextLines)
+	cfmt.Printf("#R{ %dl, %d%% }", maxTextLines, 100*min(maxTextLines, (startLine+lines-2))/maxTextLines)
 
 	buf := make([]byte, 1)
 eventLoop:
