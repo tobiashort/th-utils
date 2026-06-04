@@ -54,15 +54,24 @@ func main() {
 	startCol := 0
 	startLine := 0
 
+	lineNumbers := false
+
 draw:
 	fmt.Print(ansi.EraseEntireScreen)
 	fmt.Print(ansi.CursorMoveToHomePosition)
 	fmt.Print(ansi.CursorHide)
-	cfmt.Print("#R{th-pager}")
+	if args.File != "" {
+		cfmt.Printf("#R{%s}", ellipsis.Ellipsis(args.File, cols))
+	} else {
+		cfmt.Print("#R{th-pager}")
+	}
 	fmt.Print(ansi.CursorMoveDown(1))
 	fmt.Print(ansi.CursorMoveToColumn(0))
 	for i := 0; i < min(maxTextLines, lines-2); i++ {
 		line := textLines[startLine+i]
+		if lineNumbers {
+			line = cfmt.Sprintf("#R{%3d} %s", startLine+i+1, line)
+		}
 		line = fmt.Sprintf("%-*s", maxTextCols, line)
 		line = line[startCol:]
 		line = strings.TrimRight(line, " ")
@@ -135,7 +144,8 @@ eventLoop:
 				startLine = 0
 			}
 			goto draw
-		case ansi.InputEscape:
+		case "n":
+			lineNumbers = !lineNumbers
 			goto draw
 		case "q":
 			fallthrough
