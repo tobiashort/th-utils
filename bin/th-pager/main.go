@@ -38,7 +38,7 @@ func main() {
 	maxTextLines := len(textLines)
 	maxTextCols := 0
 	for _, textLine := range textLines {
-		maxTextCols = max(maxTextCols, len(textLine))
+		maxTextCols = max(maxTextCols, len([]rune(textLine)))
 	}
 
 	defer fmt.Print(ansi.ScreenAlternativeLeave)
@@ -134,12 +134,13 @@ eventLoop:
 			startLine -= lines / 2
 			startLine = max(startLine, 0)
 			goto draw
-		case "G":
-			startLine = 0
-			goto draw
 		case "g":
-			if composedKeys == "" {
+			switch composedKeys {
+			case "":
 				composedKeys = "g"
+			case "g":
+				composedKeys = ""
+				startLine = 0
 			}
 			goto draw
 		case "e":
