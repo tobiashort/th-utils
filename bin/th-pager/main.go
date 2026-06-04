@@ -13,11 +13,17 @@ import (
 	"github.com/tobiashort/th-utils/lib/clog"
 	"github.com/tobiashort/th-utils/lib/ellipsis"
 	"github.com/tobiashort/th-utils/lib/must"
+	strings2 "github.com/tobiashort/th-utils/lib/strings"
 	"github.com/tobiashort/th-utils/lib/term"
 )
 
 type Args struct {
 	File string `clap:"positional,desc='The file to open. Reads from Stdin if not specified'"`
+}
+
+type Occurrence struct {
+	Line int
+	Col  int
 }
 
 func main() {
@@ -56,6 +62,10 @@ func main() {
 
 	lineNumbers := false
 
+	searchTerm := ""
+	occurrences := []Occurrence{}
+	occurrenceIndex := 0
+
 draw:
 	fmt.Print(ansi.EraseEntireScreen)
 	fmt.Print(ansi.CursorMoveToHomePosition)
@@ -71,6 +81,9 @@ draw:
 		line := textLines[startLine+i]
 		line = fmt.Sprintf("%-*s", maxTextCols, line)
 		line = line[startCol:]
+		if searchTerm != "" {
+			line = strings.ReplaceAll(line, searchTerm, cfmt.Sprintf("#R{%s}", searchTerm))
+		}
 		if lineNumbers {
 			line = cfmt.Sprintf("#R{ %3d } %s", startLine+i+1, line)
 		}
@@ -127,7 +140,7 @@ eventLoop:
 		case "g":
 			fmt.Print(ansi.CursorMoveTo(lines, 0))
 			fmt.Print(ansi.EraseEntireLine)
-			fmt.Print(" g")
+			cfmt.Print(" #R{g} ")
 			must.Do2(tty.Read(buf))
 			switch string(buf[0]) {
 			case "e":
@@ -144,9 +157,72 @@ eventLoop:
 				startLine = 0
 			}
 			goto draw
-		case "n":
+		case "N":
 			lineNumbers = !lineNumbers
 			goto draw
+		case "n":
+			if occurrenceIndex+1 < len(occurrences) {
+				occurrenceIndex++
+			} else {
+				occurrenceIndex = 0
+			}
+			startLine = occurrences[occurrenceIndex].Line
+			startCol = occurrences[occurrenceIndex].Col
+			goto draw
+		case "p":
+			if occurrenceIndex-1 >= 0 {
+				occurrenceIndex--
+			} else {
+				occurrenceIndex = len(occurrences) - 1
+			}
+			startLine = occurrences[occurrenceIndex].Line
+			startCol = occurrences[occurrenceIndex].Col
+			goto draw
+		case "/":
+			fmt.Print(ansi.CursorMoveTo(lines, 0))
+			fmt.Print(ansi.EraseEntireLine)
+			cfmt.Print("#R{ / }")
+			searchTermNew := ""
+			for {
+				must.Do2(tty.Read(buf))
+				switch string(buf[0]) {
+				case ansi.InputCR:
+					fallthrough
+				case ansi.InputLF:
+					fallthrough
+				case ansi.InputCRLF:
+					searchTerm = searchTermNew
+					occurrences = []Occurrence{}
+					occurrenceIndex = 0
+					for i := startLine; i < len(textLines); i++ {
+						line := textLines[i]
+						for index := range strings2.AllIndexes(line, searchTerm) {
+							occurrences = append(occurrences, Occurrence{Line: i, Col: index})
+						}
+					}
+					for i := 0; i < startLine; i++ {
+						line := textLines[i]
+						for index := range strings2.AllIndexes(line, searchTerm) {
+							occurrences = append(occurrences, Occurrence{Line: i, Col: index})
+						}
+					}
+					if len(occurrences) == 0 {
+						fmt.Print(ansi.CursorMoveTo(lines, 0))
+						fmt.Print(ansi.EraseEntireLine)
+						cfmt.Print("#R{ not found }")
+					} else {
+						startLine = occurrences[occurrenceIndex].Line
+						startCol = occurrences[occurrenceIndex].Col
+					}
+				case ansi.InputEscape:
+					goto draw
+				default:
+					searchTermNew += string(buf[0])
+					fmt.Print(ansi.CursorMoveTo(lines, 0))
+					fmt.Print(ansi.EraseEntireLine)
+					cfmt.Printf("#R{ /%s }", searchTermNew)
+				}
+			}
 		case "q":
 			fallthrough
 		case ansi.InputCtrlC:
