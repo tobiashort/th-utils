@@ -5,8 +5,10 @@ import (
 	"io"
 	"os"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/tobiashort/th-utils/lib/ansi"
+	"github.com/tobiashort/th-utils/lib/cfmt"
 	"github.com/tobiashort/th-utils/lib/clap"
 	"github.com/tobiashort/th-utils/lib/clog"
 	"github.com/tobiashort/th-utils/lib/ellipsis"
@@ -38,7 +40,7 @@ func main() {
 	maxTextLines := len(textLines)
 	maxTextCols := 0
 	for _, textLine := range textLines {
-		maxTextCols = max(maxTextCols, len([]rune(textLine)))
+		maxTextCols = max(maxTextCols, utf8.RuneCountInString(textLine))
 	}
 
 	defer fmt.Print(ansi.ScreenAlternativeLeave)
@@ -56,42 +58,27 @@ draw:
 	fmt.Print(ansi.EraseEntireScreen)
 	fmt.Print(ansi.CursorMoveToHomePosition)
 	fmt.Print(ansi.CursorHide)
-	fmt.Print("┌")
-	for range cols - 2 {
-		fmt.Print("─")
-	}
-	fmt.Print("┐")
+	cfmt.Print("#R{th-pager}")
 	fmt.Print(ansi.CursorMoveDown(1))
 	fmt.Print(ansi.CursorMoveToColumn(0))
-	for i := 0; i < min(maxTextLines, lines-3); i++ {
+	for i := 0; i < min(maxTextLines, lines-2); i++ {
 		line := textLines[startLine+i]
-		line = fmt.Sprintf("%-*s", cols-2, line)
+		line = fmt.Sprintf("%-*s", cols, line)
 		line = line[startCol:]
-		line = fmt.Sprintf("%-*s", cols-2, line)
-		line = ellipsis.EllipsisSuffix(line, cols-2, ">>>")
-		fmt.Print("│")
+		line = fmt.Sprintf("%-*s", cols, line)
+		line = ellipsis.EllipsisSuffix(line, cols, ">>>")
 		fmt.Print(line)
-		fmt.Print("│")
 		fmt.Print(ansi.CursorMoveDown(1))
 		fmt.Print(ansi.CursorMoveToColumn(0))
 	}
-	for i := maxTextLines; i < lines-3; i++ {
-		fmt.Print("│")
-		for range cols - 2 {
-			fmt.Print(" ")
-		}
-		fmt.Print("│")
+	for i := maxTextLines; i < lines-2; i++ {
+		fmt.Print(ansi.EraseEntireLine)
 		fmt.Print(ansi.CursorMoveDown(1))
 		fmt.Print(ansi.CursorMoveToColumn(0))
 	}
-	fmt.Print("└")
-	for range cols - 2 {
-		fmt.Print("─")
-	}
-	fmt.Print("┘")
 	fmt.Print(ansi.CursorMoveDown(1))
 	fmt.Print(ansi.CursorMoveToColumn(0))
-	fmt.Printf(" %d%%, %dl", 100*min(maxTextLines, (startLine+lines-3))/maxTextLines, maxTextLines)
+	cfmt.Printf("#R{ %dl, %d%%}", maxTextLines, 100*min(maxTextLines, (startLine+lines-2))/maxTextLines)
 
 	buf := make([]byte, 1)
 eventLoop:
@@ -103,9 +90,9 @@ eventLoop:
 			startCol = max(startCol, 0)
 			goto draw
 		case "j":
-			if maxTextLines > lines-3 {
+			if maxTextLines > lines-2 {
 				startLine++
-				startLine = min(startLine, maxTextLines-lines+3)
+				startLine = min(startLine, maxTextLines-lines+2)
 				goto draw
 			}
 		case "k":
@@ -113,13 +100,13 @@ eventLoop:
 			startLine = max(startLine, 0)
 			goto draw
 		case "l":
-			if maxTextCols > cols-2 {
+			if maxTextCols > cols {
 				startCol++
-				startCol = min(startCol, maxTextCols-cols+2)
+				startCol = min(startCol, maxTextCols-cols)
 				goto draw
 			}
 		case ansi.InputCtrlD:
-			if maxTextLines > lines-3 {
+			if maxTextLines > lines-2 {
 				startLine += lines / 2
 				startLine = min(startLine, maxTextLines-lines+3)
 				goto draw
@@ -135,7 +122,9 @@ eventLoop:
 			must.Do2(tty.Read(buf))
 			switch string(buf[0]) {
 			case "e":
-				startLine = maxTextLines - lines + 3
+				if maxTextLines > lines-2 {
+					startLine = maxTextLines - lines + 2
+				}
 			case "g":
 				startLine = 0
 			}
