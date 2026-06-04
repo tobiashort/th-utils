@@ -48,8 +48,12 @@ func ToOptionsFunc[T any](s []T, f func(v T) string) []Option {
 }
 
 func (c Chooser) One(prompt string, options []Option) (Option, bool) {
-	must.Do(term.MakeRaw())
-	defer func() { must.Do(term.Restore()) }()
+	tty := must.Do2(term.OpenTTY())
+	must.Do(term.MakeRaw(tty))
+	defer func() {
+		must.Do(term.Restore(tty))
+		tty.Close()
+	}()
 
 	ok := false
 	selectedIndex := 0
