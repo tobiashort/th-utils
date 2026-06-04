@@ -84,7 +84,8 @@ func runTest() bool {
 		})
 	}
 
-	cfmt.Println("#b{[test lib/...]}")
+	cfmt.Printf("#b{[test %s]}\n", filepathJoinUncleaned(".", "lib", "..."))
+	strings.Join([]string{".", "lib", "..."}, string(os.PathSeparator))
 	libs := listLibs()
 	pool := worker.NewPool(min(len(libs), 5))
 	for _, lib := range libs {
@@ -92,7 +93,7 @@ func runTest() bool {
 	}
 	pool.Wait()
 
-	cfmt.Println("#b{[test bin/...]}")
+	cfmt.Printf("#b{[test %s]}\n", filepathJoinUncleaned(".", "bin", "..."))
 	bins := listBins()
 	pool = worker.NewPool(min(len(bins), 5))
 	for _, bin := range bins {
