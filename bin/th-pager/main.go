@@ -207,9 +207,9 @@ eventLoop:
 					} else {
 						occurrenceIndex = 0
 					}
-					startLine = min(maxTextLines-ttyRows+2, occurrences[occurrenceIndex].Line)
+					startLine = max(0, min(maxTextLines-ttyRows+2, occurrences[occurrenceIndex].Line))
 					startCol = max(0, occurrences[occurrenceIndex].Col+10-ttyCols)
-					startCol = min(startCol, maxTextCols-ttyCols)
+					startCol = max(0, min(startCol, maxTextCols-ttyCols))
 				}
 				goto draw
 			case "p":
@@ -219,9 +219,9 @@ eventLoop:
 					} else {
 						occurrenceIndex = len(occurrences) - 1
 					}
-					startLine = min(maxTextLines-ttyRows+2, occurrences[occurrenceIndex].Line)
+					startLine = max(0, min(maxTextLines-ttyRows+2, occurrences[occurrenceIndex].Line))
 					startCol = max(0, occurrences[occurrenceIndex].Col+10-ttyCols)
-					startCol = min(startCol, maxTextCols-ttyCols)
+					startCol = max(0, min(startCol, maxTextCols-ttyCols))
 				}
 				goto draw
 			case "/":
@@ -255,9 +255,9 @@ eventLoop:
 							fmt.Print(ansi.EraseEntireLine)
 							cfmt.Print("#R{ not found }")
 						} else {
-							startLine = min(maxTextLines-ttyRows+2, occurrences[occurrenceIndex].Line)
+							startLine = max(0, min(maxTextLines-ttyRows+2, occurrences[occurrenceIndex].Line))
 							startCol = max(0, occurrences[occurrenceIndex].Col+10-ttyCols)
-							startCol = min(startCol, maxTextCols-ttyCols)
+							startCol = max(0, min(startCol, maxTextCols-ttyCols))
 							goto draw
 						}
 					case ansi.InputDelete:
