@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
 	"slices"
 	"strings"
+	"syscall"
 	"unicode/utf8"
 
 	"github.com/tobiashort/th-utils/lib/ansi"
@@ -86,6 +88,18 @@ func main() {
 	occurrences := []Occurrence{}
 	occurrenceIndex := 0
 
+	signalCh := make(chan os.Signal, 1)
+	signal.Notify(signalCh, syscall.SIGWINCH)
+
+	bufCh := make(chan byte, 1)
+	go func() {
+		for {
+			buf := make([]byte, 1)
+			must.Do2(tty.Read(buf))
+			bufCh <- buf[0]
+		}
+	}()
+
 draw:
 	fmt.Print(ansi.EraseEntireScreen)
 	fmt.Print(ansi.CursorMoveToHomePosition)
@@ -121,151 +135,155 @@ draw:
 	fmt.Print(ansi.CursorMoveDown(1))
 	fmt.Print(ansi.CursorMoveToColumn(0))
 	cfmt.Printf("#R{ %dl, %d%% }", maxTextLines, 100*min(maxTextLines, (startLine+ttyRows-2))/maxTextLines)
-
-	buf := make([]byte, 1)
 eventLoop:
 	for {
-		must.Do2(tty.Read(buf))
-		switch string(buf[0]) {
-		case "h":
-			startCol--
-			startCol = max(startCol, 0)
-			goto draw
-		case "j":
-			if maxTextLines > ttyRows-2 {
-				startLine++
-				startLine = min(startLine, maxTextLines-ttyRows+2)
+		select {
+		case input := <-bufCh:
+			switch string([]byte{input}) {
+			case "h":
+				startCol--
+				startCol = max(startCol, 0)
 				goto draw
-			}
-		case "k":
-			startLine--
-			startLine = max(startLine, 0)
-			goto draw
-		case "l":
-			if maxTextCols > ttyCols {
-				startCol++
-				startCol = min(startCol, maxTextCols-ttyCols)
-				goto draw
-			}
-		case ansi.InputCtrlD:
-			if maxTextLines > ttyRows-2 {
-				startLine += ttyRows / 2
-				startLine = min(startLine, maxTextLines-ttyRows+2)
-				goto draw
-			}
-		case ansi.InputCtrlU:
-			startLine -= ttyRows / 2
-			startLine = max(startLine, 0)
-			goto draw
-		case "g":
-			fmt.Print(ansi.CursorMoveTo(ttyRows, 0))
-			fmt.Print(ansi.EraseEntireLine)
-			cfmt.Print("#R{ g }")
-			must.Do2(tty.Read(buf))
-			switch string(buf[0]) {
-			case "e":
+			case "j":
 				if maxTextLines > ttyRows-2 {
-					startLine = maxTextLines - ttyRows + 2
+					startLine++
+					startLine = min(startLine, maxTextLines-ttyRows+2)
+					goto draw
 				}
+			case "k":
+				startLine--
+				startLine = max(startLine, 0)
+				goto draw
 			case "l":
 				if maxTextCols > ttyCols {
-					startCol = maxTextCols - ttyCols
-				}
-			case "h":
-				startCol = 0
-			case "g":
-				startLine = 0
-			}
-			goto draw
-		case "N":
-			lineNumbers = !lineNumbers
-			if lineNumbers {
-				maxTextCols = TextColumns(text)
-				maxTextCols += utf8.RuneCountInString(fmt.Sprintf(" %3d  ", maxTextLines))
-			} else {
-				maxTextCols = TextColumns(text)
-			}
-			startCol = 0
-			goto draw
-		case "n":
-			if len(occurrences) > 0 {
-				if occurrenceIndex+1 < len(occurrences) {
-					occurrenceIndex++
-				} else {
-					occurrenceIndex = 0
-				}
-				startLine = min(maxTextLines-ttyRows+2, occurrences[occurrenceIndex].Line)
-				startCol = max(0, occurrences[occurrenceIndex].Col+10-ttyCols)
-				startCol = min(startCol, maxTextCols-ttyCols)
-			}
-			goto draw
-		case "p":
-			if len(occurrences) > 0 {
-				if occurrenceIndex-1 >= 0 {
-					occurrenceIndex--
-				} else {
-					occurrenceIndex = len(occurrences) - 1
-				}
-				startLine = min(maxTextLines-ttyRows+2, occurrences[occurrenceIndex].Line)
-				startCol = max(0, occurrences[occurrenceIndex].Col+10-ttyCols)
-				startCol = min(startCol, maxTextCols-ttyCols)
-			}
-			goto draw
-		case "/":
-			fmt.Print(ansi.CursorMoveTo(ttyRows, 0))
-			fmt.Print(ansi.EraseEntireLine)
-			cfmt.Print("#R{ / }")
-			searchTermNew := ""
-			for {
-				must.Do2(tty.Read(buf))
-				switch string(buf[0]) {
-				case ansi.InputCR:
-					fallthrough
-				case ansi.InputLF:
-					searchTerm = searchTermNew
-					occurrences = []Occurrence{}
-					occurrenceIndex = 0
-					for i := startLine; i < len(textLines); i++ {
-						line := textLines[i]
-						for _, index := range strings2.AllIndexes(line, searchTerm) {
-							occurrences = append(occurrences, Occurrence{Line: i, Col: index})
-						}
-					}
-					for i := 0; i < startLine; i++ {
-						line := textLines[i]
-						for _, index := range strings2.AllIndexes(line, searchTerm) {
-							occurrences = append(occurrences, Occurrence{Line: i, Col: index})
-						}
-					}
-					if len(occurrences) == 0 {
-						fmt.Print(ansi.CursorMoveTo(ttyRows, 0))
-						fmt.Print(ansi.EraseEntireLine)
-						cfmt.Print("#R{ not found }")
-					} else {
-						startLine = min(maxTextLines-ttyRows+2, occurrences[occurrenceIndex].Line)
-						startCol = max(0, occurrences[occurrenceIndex].Col+10-ttyCols)
-						startCol = min(startCol, maxTextCols-ttyCols)
-						goto draw
-					}
-				case ansi.InputDelete:
-					fallthrough
-				case ansi.InputBackSpace:
-					if searchTermNew != "" {
-						searchTermNew = searchTermNew[:len(searchTermNew)-1]
-					}
-				case ansi.InputEscape:
+					startCol++
+					startCol = min(startCol, maxTextCols-ttyCols)
 					goto draw
-				default:
-					searchTermNew += string(buf[0])
 				}
+			case ansi.InputCtrlD:
+				if maxTextLines > ttyRows-2 {
+					startLine += ttyRows / 2
+					startLine = min(startLine, maxTextLines-ttyRows+2)
+					goto draw
+				}
+			case ansi.InputCtrlU:
+				startLine -= ttyRows / 2
+				startLine = max(startLine, 0)
+				goto draw
+			case "g":
 				fmt.Print(ansi.CursorMoveTo(ttyRows, 0))
 				fmt.Print(ansi.EraseEntireLine)
-				cfmt.Printf("#R{ /%s }", searchTermNew)
+				cfmt.Print("#R{ g }")
+				input = <-bufCh
+				switch string([]byte{input}) {
+				case "e":
+					if maxTextLines > ttyRows-2 {
+						startLine = maxTextLines - ttyRows + 2
+					}
+				case "l":
+					if maxTextCols > ttyCols {
+						startCol = maxTextCols - ttyCols
+					}
+				case "h":
+					startCol = 0
+				case "g":
+					startLine = 0
+				}
+				goto draw
+			case "N":
+				lineNumbers = !lineNumbers
+				if lineNumbers {
+					maxTextCols = TextColumns(text)
+					maxTextCols += utf8.RuneCountInString(fmt.Sprintf(" %3d  ", maxTextLines))
+				} else {
+					maxTextCols = TextColumns(text)
+				}
+				startCol = 0
+				goto draw
+			case "n":
+				if len(occurrences) > 0 {
+					if occurrenceIndex+1 < len(occurrences) {
+						occurrenceIndex++
+					} else {
+						occurrenceIndex = 0
+					}
+					startLine = min(maxTextLines-ttyRows+2, occurrences[occurrenceIndex].Line)
+					startCol = max(0, occurrences[occurrenceIndex].Col+10-ttyCols)
+					startCol = min(startCol, maxTextCols-ttyCols)
+				}
+				goto draw
+			case "p":
+				if len(occurrences) > 0 {
+					if occurrenceIndex-1 >= 0 {
+						occurrenceIndex--
+					} else {
+						occurrenceIndex = len(occurrences) - 1
+					}
+					startLine = min(maxTextLines-ttyRows+2, occurrences[occurrenceIndex].Line)
+					startCol = max(0, occurrences[occurrenceIndex].Col+10-ttyCols)
+					startCol = min(startCol, maxTextCols-ttyCols)
+				}
+				goto draw
+			case "/":
+				fmt.Print(ansi.CursorMoveTo(ttyRows, 0))
+				fmt.Print(ansi.EraseEntireLine)
+				cfmt.Print("#R{ / }")
+				searchTermNew := ""
+				for {
+					input = <-bufCh
+					switch string([]byte{input}) {
+					case ansi.InputCR:
+						fallthrough
+					case ansi.InputLF:
+						searchTerm = searchTermNew
+						occurrences = []Occurrence{}
+						occurrenceIndex = 0
+						for i := startLine; i < len(textLines); i++ {
+							line := textLines[i]
+							for _, index := range strings2.AllIndexes(line, searchTerm) {
+								occurrences = append(occurrences, Occurrence{Line: i, Col: index})
+							}
+						}
+						for i := 0; i < startLine; i++ {
+							line := textLines[i]
+							for _, index := range strings2.AllIndexes(line, searchTerm) {
+								occurrences = append(occurrences, Occurrence{Line: i, Col: index})
+							}
+						}
+						if len(occurrences) == 0 {
+							fmt.Print(ansi.CursorMoveTo(ttyRows, 0))
+							fmt.Print(ansi.EraseEntireLine)
+							cfmt.Print("#R{ not found }")
+						} else {
+							startLine = min(maxTextLines-ttyRows+2, occurrences[occurrenceIndex].Line)
+							startCol = max(0, occurrences[occurrenceIndex].Col+10-ttyCols)
+							startCol = min(startCol, maxTextCols-ttyCols)
+							goto draw
+						}
+					case ansi.InputDelete:
+						fallthrough
+					case ansi.InputBackSpace:
+						if searchTermNew != "" {
+							searchTermNew = searchTermNew[:len(searchTermNew)-1]
+						}
+					case ansi.InputEscape:
+						goto draw
+					default:
+						input = <-bufCh
+						searchTermNew += string([]byte{input})
+					}
+					fmt.Print(ansi.CursorMoveTo(ttyRows, 0))
+					fmt.Print(ansi.EraseEntireLine)
+					cfmt.Printf("#R{ /%s }", searchTermNew)
+				}
+			case "q":
+				fallthrough
+			case ansi.InputCtrlC:
+				break eventLoop
 			}
-		case "q":
-			fallthrough
-		case ansi.InputCtrlC:
-			break eventLoop
+		case _ = <-signalCh:
+			ttyCols, ttyRows = must.Do3(term.Size(tty))
+			goto draw
 		}
 	}
 }
