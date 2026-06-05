@@ -269,7 +269,6 @@ eventLoop:
 					case ansi.InputEscape:
 						goto draw
 					default:
-						input = <-bufCh
 						searchTermNew += string([]byte{input})
 					}
 					fmt.Print(ansi.CursorMoveTo(ttyRows, 0))
