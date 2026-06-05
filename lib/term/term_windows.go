@@ -55,6 +55,7 @@ import (
 	"fmt"
 	"os"
 	"syscall"
+	"time"
 	"unsafe"
 )
 
@@ -95,11 +96,31 @@ func Restore(tty *os.File) error {
 	}
 }
 
-func Size(tty *os.File) (int, int, error) {
+func Size(tty *os.File) (Dim, error) {
 	var cols, rows C.int
 	ret := C.term_size(&cols, &rows)
 	if ret != 0 {
-		return 0, 0, fmt.Errorf("failed to get terminal size (code %d)", int(ret))
+		return Dim{}, fmt.Errorf("failed to get terminal size (code %d)", int(ret))
 	}
-	return int(cols), int(rows), nil
+	return Dim{Cols: int(cols), Rows: int(rows)}, nil
+}
+
+func OnResize(tty *os.File) chan Dim {
+	ch := make(chan Dim, 1)
+	go func() {
+		dimPrev := Dim{}
+		for {
+			dim, err := Size(tty)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+			} else {
+				if dim.Cols != dimPrev.Cols || dim.Rows != dimPrev.Rows {
+					ch <- dim
+					dimPrev = dim
+				}
+			}
+			time.Sleep(250 * time.Millisecond)
+		}
+	}()
+	return ch
 }

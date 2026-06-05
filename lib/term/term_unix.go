@@ -47,6 +47,8 @@ import "C"
 import (
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 // Checks whether stdout is a terminal or not
@@ -84,12 +86,29 @@ func Restore(tty *os.File) error {
 	}
 }
 
-func Size(tty *os.File) (int, int, error) {
+func Size(tty *os.File) (Dim, error) {
 	var cols, rows C.int
 	fd := C.int(tty.Fd())
 	if ret := C.term_size(fd, &cols, &rows); ret != 0 {
 		C.perror(C.CString("ioctl"))
-		return 0, 0, fmt.Errorf("failed to get terminal size (code %d)", int(ret))
+		return Dim{}, fmt.Errorf("failed to get terminal size (code %d)", int(ret))
 	}
-	return int(cols), int(rows), nil
+	return Dim{Cols: int(cols), Rows: int(rows)}, nil
+}
+
+func OnResize(tty *os.File) chan Dim {
+	ch := make(chan Dim, 1)
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGWINCH)
+	go func() {
+		for range sigCh {
+			dim, err := Size(tty)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+			} else {
+				ch <- dim
+			}
+		}
+	}()
+	return ch
 }

@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/signal"
 	"slices"
 	"strings"
-	"syscall"
 	"unicode/utf8"
 
 	"github.com/tobiashort/th-utils/lib/ansi"
@@ -43,7 +41,7 @@ func TextColumns(text string) int {
 func PrepareText(text string) string {
 	tty := must.Do2(term.OpenTTY())
 	defer tty.Close()
-	ttyCols, _ := must.Do3(term.Size(tty))
+	ttyCols := must.Do2(term.Size(tty)).Cols
 	stripped := ansi.Strip(text)
 	if TextColumns(stripped) > ttyCols {
 		text = stripped
@@ -77,7 +75,9 @@ func main() {
 	must.Do(term.MakeRaw(tty))
 	defer term.Restore(tty)
 
-	ttyCols, ttyRows := must.Do3(term.Size(tty))
+	ttyDim := must.Do2(term.Size(tty))
+	ttyCols := ttyDim.Cols
+	ttyRows := ttyDim.Rows
 	textLines := TextLines(text)
 	maxTextCols := TextColumns(text)
 	maxTextLines := len(textLines)
@@ -88,8 +88,7 @@ func main() {
 	occurrences := []Occurrence{}
 	occurrenceIndex := 0
 
-	signalCh := make(chan os.Signal, 1)
-	signal.Notify(signalCh, syscall.SIGWINCH)
+	dimCh := term.OnResize(tty)
 
 	bufCh := make(chan byte, 1)
 	go func() {
@@ -280,8 +279,9 @@ eventLoop:
 			case ansi.InputCtrlC:
 				break eventLoop
 			}
-		case _ = <-signalCh:
-			ttyCols, ttyRows = must.Do3(term.Size(tty))
+		case ttyDim = <-dimCh:
+			ttyCols = ttyDim.Cols
+			ttyRows = ttyDim.Rows
 			goto draw
 		}
 	}
