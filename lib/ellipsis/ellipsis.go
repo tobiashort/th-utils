@@ -11,8 +11,10 @@ func Ellipsis(text string, length int) string {
 }
 
 func EllipsisSuffix(text string, length int, suffix string) string {
-	if utf8.RuneCountInString(text) <= length {
+	stripped := ansi.Strip(text)
+	if utf8.RuneCountInString(stripped) <= length {
 		return text
 	}
-	return string([]rune(text)[:length-utf8.RuneCountInString(ansi.Strip(suffix))]) + suffix
+	lenDiff := utf8.RuneCountInString(text) - utf8.RuneCountInString(stripped)
+	return string([]rune(text)[:length+lenDiff-utf8.RuneCountInString(ansi.Strip(suffix))]) + suffix
 }
