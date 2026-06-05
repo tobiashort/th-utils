@@ -179,6 +179,13 @@ eventLoop:
 			goto draw
 		case "N":
 			lineNumbers = !lineNumbers
+			if lineNumbers {
+				maxTextCols = TextColumns(text)
+				maxTextCols += utf8.RuneCountInString(fmt.Sprintf(" %3d  ", maxTextLines))
+			} else {
+				maxTextCols = TextColumns(text)
+			}
+			startCol = 0
 			goto draw
 		case "n":
 			if len(occurrences) > 0 {
