@@ -28,28 +28,16 @@ type Occurrence struct {
 	Col  int
 }
 
-func TextLines(text string) []string {
-	return strings.Split(text, "\n")
+func MaxTokenCols(tokens [][]Token) int {
+	return slices.Max(slices2.Map(tokens, func(tokenRow []Token) int { return len(tokenRow) }))
 }
 
-func TextColumns(text string) int {
-	lines := TextLines(text)
-	lineLengths := slices2.Map(lines, func(line string) int { return utf8.RuneCountInString(line) })
-	return slices.Max(lineLengths)
-}
-
-func PrepareText(text string) string {
-	tty := must.Do2(term.OpenTTY())
-	defer tty.Close()
-	ttyCols := must.Do2(term.Size(tty)).Cols
-	stripped := ansi.Strip(text)
-	if TextColumns(stripped) > ttyCols {
-		text = stripped
+func Line(tokenRow []Token) string {
+	b := strings.Builder{}
+	for _, token := range tokenRow {
+		b.WriteString(token.Literal)
 	}
-	text = strings.ReplaceAll(text, "\r", "")
-	text = strings.TrimSuffix(text, "\n")
-	text = strings.ReplaceAll(text, "\t", "    ")
-	return text
+	return b.String()
 }
 
 func main() {
@@ -66,7 +54,9 @@ func main() {
 	}
 
 	text := string(must.Do2(io.ReadAll(reader)))
-	text = PrepareText(text)
+	tokens := Parse(text)
+	maxTokenRows := len(tokens)
+	maxTokenCols := MaxTokenCols(tokens)
 
 	defer fmt.Print(ansi.ScreenAlternativeLeave)
 	fmt.Print(ansi.ScreenAlternativeEnter)
@@ -78,9 +68,6 @@ func main() {
 	ttyDim := must.Do2(term.Size(tty))
 	ttyCols := ttyDim.Cols
 	ttyRows := ttyDim.Rows
-	textLines := TextLines(text)
-	maxTextCols := TextColumns(text)
-	maxTextLines := len(textLines)
 	startCol := 0
 	startLine := 0
 	lineNumbers := false
@@ -110,10 +97,22 @@ draw:
 	}
 	fmt.Print(ansi.CursorMoveDown(1))
 	fmt.Print(ansi.CursorMoveToColumn(0))
-	for i := 0; i < min(maxTextLines, ttyRows-2); i++ {
-		line := textLines[startLine+i]
-		line = fmt.Sprintf("%-*s", maxTextCols, line)
-		line = line[startCol:]
+	for i := 0; i < min(maxTokenRows, ttyRows-2); i++ {
+		tokenRow := tokens[startLine+i]
+
+		j := 0
+		col := 0
+		for ; col < len(tokenRow) && j < startCol; col++ {
+			if tokenRow[col].Type == TokenAnsi {
+				continue
+			}
+			j++
+		}
+
+		tokenRow = append(slices2.Filter(tokenRow[:col], func(t Token) bool { return t.Type == TokenAnsi }), tokenRow[col:]...)
+
+		line := Line(tokenRow)
+
 		if lineNumbers {
 			line = cfmt.Sprintf("#R{ %3d } %s", startLine+i+1, line)
 		}
@@ -126,14 +125,15 @@ draw:
 		fmt.Print(ansi.CursorMoveDown(1))
 		fmt.Print(ansi.CursorMoveToColumn(0))
 	}
-	for i := maxTextLines; i < ttyRows-2; i++ {
+	for i := maxTokenRows; i < ttyRows-2; i++ {
 		fmt.Print(ansi.EraseEntireLine)
 		fmt.Print(ansi.CursorMoveDown(1))
 		fmt.Print(ansi.CursorMoveToColumn(0))
 	}
 	fmt.Print(ansi.CursorMoveDown(1))
 	fmt.Print(ansi.CursorMoveToColumn(0))
-	cfmt.Printf("#R{ %dl, %d%% }", maxTextLines, 100*min(maxTextLines, (startLine+ttyRows-2))/maxTextLines)
+	cfmt.Printf("#R{ %dl, %d%% }", maxTokenRows, 100*min(maxTokenRows, (startLine+ttyRows-2))/maxTokenRows)
+
 eventLoop:
 	for {
 		select {
@@ -144,9 +144,9 @@ eventLoop:
 				startCol = max(startCol, 0)
 				goto draw
 			case "j":
-				if maxTextLines > ttyRows-2 {
+				if maxTokenRows > ttyRows-2 {
 					startLine++
-					startLine = min(startLine, maxTextLines-ttyRows+2)
+					startLine = min(startLine, maxTokenRows-ttyRows+2)
 					goto draw
 				}
 			case "k":
@@ -154,15 +154,15 @@ eventLoop:
 				startLine = max(startLine, 0)
 				goto draw
 			case "l":
-				if maxTextCols > ttyCols {
+				if maxTokenCols > ttyCols {
 					startCol++
-					startCol = min(startCol, maxTextCols-ttyCols)
+					startCol = min(startCol, maxTokenCols-ttyCols)
 					goto draw
 				}
 			case ansi.InputCtrlD:
-				if maxTextLines > ttyRows-2 {
+				if maxTokenRows > ttyRows-2 {
 					startLine += ttyRows / 2
-					startLine = min(startLine, maxTextLines-ttyRows+2)
+					startLine = min(startLine, maxTokenRows-ttyRows+2)
 					goto draw
 				}
 			case ansi.InputCtrlU:
@@ -176,12 +176,12 @@ eventLoop:
 				input = <-bufCh
 				switch string([]byte{input}) {
 				case "e":
-					if maxTextLines > ttyRows-2 {
-						startLine = maxTextLines - ttyRows + 2
+					if maxTokenRows > ttyRows-2 {
+						startLine = maxTokenRows - ttyRows + 2
 					}
 				case "l":
-					if maxTextCols > ttyCols {
-						startCol = maxTextCols - ttyCols
+					if maxTokenCols > ttyCols {
+						startCol = maxTokenCols - ttyCols
 					}
 				case "h":
 					startCol = 0
@@ -192,10 +192,10 @@ eventLoop:
 			case "N":
 				lineNumbers = !lineNumbers
 				if lineNumbers {
-					maxTextCols = TextColumns(text)
-					maxTextCols += utf8.RuneCountInString(fmt.Sprintf(" %3d  ", maxTextLines))
+					maxTokenCols = MaxTokenCols(tokens)
+					maxTokenCols += utf8.RuneCountInString(fmt.Sprintf(" %3d  ", maxTokenCols))
 				} else {
-					maxTextCols = TextColumns(text)
+					maxTokenCols = MaxTokenCols(tokens)
 				}
 				startCol = 0
 				goto draw
@@ -206,9 +206,9 @@ eventLoop:
 					} else {
 						occurrenceIndex = 0
 					}
-					startLine = max(0, min(maxTextLines-ttyRows+2, occurrences[occurrenceIndex].Line))
+					startLine = max(0, min(maxTokenRows-ttyRows+2, occurrences[occurrenceIndex].Line))
 					startCol = max(0, occurrences[occurrenceIndex].Col+10-ttyCols)
-					startCol = max(0, min(startCol, maxTextCols-ttyCols))
+					startCol = max(0, min(startCol, maxTokenCols-ttyCols))
 				}
 				goto draw
 			case "p":
@@ -218,9 +218,9 @@ eventLoop:
 					} else {
 						occurrenceIndex = len(occurrences) - 1
 					}
-					startLine = max(0, min(maxTextLines-ttyRows+2, occurrences[occurrenceIndex].Line))
+					startLine = max(0, min(maxTokenRows-ttyRows+2, occurrences[occurrenceIndex].Line))
 					startCol = max(0, occurrences[occurrenceIndex].Col+10-ttyCols)
-					startCol = max(0, min(startCol, maxTextCols-ttyCols))
+					startCol = max(0, min(startCol, maxTokenCols-ttyCols))
 				}
 				goto draw
 			case "/":
@@ -237,14 +237,16 @@ eventLoop:
 						searchTerm = searchTermNew
 						occurrences = []Occurrence{}
 						occurrenceIndex = 0
-						for i := startLine; i < len(textLines); i++ {
-							line := textLines[i]
+						for i := startLine; i < len(tokens); i++ {
+							tokenRow := tokens[i]
+							line := Line(tokenRow)
 							for _, index := range strings2.AllIndexes(line, searchTerm) {
 								occurrences = append(occurrences, Occurrence{Line: i, Col: index})
 							}
 						}
 						for i := 0; i < startLine; i++ {
-							line := textLines[i]
+							tokenRow := tokens[i]
+							line := Line(tokenRow)
 							for _, index := range strings2.AllIndexes(line, searchTerm) {
 								occurrences = append(occurrences, Occurrence{Line: i, Col: index})
 							}
@@ -254,9 +256,9 @@ eventLoop:
 							fmt.Print(ansi.EraseEntireLine)
 							cfmt.Print("#R{ not found }")
 						} else {
-							startLine = max(0, min(maxTextLines-ttyRows+2, occurrences[occurrenceIndex].Line))
+							startLine = max(0, min(maxTokenRows-ttyRows+2, occurrences[occurrenceIndex].Line))
 							startCol = max(0, occurrences[occurrenceIndex].Col+10-ttyCols)
-							startCol = max(0, min(startCol, maxTextCols-ttyCols))
+							startCol = max(0, min(startCol, maxTokenCols-ttyCols))
 							goto draw
 						}
 					case ansi.InputDelete:
