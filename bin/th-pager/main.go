@@ -39,7 +39,6 @@ func AddLineNumbers(tokenRow []Token, lineNumber int) []Token {
 		prefix = append(prefix, Token{Type: TokenRune, Literal: string(r)})
 	}
 	prefix = append(prefix, Token{Type: TokenAnsi, Literal: ansi.DecorReset})
-	prefix = append(prefix, Token{Type: TokenRune, Literal: " "})
 	return append(prefix, tokenRow...)
 }
 
@@ -206,7 +205,7 @@ eventLoop:
 				if length > ttyCols {
 					startCol++
 					if lineNumbers {
-						startCol = min(startCol, length-ttyCols+utf8.RuneCountInString(fmt.Sprintf(" %3d  ", index+1)))
+						startCol = min(startCol, length-ttyCols+utf8.RuneCountInString(fmt.Sprintf(" %3d ", index+1)))
 					} else {
 						startCol = min(startCol, length-ttyCols)
 					}
@@ -238,7 +237,7 @@ eventLoop:
 						startCol = length - ttyCols
 					}
 					if lineNumbers {
-						startCol += utf8.RuneCountInString(fmt.Sprintf(" %3d  ", index+1))
+						startCol += utf8.RuneCountInString(fmt.Sprintf(" %3d ", index+1))
 					}
 				case "h":
 					startCol = 0
