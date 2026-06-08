@@ -22,6 +22,6 @@ func main() {
 	must.Do(term.Restore(tty))
 	clog.Info("Restored to original mode")
 
-	cols, lines := must.Do3(term.Size(tty))
-	clog.Infof("cols=%d lines=%d", cols, lines)
+	dim := must.Do2(term.Size(tty))
+	clog.Infof("cols=%d rows=%d", dim.Cols, dim.Rows)
 }
