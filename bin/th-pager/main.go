@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"slices"
 	"strings"
 	"unicode/utf8"
@@ -166,7 +167,10 @@ draw:
 		tokenRow = Cut(tokenRow, ttyCols)
 		line := Line(tokenRow)
 		if searchTerm != "" {
-			line = strings.ReplaceAll(line, searchTerm, cfmt.Sprintf("#R{%s}", searchTerm))
+			re := regexp.MustCompile(`(?i)` + regexp.QuoteMeta(searchTerm))
+			line = re.ReplaceAllStringFunc(line, func(match string) string {
+				return cfmt.Sprintf("#R{%s}", match)
+			})
 		}
 		fmt.Print(line)
 		fmt.Print(ansi.CursorMoveDown(1))
@@ -301,7 +305,7 @@ eventLoop:
 						for i := startLine; i < len(tokens); i++ {
 							tokenRow := tokens[i]
 							line := Line(tokenRow)
-							for _, index := range strings2.AllIndexes(line, searchTerm) {
+							for _, index := range strings2.AllIndexes(strings.ToLower(line), strings.ToLower(searchTerm)) {
 								occurrences = append(occurrences, Occurrence{Line: i, Col: index})
 							}
 						}
