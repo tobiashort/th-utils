@@ -247,6 +247,10 @@ eventLoop:
 				goto draw
 			case "N":
 				lineNumbers = !lineNumbers
+				if !lineNumbers {
+					_, length := BiggestLine(tokens)
+					startCol = min(startCol, length-ttyCols)
+				}
 				goto draw
 			case "n":
 				if len(occurrences) > 0 {
@@ -258,6 +262,10 @@ eventLoop:
 					startLine = max(0, min(maxTokenRows-ttyRows+2, occurrences[occurrenceIndex].Line))
 					startCol = max(0, occurrences[occurrenceIndex].Col+10-ttyCols)
 					startCol = max(0, min(startCol, maxTokenCols-ttyCols))
+					if lineNumbers {
+						index, _ := BiggestLine(tokens)
+						startCol += utf8.RuneCountInString(fmt.Sprintf(" %3d ", index+1))
+					}
 				}
 				goto draw
 			case "p":
@@ -270,6 +278,10 @@ eventLoop:
 					startLine = max(0, min(maxTokenRows-ttyRows+2, occurrences[occurrenceIndex].Line))
 					startCol = max(0, occurrences[occurrenceIndex].Col+10-ttyCols)
 					startCol = max(0, min(startCol, maxTokenCols-ttyCols))
+					if lineNumbers {
+						index, _ := BiggestLine(tokens)
+						startCol += utf8.RuneCountInString(fmt.Sprintf(" %3d ", index+1))
+					}
 				}
 				goto draw
 			case "/":
@@ -308,6 +320,10 @@ eventLoop:
 							startLine = max(0, min(maxTokenRows-ttyRows+2, occurrences[occurrenceIndex].Line))
 							startCol = max(0, occurrences[occurrenceIndex].Col+10-ttyCols)
 							startCol = max(0, min(startCol, maxTokenCols-ttyCols))
+							if lineNumbers {
+								index, _ := BiggestLine(tokens)
+								startCol += utf8.RuneCountInString(fmt.Sprintf(" %3d ", index+1))
+							}
 							goto draw
 						}
 					case ansi.InputDelete:
