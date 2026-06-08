@@ -32,6 +32,20 @@ func MaxTokenCols(tokens [][]Token) int {
 	return slices.Max(slices2.Map(tokens, func(tokenRow []Token) int { return len(tokenRow) }))
 }
 
+func BiggestLine(tokens [][]Token) (int, int) {
+	maxIndex := 0
+	maxLen := 0
+	for index, tokenRow := range tokens {
+		line := ansi.Strip(Line(tokenRow))
+		length := utf8.RuneCountInString(line)
+		if length > maxLen {
+			maxLen = length
+			maxIndex = index
+		}
+	}
+	return maxIndex, maxLen
+}
+
 func Line(tokenRow []Token) string {
 	b := strings.Builder{}
 	for _, token := range tokenRow {
@@ -154,9 +168,14 @@ eventLoop:
 				startLine = max(startLine, 0)
 				goto draw
 			case "l":
-				if maxTokenCols > ttyCols {
+				index, length := BiggestLine(tokens)
+				if length > ttyCols {
 					startCol++
-					startCol = min(startCol, maxTokenCols-ttyCols)
+					if lineNumbers {
+						startCol = min(startCol, length-ttyCols+utf8.RuneCountInString(fmt.Sprintf(" %3d  ", index+1)))
+					} else {
+						startCol = min(startCol, length-ttyCols)
+					}
 					goto draw
 				}
 			case ansi.InputCtrlD:
@@ -180,8 +199,12 @@ eventLoop:
 						startLine = maxTokenRows - ttyRows + 2
 					}
 				case "l":
-					if maxTokenCols > ttyCols {
-						startCol = maxTokenCols - ttyCols
+					index, length := BiggestLine(tokens)
+					if length > ttyCols {
+						startCol = length - ttyCols
+					}
+					if lineNumbers {
+						startCol += utf8.RuneCountInString(fmt.Sprintf(" %3d  ", index+1))
 					}
 				case "h":
 					startCol = 0
@@ -191,13 +214,12 @@ eventLoop:
 				goto draw
 			case "N":
 				lineNumbers = !lineNumbers
+				index, _ := BiggestLine(tokens)
 				if lineNumbers {
-					maxTokenCols = MaxTokenCols(tokens)
-					maxTokenCols += utf8.RuneCountInString(fmt.Sprintf(" %3d  ", maxTokenCols))
+					startCol += utf8.RuneCountInString(fmt.Sprintf(" %3d  ", index+1))
 				} else {
-					maxTokenCols = MaxTokenCols(tokens)
+					startCol -= max(0, utf8.RuneCountInString(fmt.Sprintf(" %3d  ", index+1)))
 				}
-				startCol = 0
 				goto draw
 			case "n":
 				if len(occurrences) > 0 {
