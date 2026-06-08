@@ -248,12 +248,6 @@ eventLoop:
 				goto draw
 			case "N":
 				lineNumbers = !lineNumbers
-				index, _ := BiggestLine(tokens)
-				if lineNumbers {
-					startCol += utf8.RuneCountInString(fmt.Sprintf(" %3d  ", index+1))
-				} else {
-					startCol -= max(0, utf8.RuneCountInString(fmt.Sprintf(" %3d  ", index+1)))
-				}
 				goto draw
 			case "n":
 				if len(occurrences) > 0 {
