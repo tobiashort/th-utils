@@ -316,11 +316,7 @@ eventLoop:
 								occurrences = append(occurrences, Occurrence{Line: i, Col: index})
 							}
 						}
-						if len(occurrences) == 0 {
-							fmt.Print(ansi.CursorMoveTo(ttyRows, 0))
-							fmt.Print(ansi.EraseEntireLine)
-							cfmt.Print("#R{ not found }")
-						} else {
+						if len(occurrences) > 0 {
 							startLine = max(0, min(maxTokenRows-ttyRows+2, occurrences[occurrenceIndex].Line))
 							startCol = max(0, occurrences[occurrenceIndex].Col+10-ttyCols)
 							startCol = max(0, min(startCol, maxTokenCols-ttyCols))
