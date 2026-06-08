@@ -32,6 +32,43 @@ func MaxTokenCols(tokens [][]Token) int {
 	return slices.Max(slices2.Map(tokens, func(tokenRow []Token) int { return len(tokenRow) }))
 }
 
+func AddLineNumbers(tokenRow []Token, lineNumber int) []Token {
+	prefix := make([]Token, 0)
+	prefix = append(prefix, Token{Type: TokenAnsi, Literal: ansi.DecorReversed})
+	for _, r := range fmt.Sprintf(" %3d ", lineNumber) {
+		prefix = append(prefix, Token{Type: TokenRune, Literal: string(r)})
+	}
+	prefix = append(prefix, Token{Type: TokenAnsi, Literal: ansi.DecorReset})
+	prefix = append(prefix, Token{Type: TokenRune, Literal: " "})
+	return append(prefix, tokenRow...)
+}
+
+func Cut(tokenRow []Token, width int) []Token {
+	tokenRowNew := make([]Token, 0)
+	length := 0
+	for i, t := range tokenRow {
+		if t.Type == TokenAnsi {
+			tokenRowNew = append(tokenRowNew, t)
+			continue
+		}
+		if length+utf8.RuneCountInString(t.Literal) < width {
+			length += utf8.RuneCountInString(t.Literal)
+			tokenRowNew = append(tokenRowNew, t)
+			continue
+		}
+		if len(slices2.Filter(tokenRow[i:], func(t Token) bool { return t.Type == TokenRune })) == 1 {
+			tokenRowNew = append(tokenRowNew, tokenRow[i:]...)
+		} else {
+			tokenRowNew = append(tokenRowNew, Token{Type: TokenAnsi, Literal: ansi.DecorReset})
+			tokenRowNew = append(tokenRowNew, Token{Type: TokenAnsi, Literal: ansi.DecorReversed})
+			tokenRowNew = append(tokenRowNew, Token{Type: TokenRune, Literal: ">"})
+			tokenRowNew = append(tokenRowNew, Token{Type: TokenAnsi, Literal: ansi.DecorReset})
+		}
+		break
+	}
+	return tokenRowNew
+}
+
 func BiggestLine(tokens [][]Token) (int, int) {
 	maxIndex := 0
 	maxLen := 0
@@ -124,14 +161,11 @@ draw:
 		}
 
 		tokenRow = append(slices2.Filter(tokenRow[:col], func(t Token) bool { return t.Type == TokenAnsi }), tokenRow[col:]...)
-
-		line := Line(tokenRow)
-
 		if lineNumbers {
-			line = cfmt.Sprintf("#R{ %3d } %s", startLine+i+1, line)
+			tokenRow = AddLineNumbers(tokenRow, startLine+i+1)
 		}
-		line = strings.TrimRight(line, " ")
-		line = ellipsis.EllipsisSuffix(line, ttyCols, cfmt.Sprintf("#R{>>>}"))
+		tokenRow = Cut(tokenRow, ttyCols)
+		line := Line(tokenRow)
 		if searchTerm != "" {
 			line = strings.ReplaceAll(line, searchTerm, cfmt.Sprintf("#R{%s}", searchTerm))
 		}
