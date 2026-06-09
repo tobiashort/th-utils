@@ -142,7 +142,7 @@ draw:
 	fmt.Print(ansi.CursorMoveToHomePosition)
 	fmt.Print(ansi.CursorHide)
 	if args.File != "" {
-		cfmt.Printf("#R{ %s }", ellipsis.Ellipsis(args.File, ttyCols))
+		cfmt.Printf("#R{ %s }", ellipsis.Ellipsis(args.File, ttyCols, "...", ellipsis.PosEnd))
 	} else {
 		cfmt.Print("#R{ th-pager }")
 	}

@@ -9,6 +9,7 @@ import (
 
 	"github.com/tobiashort/th-utils/lib/ansi"
 	"github.com/tobiashort/th-utils/lib/cfmt"
+	"github.com/tobiashort/th-utils/lib/ellipsis"
 	"github.com/tobiashort/th-utils/lib/must"
 	"github.com/tobiashort/th-utils/lib/term"
 )
@@ -55,6 +56,8 @@ func (c Chooser) One(prompt string, options []Option) (Option, bool) {
 		tty.Close()
 	}()
 
+	dim := must.Do2(term.Size(tty))
+
 	ok := false
 	selectedIndex := 0
 	maxLines := 5
@@ -88,9 +91,9 @@ draw:
 		for index := selectedIndex - selectedLine; index < min(selectedIndex+(maxLines-selectedLine), len(filtered)); index++ {
 			option := filtered[index]
 			if index == selectedIndex {
-				c.Formatter.Fprintf(c.Writer, "#yB{▌ %s}\r\n", option.Value)
+				c.Formatter.Fprintf(c.Writer, "#yB{▌ %s}\r\n", ellipsis.Ellipsis(option.Value, dim.Cols-2, "...", ellipsis.PosCenter))
 			} else {
-				fmt.Fprintf(c.Writer, "  %s\r\n", option.Value)
+				fmt.Fprintf(c.Writer, "  %s\r\n", ellipsis.Ellipsis(option.Value, dim.Cols-2, "...", ellipsis.PosCenter))
 			}
 		}
 	}

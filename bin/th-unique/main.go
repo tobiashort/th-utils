@@ -9,9 +9,9 @@ import (
 
 	"github.com/tobiashort/th-utils/lib/ellipsis"
 
+	"github.com/tobiashort/th-utils/lib/assert"
 	"github.com/tobiashort/th-utils/lib/clap"
 	"github.com/tobiashort/th-utils/lib/orderedmap"
-	"github.com/tobiashort/th-utils/lib/assert"
 )
 
 type Args struct {
@@ -57,7 +57,7 @@ func main() {
 			barWidth := int(float64(args.PlotMaxBarWidth) * float64(count) / float64(maxCount))
 			bar := strings.Repeat("\u28FF", barWidth/2)
 			bar += strings.Repeat("\u2847", barWidth%2)
-			fmt.Printf("%*s %s %d\n", args.PlotLabelWidth, ellipsis.Ellipsis(value, args.PlotLabelWidth), bar, count)
+			fmt.Printf("%*s %s %d\n", args.PlotLabelWidth, ellipsis.Ellipsis(value, args.PlotLabelWidth, "...", ellipsis.PosEnd), bar, count)
 		}
 		return
 	}

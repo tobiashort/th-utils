@@ -29,6 +29,6 @@ func main() {
 	bytesRead := must.Do2(io.ReadAll(os.Stdin))
 	text := string(bytesRead)
 	text = strings.TrimSpace(text)
-	text = ellipsis.Ellipsis(text, args.Length)
+	text = ellipsis.Ellipsis(text, args.Length, "...", ellipsis.PosEnd)
 	fmt.Print(text)
 }
