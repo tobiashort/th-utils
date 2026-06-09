@@ -27,10 +27,10 @@ func Parse(text string) [][]Token {
 	textLines := strings.Split(text, "\n")
 	height := len(textLines)
 	tokens := make([][]Token, height)
+	rg := regexp.MustCompile("^" + ansi.Regexp.String())
 	for i, textLine := range textLines {
 		tokens[i] = make([]Token, 0)
 		for j := 0; j < len(textLine); {
-			rg := regexp.MustCompile("^" + ansi.Regexp.String())
 			a := rg.FindString(textLine[j:])
 			if a != "" {
 				tokens[i] = append(tokens[i], Token{Type: TokenAnsi, Literal: a})
