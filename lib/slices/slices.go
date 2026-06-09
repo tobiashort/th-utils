@@ -14,6 +14,10 @@ func Filter[A any](slice []A, filter func(A) bool) []A {
 	return iter.Collect(iterator)
 }
 
+func Count[A any](slice []A, filter func(A) bool) int {
+	return len(Filter(slice, filter))
+}
+
 func Map[A, B any](slice []A, mapper func(A) B) []B {
 	iterator := iter.From(slice)
 	iterator2 := iter.Map(iterator, mapper)
