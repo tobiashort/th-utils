@@ -6,6 +6,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/tobiashort/th-utils/lib/ansi"
+	"github.com/tobiashort/th-utils/lib/unicode"
 )
 
 type TokenType string
@@ -18,6 +19,7 @@ const (
 type Token struct {
 	Type    TokenType
 	Literal string
+	Width   int
 }
 
 func Parse(text string) [][]Token {
@@ -33,11 +35,11 @@ func Parse(text string) [][]Token {
 		for j := 0; j < len(textLine); {
 			a := rg.FindString(textLine[j:])
 			if a != "" {
-				tokens[i] = append(tokens[i], Token{Type: TokenAnsi, Literal: a})
+				tokens[i] = append(tokens[i], Token{Type: TokenAnsi, Literal: a, Width: 0})
 				j += len(a)
 			} else {
 				r, rs := utf8.DecodeRuneInString(textLine[j:])
-				tokens[i] = append(tokens[i], Token{Type: TokenRune, Literal: string(r)})
+				tokens[i] = append(tokens[i], Token{Type: TokenRune, Literal: string(r), Width: unicode.Width(r)})
 				j += rs
 			}
 		}

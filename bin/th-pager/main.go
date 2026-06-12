@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"slices"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/tobiashort/th-utils/lib/ansi"
 	"github.com/tobiashort/th-utils/lib/cfmt"
@@ -18,6 +17,7 @@ import (
 	slices2 "github.com/tobiashort/th-utils/lib/slices"
 	strings2 "github.com/tobiashort/th-utils/lib/strings"
 	"github.com/tobiashort/th-utils/lib/term"
+	"github.com/tobiashort/th-utils/lib/unicode"
 )
 
 type Args struct {
@@ -51,8 +51,8 @@ func Cut(tokenRow []Token, width int) []Token {
 			tokenRowNew = append(tokenRowNew, t)
 			continue
 		}
-		if length+utf8.RuneCountInString(t.Literal) < width {
-			length += utf8.RuneCountInString(t.Literal)
+		if length+t.Width < width {
+			length += t.Width
 			tokenRowNew = append(tokenRowNew, t)
 			continue
 		}
@@ -71,16 +71,20 @@ func Cut(tokenRow []Token, width int) []Token {
 
 func BiggestLine(tokens [][]Token) (int, int) {
 	maxIndex := 0
-	maxLen := 0
+	maxWidth := 0
 	for index, tokenRow := range tokens {
-		line := ansi.Strip(Line(tokenRow))
-		length := utf8.RuneCountInString(line)
-		if length > maxLen {
-			maxLen = length
+		width := 0
+		for _, token := range tokenRow {
+			if token.Type == TokenRune {
+				width += token.Width
+			}
+		}
+		if width > maxWidth {
+			maxWidth = width
 			maxIndex = index
 		}
 	}
-	return maxIndex, maxLen
+	return maxIndex, maxWidth
 }
 
 func Line(tokenRow []Token) string {
@@ -209,7 +213,7 @@ eventLoop:
 				if length > ttyCols {
 					startCol++
 					if lineNumbers {
-						startCol = min(startCol, length-ttyCols+utf8.RuneCountInString(fmt.Sprintf(" %3d ", index+1)))
+						startCol = min(startCol, length-ttyCols+unicode.WidthString(fmt.Sprintf(" %3d ", index+1)))
 					} else {
 						startCol = min(startCol, length-ttyCols)
 					}
@@ -241,7 +245,7 @@ eventLoop:
 						startCol = length - ttyCols
 					}
 					if lineNumbers {
-						startCol += utf8.RuneCountInString(fmt.Sprintf(" %3d ", index+1))
+						startCol += unicode.WidthString(fmt.Sprintf(" %3d ", index+1))
 					}
 				case "h":
 					startCol = 0
@@ -268,7 +272,7 @@ eventLoop:
 					startCol = max(0, min(startCol, maxTokenCols-ttyCols))
 					if lineNumbers {
 						index, _ := BiggestLine(tokens)
-						startCol += utf8.RuneCountInString(fmt.Sprintf(" %3d ", index+1))
+						startCol += unicode.WidthString(fmt.Sprintf(" %3d ", index+1))
 					}
 				}
 				goto draw
@@ -284,7 +288,7 @@ eventLoop:
 					startCol = max(0, min(startCol, maxTokenCols-ttyCols))
 					if lineNumbers {
 						index, _ := BiggestLine(tokens)
-						startCol += utf8.RuneCountInString(fmt.Sprintf(" %3d ", index+1))
+						startCol += unicode.WidthString(fmt.Sprintf(" %3d ", index+1))
 					}
 				}
 				goto draw
@@ -322,7 +326,7 @@ eventLoop:
 							startCol = max(0, min(startCol, maxTokenCols-ttyCols))
 							if lineNumbers {
 								index, _ := BiggestLine(tokens)
-								startCol += utf8.RuneCountInString(fmt.Sprintf(" %3d ", index+1))
+								startCol += unicode.WidthString(fmt.Sprintf(" %3d ", index+1))
 							}
 							goto draw
 						}
