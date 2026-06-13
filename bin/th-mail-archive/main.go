@@ -50,9 +50,10 @@ func NotMuchNew() chan string {
 	return out
 }
 
-func NotMuchSearch(search string) chan string {
+func NotMuchSearch(args ...string) chan string {
 	out := make(chan string)
-	cmd := exec.Command("notmuch", "search", search)
+	cmd := exec.Command("notmuch", "search")
+	cmd.Args = append(cmd.Args, args...)
 	stderr := must.Do2(cmd.StderrPipe())
 	stdout := must.Do2(cmd.StdoutPipe())
 	errDone, outDone := false, false
@@ -81,6 +82,15 @@ func NotMuchSearch(search string) chan string {
 	}()
 	return out
 }
+
+var (
+	title      string
+	output     []string
+	dim        term.Dim
+	startLine  int
+	startCol   int
+	cursorLine int
+)
 
 func run() int {
 	args := Args{}
@@ -114,28 +124,43 @@ func run() int {
 	fmt.Print(ansi.CursorHide)
 	defer fmt.Print(ansi.CursorShow)
 
-	title := "n: new, s: search"
-	output := []string{}
-	dim := must.Do2(term.Size(tty))
-	startLine := 0
-	startCol := 0
-	cursorLine := 0
+	title = "n: new, s: search"
+	output = []string{}
+	dim = must.Do2(term.Size(tty))
+	startLine = 0
+	startCol = 0
+	cursorLine = 0
 
-draw:
-	fmt.Print(ansi.EraseEntireScreen)
-	fmt.Print(ansi.CursorMoveToHomePosition)
-	cfmt.Printf("#R{%s}", title)
-	for i := startLine; i < min(len(output), startLine+dim.Rows-1); i++ {
-		fmt.Print(ansi.CursorMoveDown(1))
-		fmt.Print(ansi.CursorMoveToColumn(1))
-		text := output[i]
-		text = ellipsis.Ellipsis(text, dim.Cols, cfmt.Sprint("#R{>}"), ellipsis.PosEnd)
-		if i-startLine == cursorLine {
-			cfmt.Printf("#yR{%s}", text)
-		} else {
-			fmt.Print(text)
+	draw := func() {
+		fmt.Print(ansi.EraseEntireScreen)
+		fmt.Print(ansi.CursorMoveToHomePosition)
+		cfmt.Printf("#R{%s}", title)
+		for i := startLine; i < min(len(output), startLine+dim.Rows-1); i++ {
+			fmt.Print(ansi.CursorMoveDown(1))
+			fmt.Print(ansi.CursorMoveToColumn(1))
+			text := output[i]
+			text = ellipsis.Ellipsis(text, dim.Cols, cfmt.Sprint("#R{>}"), ellipsis.PosEnd)
+			if i-startLine == cursorLine {
+				cfmt.Printf("#yR{%s}", text)
+			} else {
+				fmt.Print(text)
+			}
 		}
 	}
+
+	down := func() {
+		if cursorLine == dim.Rows-2 {
+			if startLine < len(output)-1 {
+				startLine++
+			}
+		} else {
+			if startLine+cursorLine < len(output)-1 {
+				cursorLine++
+			}
+		}
+	}
+
+	draw()
 
 eventLoop:
 	for {
@@ -143,14 +168,8 @@ eventLoop:
 		case key := <-onKeystroke:
 			switch string([]byte{key}) {
 			case "j":
-				if cursorLine == dim.Rows-2 {
-					if startLine < len(output)-1 {
-						startLine++
-					}
-				} else {
-					cursorLine++
-				}
-				goto draw
+				down()
+				draw()
 			case "k":
 				if cursorLine == 0 {
 					if startLine > 0 {
@@ -159,16 +178,16 @@ eventLoop:
 				} else {
 					cursorLine--
 				}
-				goto draw
+				draw()
 			case "h":
 				if startCol > 0 {
 					startCol--
-					goto draw
+					draw()
 				}
 			case "l":
 				if startCol < dim.Cols-1 {
 					startCol++
-					goto draw
+					draw()
 				}
 			case "n":
 				title = cfmt.Sprint("#R{notmuch new}")
@@ -176,19 +195,13 @@ eventLoop:
 				startLine = 0
 				startCol = 0
 				cursorLine = 0
-				fmt.Print(ansi.EraseEntireScreen)
-				fmt.Print(ansi.CursorMoveToHomePosition)
-				fmt.Print(title)
-				fmt.Print(ansi.CursorMoveDown(1))
-				fmt.Print(ansi.CursorMoveToColumn(1))
+				draw()
 				for out := range NotMuchNew() {
 					output = append(output, out)
 					fmt.Print(ellipsis.Ellipsis(out, dim.Cols, cfmt.Sprint("#R{>}"), ellipsis.PosEnd))
-					fmt.Print(ansi.CursorMoveDown(1))
-					fmt.Print(ansi.CursorMoveToColumn(1))
-					cursorLine++
+					down()
+					draw()
 				}
-				goto draw
 			case "s":
 				output = []string{}
 				startLine = 0
@@ -229,14 +242,41 @@ eventLoop:
 					}
 					count++
 				}
-				goto draw
+				draw()
+			case "f":
+				selected := output[startLine+cursorLine]
+				var thread int
+				fmt.Sscanf(selected, "thread:%016x", &thread)
+				opt := "--output=files"
+				search := fmt.Sprintf("thread:%016x", thread)
+				title = cfmt.Sprintf("#R{notmuch search %s %s}", opt, search)
+				output = []string{}
+				startLine = 0
+				startCol = 0
+				cursorLine = 0
+				fmt.Print(ansi.EraseEntireScreen)
+				fmt.Print(ansi.CursorMoveToHomePosition)
+				fmt.Print(title)
+				fmt.Print(ansi.CursorMoveDown(1))
+				fmt.Print(ansi.CursorMoveToColumn(1))
+				count := 0
+				for out := range NotMuchSearch(opt, search) {
+					output = append(output, out)
+					if count < dim.Rows-1 {
+						fmt.Print(ellipsis.Ellipsis(out, dim.Cols, cfmt.Sprint("#R{>}"), ellipsis.PosEnd))
+						fmt.Print(ansi.CursorMoveDown(1))
+						fmt.Print(ansi.CursorMoveToColumn(1))
+					}
+					count++
+				}
+				draw()
 			case "q":
 				fallthrough
 			case ansi.InputCtrlC:
 				break eventLoop
 			}
 		case dim = <-onResize:
-			goto draw
+			draw()
 		}
 	}
 
