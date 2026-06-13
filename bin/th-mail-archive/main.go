@@ -3,8 +3,12 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"runtime"
+	"time"
 
 	"github.com/tobiashort/th-utils/lib/ansi"
 	"github.com/tobiashort/th-utils/lib/cfmt"
@@ -81,6 +85,32 @@ func NotMuchSearch(args ...string) chan string {
 		outDone = true
 	}()
 	return out
+}
+
+func NotMuchOpen(filePath string) {
+	tmpDir := must.Do2(os.MkdirTemp("", "th-notmuch-open-*"))
+	file := must.Do2(os.Open(filePath))
+	emlPath := filepath.Join(tmpDir, filepath.Base(filePath)+".eml")
+	eml := must.Do2(os.Create(emlPath))
+	must.Do2(io.Copy(eml, file))
+	switch runtime.GOOS {
+	case "darwin":
+		cmd := exec.Command("open", emlPath)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		must.Do(cmd.Start())
+	case "linux":
+		cmd := exec.Command("xdg-open", emlPath)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		must.Do(cmd.Run())
+	default:
+		panic("not implemented: " + runtime.GOOS)
+	}
+	go func() {
+		time.Sleep(2 * time.Second)
+		os.RemoveAll(tmpDir)
+	}()
 }
 
 var (
@@ -232,43 +262,19 @@ eventLoop:
 				}
 				fmt.Print(ansi.CursorMoveDown(1))
 				fmt.Print(ansi.CursorMoveToColumn(1))
-				count := 0
+				fmt.Print("...")
 				for out := range NotMuchSearch(search) {
 					output = append(output, out)
-					if count < dim.Rows-1 {
-						fmt.Print(ellipsis.Ellipsis(out, dim.Cols, cfmt.Sprint("#R{>}"), ellipsis.PosEnd))
-						fmt.Print(ansi.CursorMoveDown(1))
-						fmt.Print(ansi.CursorMoveToColumn(1))
-					}
-					count++
 				}
 				draw()
-			case "f":
+			case "o":
 				selected := output[startLine+cursorLine]
 				var thread int
 				fmt.Sscanf(selected, "thread:%016x", &thread)
 				opt := "--output=files"
 				search := fmt.Sprintf("thread:%016x", thread)
-				title = cfmt.Sprintf("#R{notmuch search %s %s}", opt, search)
-				output = []string{}
-				startLine = 0
-				startCol = 0
-				cursorLine = 0
-				fmt.Print(ansi.EraseEntireScreen)
-				fmt.Print(ansi.CursorMoveToHomePosition)
-				fmt.Print(title)
-				fmt.Print(ansi.CursorMoveDown(1))
-				fmt.Print(ansi.CursorMoveToColumn(1))
-				count := 0
-				for out := range NotMuchSearch(opt, search) {
-					output = append(output, out)
-					if count < dim.Rows-1 {
-						fmt.Print(ellipsis.Ellipsis(out, dim.Cols, cfmt.Sprint("#R{>}"), ellipsis.PosEnd))
-						fmt.Print(ansi.CursorMoveDown(1))
-						fmt.Print(ansi.CursorMoveToColumn(1))
-					}
-					count++
-				}
+				filePath := <-NotMuchSearch(opt, search)
+				NotMuchOpen(filePath)
 				draw()
 			case "q":
 				fallthrough
