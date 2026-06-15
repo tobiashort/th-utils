@@ -169,6 +169,7 @@ func run() int {
 			fmt.Print(ansi.CursorMoveDown(1))
 			fmt.Print(ansi.CursorMoveToColumn(1))
 			text := output[i]
+			text = text[min(startCol, len(text)):]
 			text = ellipsis.Ellipsis(text, dim.Cols, cfmt.Sprint("#R{>}"), ellipsis.PosEnd)
 			if i-startLine == cursorLine {
 				cfmt.Printf("#yR{%s}", text)
