@@ -1,3 +1,5 @@
+//go:build ignore
+
 package main
 
 import "github.com/tobiashort/th-utils/lib/clog"
