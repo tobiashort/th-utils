@@ -64,7 +64,6 @@ func TestSplit2(t *testing.T) {
 	expected := [][]Int{}
 
 	if !reflect.DeepEqual(expected, actual) {
-		t.Fatalf("Expected: %q, got %q", expected, actual)
-
+		t.Fatalf("Expected: %v, got %v", expected, actual)
 	}
 }
