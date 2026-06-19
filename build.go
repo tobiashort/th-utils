@@ -14,6 +14,7 @@ import (
 	"github.com/tobiashort/th-utils/lib/clap"
 	"github.com/tobiashort/th-utils/lib/clog"
 	"github.com/tobiashort/th-utils/lib/must"
+	strings2 "github.com/tobiashort/th-utils/lib/strings"
 	"github.com/tobiashort/th-utils/lib/worker"
 )
 
@@ -26,6 +27,7 @@ type Args struct {
 	Clean   any      `clap:"cmdopt,desc='Deletes build path.'"`
 	Test    any      `clap:"cmdopt,desc='Runs all tests'"`
 	Build   BuildOpt `clap:"cmdopt,desc='Builds binaries.'"`
+	Repl    BuildOpt `clap:"cmdopt,desc='Starts REPL.'"`
 }
 
 func cleanUp(dir string) {
@@ -236,6 +238,18 @@ func main() {
 			cfmt.Println("#y{====}")
 			cfmt.Println("#r{ERROR}")
 			os.Exit(1)
+		}
+	case &args.Repl:
+		if pth, err := exec.LookPath("gomacro"); err == nil {
+			clog.Infof("gomacro: %s", pth)
+			cmd := exec.Command("gomacro")
+			cmd.Stdin = os.Stdin
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			must.Do(cmd.Run())
+		} else {
+			clog.Error(strings2.Dedent(`gomacro: #r{not found}
+				                       |go install github.com/cosmos72/gomacro@latest`))
 		}
 	default:
 		clog.Errorf("Unknown command: %v", args.Command)
