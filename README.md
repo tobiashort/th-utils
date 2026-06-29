@@ -12,5 +12,6 @@ Commands:
   clean       Deletes build path.
   test        Runs all tests
   build       Builds binaries.
+  repl        Starts REPL.
 
 ```

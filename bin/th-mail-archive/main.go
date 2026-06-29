@@ -268,6 +268,33 @@ eventLoop:
 					output = append(output, out)
 				}
 				draw()
+			case "f":
+				selected := output[startLine+cursorLine]
+				var thread int
+				fmt.Sscanf(selected, "thread:%016x", &thread)
+				opt := "--output=files"
+				search := fmt.Sprintf("thread:%016x", thread)
+				title = cfmt.Sprintf("#R{notmuch search %s %s}", opt, search)
+				output = []string{}
+				startLine = 0
+				startCol = 0
+				cursorLine = 0
+				fmt.Print(ansi.EraseEntireScreen)
+				fmt.Print(ansi.CursorMoveToHomePosition)
+				fmt.Print(title)
+				fmt.Print(ansi.CursorMoveDown(1))
+				fmt.Print(ansi.CursorMoveToColumn(1))
+				count := 0
+				for out := range NotMuchSearch(opt, search) {
+					output = append(output, out)
+					if count < dim.Rows-1 {
+						fmt.Print(ellipsis.Ellipsis(out, dim.Cols, cfmt.Sprint("#R{>}"), ellipsis.PosEnd))
+						fmt.Print(ansi.CursorMoveDown(1))
+						fmt.Print(ansi.CursorMoveToColumn(1))
+					}
+					count++
+				}
+				draw()
 			case "o":
 				selected := output[startLine+cursorLine]
 				var thread int
