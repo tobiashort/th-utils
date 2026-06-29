@@ -15,10 +15,11 @@ import (
 )
 
 type Args struct {
-	Count           bool `clap:"desc='The count of the number of times the line occurred'"`
-	Plot            bool `clap:"conflicts=Count,desc='Plot as horizontal ascii bar chart'"`
-	PlotLabelWidth  int  `clap:"short=,default=10,desc='The label width when plotting.'"`
-	PlotMaxBarWidth int  `clap:"short=,default=80,desc='The max bar width when plotting.'"`
+	Count           bool   `clap:"desc='The count of the number of times the line occurred'"`
+	Plot            bool   `clap:"conflicts=Count,desc='Plot as horizontal ascii bar chart'"`
+	PlotLabelWidth  int    `clap:"short=,default=10,desc='The label width when plotting.'"`
+	PlotMaxBarWidth int    `clap:"short=,default=80,desc='The max bar width when plotting.'"`
+	Symbol          string `clap:"short=,default=#,desc='The plot symbol'"`
 }
 
 func main() {
@@ -55,8 +56,7 @@ func main() {
 		maxCount := slices.Max(keywordCounts.Values())
 		for value, count := range keywordCounts.Iterate() {
 			barWidth := int(float64(args.PlotMaxBarWidth) * float64(count) / float64(maxCount))
-			bar := strings.Repeat("\u28FF", barWidth/2)
-			bar += strings.Repeat("\u2847", barWidth%2)
+			bar := strings.Repeat(args.Symbol, max(barWidth/2, 1))
 			fmt.Printf("%*s %s %d\n", args.PlotLabelWidth, ellipsis.Ellipsis(value, args.PlotLabelWidth, "...", ellipsis.PosEnd), bar, count)
 		}
 		return
