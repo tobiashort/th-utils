@@ -34,18 +34,30 @@ int term_restore(HANDLE h_stdin) {
 int term_size(int *cols, int *rows) {
     CONSOLE_SCREEN_BUFFER_INFO info;
 
-    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+    HANDLE h = CreateFileA(
+        "CONOUT$",
+        GENERIC_READ | GENERIC_WRITE,
+        FILE_SHARE_WRITE | FILE_SHARE_READ,
+        NULL,
+        OPEN_EXISTING,
+        0,
+        NULL
+    );
+
     if (h == INVALID_HANDLE_VALUE) {
         return 1;
     }
 
     if (!GetConsoleScreenBufferInfo(h, &info)) {
+        printf("GetLastError = %lu\n", GetLastError());
+        CloseHandle(h);
         return 2;
     }
 
     *cols = info.srWindow.Right - info.srWindow.Left + 1;
     *rows = info.srWindow.Bottom - info.srWindow.Top + 1;
 
+    CloseHandle(h);
     return 0;
 }
 */
