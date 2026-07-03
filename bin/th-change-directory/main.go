@@ -64,7 +64,7 @@ end
 		fmt.Print(`Remove-Item Alias:cd
 function global:cd {
     param([string]$Path)
-    $dir = th-change-directory $Path
+    $dir = th-change-directory.exe ($Path -replace '[\\/]+$', '')
     if (-not $dir) { return }
     Set-Location $dir
 }
