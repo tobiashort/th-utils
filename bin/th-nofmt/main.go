@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"unicode"
 
 	"github.com/tobiashort/th-utils/lib/assert"
 	"github.com/tobiashort/th-utils/lib/clap"
@@ -28,7 +27,7 @@ func Fmt(src string) {
 	srcLines2 := make([]string, 0)
 	for i := range srcLines {
 		srcLine := srcLines[i]
-		srcLine = strings.TrimRightFunc(srcLine, func(c rune) bool { return unicode.IsSpace(c) })
+		srcLine = strings2.TrimRightSpace(srcLine)
 		if strings.HasSuffix(srcLine, "//nofmt") {
 			srcLines2 = append(srcLines2, "//nofmt:enable")
 			srcLines2 = append(srcLines2, strings.TrimSuffix(srcLine, " //nofmt"))
