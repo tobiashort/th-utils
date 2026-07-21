@@ -12,8 +12,8 @@ import (
 )
 
 type Args struct {
-	Files     []string `clap:"mandatory,desc='The files which lines shall be joined.'"`
-	Separator string   `clap:"default='  ',desc='The separator how lines shall be joined.'"`
+	Files     []string `clap:"mandatory,positional,desc='The files which lines shall be joined.'"`
+	Separator string   `clap:"default=' ',desc='The separator how lines shall be joined.'"`
 }
 
 func join(args Args) {
@@ -46,6 +46,12 @@ func join(args Args) {
 
 func main() {
 	args := Args{}
+	clap.Description(`This tool combines the contents of one or more input files by joining their
+lines in a structured, line-by-line manner. When multiple files are provided,
+the tool merges corresponding lines from each file together, creating a new
+output where each line consists of the combined content from the same line
+position across all input files. When a single file is provided, the tool
+combines the lines within that file into a single continuous joined sequence`)
 	clap.Parse(&args)
 	join(args)
 }
