@@ -1,6 +1,6 @@
 ```
 Usage:
-  th-cut-n-stitch [OPTIONS] <Delimiter> <Format>
+  th-cut-and-stitch [OPTIONS] <Delimiter> <Format>
 
 Options:
   -h, --help  Show this help message and exit
