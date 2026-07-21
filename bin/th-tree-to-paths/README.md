@@ -5,7 +5,7 @@ Usage:
   th-tree-to-paths [OPTIONS]
 
 Options:
-  -d, --delimiter <Delimiter>  The delimiter (default:  => )
+  -d, --delimiter <Delimiter>  The delimiter (default: " => ")
   -h, --help                   Show this help message and exit
 
 ```
