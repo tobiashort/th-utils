@@ -30,9 +30,7 @@ func join(args Args) {
 	}
 
 	if len(lines) == 1 {
-		for _, l := range lines[0] {
-			fmt.Println(l)
-		}
+		fmt.Print(strings.Join(lines[0], args.Separator))
 		return
 	}
 

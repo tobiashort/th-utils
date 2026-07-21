@@ -1,6 +1,15 @@
 package main
 
-func ExampleJoin() {
+func ExampleJoin_singleFile() {
+	args := Args{
+		Files:     []string{"./testdata/file1"},
+		Separator: "-",
+	}
+	join(args)
+	// Output: a-b-c-d
+}
+
+func ExampleJoin_multipleFiles() {
 	args := Args{
 		Files:     []string{"./testdata/file1", "./testdata/file2", "./testdata/file3"},
 		Separator: " ",
