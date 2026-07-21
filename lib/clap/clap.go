@@ -13,6 +13,7 @@ import (
 	"unicode"
 
 	"github.com/tobiashort/th-utils/lib/cfmt"
+	"github.com/tobiashort/th-utils/lib/ternary"
 )
 
 var (
@@ -791,7 +792,7 @@ func printHelp(args []arg, w io.Writer) {
 				desc += " (can be specified multiple times)"
 			}
 			if arg.defaultValue != "" {
-				desc += cfmt.Sprintf(" (default: %s)", arg.defaultValue)
+				desc += cfmt.Sprintf(" (default: %s)", ternary.IfThenElse(arg.kind == reflect.String, strconv.Quote(arg.defaultValue), arg.defaultValue))
 			}
 			cfmt.Fprintf(&buf, "  #y{%-*s}  %s\n", maxLabelLen, labels[arg.name], desc)
 		}
@@ -813,7 +814,7 @@ func printHelp(args []arg, w io.Writer) {
 				additionalDesciptions = append(additionalDesciptions, "can be specified multiple times")
 			}
 			if arg.defaultValue != "" {
-				additionalDesciptions = append(additionalDesciptions, "default: "+arg.defaultValue)
+				additionalDesciptions = append(additionalDesciptions, "default: "+ternary.IfThenElse(arg.kind == reflect.String, strconv.Quote(arg.defaultValue), arg.defaultValue))
 			}
 			var desc string
 			if len(additionalDesciptions) > 0 {
