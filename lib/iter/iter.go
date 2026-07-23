@@ -20,10 +20,10 @@ func From[A any](slice []A) Iterator[A] {
 	}
 }
 
-func Skip[A any](iterator Iterator[A], skip int) Iterator[A] {
+func (iter Iterator[A]) Skip(skip int) Iterator[A] {
 	return Iterator[A]{
 		seq: func(yield func(int, A) bool) {
-			for index, item := range iterator.seq {
+			for index, item := range iter.seq {
 				if index >= skip {
 					if !yield(index, item) {
 						break
@@ -34,10 +34,10 @@ func Skip[A any](iterator Iterator[A], skip int) Iterator[A] {
 	}
 }
 
-func Filter[A any](iterator Iterator[A], filter func(A) bool) Iterator[A] {
+func (iter Iterator[A]) Filter(filter func(A) bool) Iterator[A] {
 	return Iterator[A]{
 		seq: func(yield func(int, A) bool) {
-			for index, item := range iterator.seq {
+			for index, item := range iter.seq {
 				if filter(item) {
 					if !yield(index, item) {
 						return
@@ -48,10 +48,10 @@ func Filter[A any](iterator Iterator[A], filter func(A) bool) Iterator[A] {
 	}
 }
 
-func Map[A, B any](iterator Iterator[A], mapper func(A) B) Iterator[B] {
+func (iter Iterator[A]) Map[B any](mapper func(A) B) Iterator[B] {
 	return Iterator[B]{
 		seq: func(yield func(int, B) bool) {
-			for index, item := range iterator.seq {
+			for index, item := range iter.seq {
 				if !yield(index, mapper(item)) {
 					return
 				}
@@ -60,23 +60,23 @@ func Map[A, B any](iterator Iterator[A], mapper func(A) B) Iterator[B] {
 	}
 }
 
-func Reduce[A any](iterator Iterator[A], initialValue A, reduce func(accumulator, value A) A) A {
+func (iter Iterator[A]) Reduce(initialValue A, reduce func(accumulator, value A) A) A {
 	accumulator := initialValue
-	for _, item := range iterator.seq {
+	for _, item := range iter.seq {
 		accumulator = reduce(accumulator, item)
 	}
 	return accumulator
 }
 
-func ForEach[A any](iterator Iterator[A], do func(A)) {
-	for _, item := range iterator.seq {
+func (iter Iterator[A]) ForEach(do func(A)) {
+	for _, item := range iter.seq {
 		do(item)
 	}
 }
 
-func Collect[A any](iterator Iterator[A]) []A {
+func (iter Iterator[A]) Collect() []A {
 	var slice []A
-	for _, item := range iterator.seq {
+	for _, item := range iter.seq {
 		slice = append(slice, item)
 	}
 	return slice

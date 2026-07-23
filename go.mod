@@ -1,3 +1,3 @@
 module github.com/tobiashort/th-utils
 
-go 1.26.0
+go 1.27rc2
