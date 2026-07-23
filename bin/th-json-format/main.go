@@ -2,7 +2,8 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"io"
 	"os"
@@ -16,12 +17,12 @@ type Args struct {
 	JSON string `clap:"positional,desc='The JSON string. Reads from Stdin if not specified.'"`
 }
 
-func unmarshal(r json.RawMessage) any {
+func unmarshal(r jsontext.Value) any {
 	r = bytes.TrimSpace(r)
 	switch r[0] {
 	case '[':
 		var v []any
-		var temp []json.RawMessage
+		var temp []jsontext.Value
 		must.Do(json.Unmarshal(r, &temp))
 		for _, t := range temp {
 			v = append(v, unmarshal(t))
@@ -40,7 +41,7 @@ func unmarshal(r json.RawMessage) any {
 
 func format(input []byte) []byte {
 	unmarshalled := unmarshal(input)
-	return must.Do2(json.MarshalIndent(unmarshalled, "", "  "))
+	return must.Do2(json.Marshal(unmarshalled, jsontext.WithIndent("  ")))
 }
 
 func main() {

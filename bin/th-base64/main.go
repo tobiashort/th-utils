@@ -7,20 +7,22 @@ import (
 	"os"
 
 	"github.com/tobiashort/th-utils/lib/clap"
+	"github.com/tobiashort/th-utils/lib/must"
 )
 
 type Args struct {
-	Raw    bool `clap:"desc='no padding'"`
-	Url    bool `clap:"desc='url and file safe'"`
-	Decode bool `clap:"desc='decode otherwise encode'"`
+	Raw    bool   `clap:"desc='no padding'"`
+	Url    bool   `clap:"desc='url and file safe'"`
+	Decode bool   `clap:"desc='decode otherwise encode'"`
+	Text   string `clap:"positional,desc='The string to encode/decode. Reads from stdin if not specified'"`
 }
 
 func main() {
 	args := Args{}
 	clap.Parse(&args)
-	data, err := io.ReadAll(os.Stdin)
-	if err != nil {
-		panic(err)
+	data := []byte(args.Text)
+	if len(data) == 0 {
+		data = must.Do2(io.ReadAll(os.Stdin))
 	}
 	var encoding *base64.Encoding
 	if args.Raw {

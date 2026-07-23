@@ -1,7 +1,8 @@
 package orderedmap
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"reflect"
 	"testing"
@@ -153,7 +154,7 @@ func TestUnmarshalMarshalStringAny(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			dataOut, err := json.MarshalIndent(m, "", "  ")
+			dataOut, err := json.Marshal(m, jsontext.WithIndent("  "))
 			if err != nil {
 				t.Fatal(err)
 			}

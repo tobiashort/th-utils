@@ -2,7 +2,8 @@ package orderedmap
 
 import (
 	"bytes"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"iter"
 	"reflect"
@@ -97,32 +98,29 @@ func (m *OrderedMap[K, V]) UnmarshalJSON(data []byte) (err error) {
 	m.keys = make([]K, 0)
 	m.keyValues = make(map[K]V)
 
-	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder := jsontext.NewDecoder(bytes.NewReader(data))
 
 	// parse {
-	token := must.Do2(decoder.Token())
-	if token != json.Delim('{') {
+	token := must.Do2(decoder.ReadToken())
+	if token.Kind() != jsontext.KindBeginObject {
 		return fmt.Errorf("at %d expected '{', got '%s'", decoder.InputOffset(), token)
 	}
 
 next:
 	// parse }
-	token = must.Do2(decoder.Token())
-	if token == json.Delim('}') {
+	token = must.Do2(decoder.ReadToken())
+	if token.Kind() == jsontext.KindEndObject {
 		return nil
 	}
 
 	// if not } we parsed a key
-	key := token.(K)
+	var key any
+	key = token.String()
 
 	// parse value
-	var valueRaw json.RawMessage
-	must.Do(decoder.Decode(&valueRaw))
-
-	var valueCompacted bytes.Buffer
-	must.Do(json.Compact(&valueCompacted, valueRaw))
-
-	valueStr := valueCompacted.String()
+	valueRaw := must.Do2(decoder.ReadValue())
+	must.Do(valueRaw.Compact())
+	valueStr := valueRaw.String()
 
 	var value any
 
@@ -156,8 +154,8 @@ next:
 	}
 
 	// add key and value
-	m.keys = append(m.keys, key)
-	m.keyValues[key] = value.(V)
+	m.keys = append(m.keys, key.(K))
+	m.keyValues[key.(K)] = value.(V)
 
 	// continue parsing
 	goto next
@@ -169,12 +167,12 @@ func (m OrderedMap[K, V]) MarshalJSON() ([]byte, error) {
 	}
 
 	builder := strings.Builder{}
-	encoder := json.NewEncoder(&builder)
+	encoder := jsontext.NewEncoder(&builder)
 	builder.WriteString("{")
 	for idx, key := range m.keys {
 		val := m.keyValues[key]
 		fmt.Fprintf(&builder, `"%v":`, key)
-		err := encoder.Encode(val)
+		err := json.MarshalEncode(encoder, val)
 		if err != nil {
 			return nil, err
 		}
