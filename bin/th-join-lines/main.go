@@ -8,7 +8,6 @@ import (
 	"github.com/tobiashort/th-utils/lib/clap"
 	"github.com/tobiashort/th-utils/lib/must"
 	"github.com/tobiashort/th-utils/lib/slices"
-	"github.com/tobiashort/th-utils/lib/zip"
 )
 
 type Args struct {
@@ -35,7 +34,7 @@ func join(args Args) {
 	}
 
 	joined := slices.Reduce(lines[1:], lines[0], func(a, b []string) []string {
-		res := zip.Zip(struct{ A, B string }{}, a, b)
+		res := slices.Zip(struct{ A, B string }{}, a, b)
 		return slices.Map(res, func(s struct{ A, B string }) string { return s.A + args.Separator + s.B })
 	})
 
