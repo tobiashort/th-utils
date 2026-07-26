@@ -18,6 +18,8 @@ type Args struct {
 	File string `clap:"positional,desc='The file to format. Reads from Stdin if not specified.'"`
 }
 
+var formatCommand = "gofmt"
+
 func Fmt(src string) {
 	var replacements [][]string
 	var replacement []string
@@ -55,14 +57,14 @@ func Fmt(src string) {
 
 	src = strings.Join(srcLines2, "\n")
 
-	cmd := exec.Command("goimports")
+	cmd := exec.Command(formatCommand)
 	cmd.Stdin = strings.NewReader(src)
-	goimportsOut := string(must.Do2(cmd.CombinedOutput()))
+	formatCommandOut := string(must.Do2(cmd.CombinedOutput()))
 
 	enabled = false
 	replacementIndex := 0
 	srcLines3 := make([]string, 0)
-	scanner := bufio.NewScanner(strings.NewReader(goimportsOut))
+	scanner := bufio.NewScanner(strings.NewReader(formatCommandOut))
 	for scanner.Scan() {
 		srcLine := scanner.Text()
 		if strings.TrimSpace(srcLine) == "//nofmt:enable" {
@@ -119,6 +121,10 @@ func main() {
                                  |[custom formatted code]
                                  |//nofmt:disable`))
 	clap.Parse(&args)
+
+	if _, err := exec.LookPath("goimports"); err == nil {
+		formatCommand = "goimports"
+	}
 
 	var src string
 	if args.File != "" {
