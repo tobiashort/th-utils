@@ -2,6 +2,7 @@ package worker
 
 import (
 	"fmt"
+	"runtime"
 	"strconv"
 	"sync"
 
@@ -22,6 +23,9 @@ type pool struct {
 }
 
 func NewPool(cap int) Pool {
+	if cap <= 0 {
+		cap = runtime.NumCPU()
+	}
 	pool := &pool{}
 	pool.cap = cap
 	pool.workers = make([]*worker, cap)

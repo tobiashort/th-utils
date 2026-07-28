@@ -162,7 +162,7 @@ func main() {
 	args = Args{}
 	clap.Parse(&args)
 
-	pool := worker.NewPool(5)
+	pool := worker.NewPool(0)
 	gitRepositories := findGitRepositories()
 	for _, path := range gitRepositories {
 		worker := pool.GetWorker()
