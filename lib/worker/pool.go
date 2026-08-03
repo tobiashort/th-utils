@@ -23,7 +23,7 @@ type pool struct {
 }
 
 func NewPool(cap int) Pool {
-	if cap <= 0 {
+	if cap <= 0 || cap > runtime.NumCPU() {
 		cap = runtime.NumCPU()
 	}
 	pool := &pool{}

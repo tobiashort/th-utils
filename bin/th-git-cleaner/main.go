@@ -162,8 +162,8 @@ func main() {
 	args = Args{}
 	clap.Parse(&args)
 
-	pool := worker.NewPool(0)
 	gitRepositories := findGitRepositories()
+	pool := worker.NewPool(len(gitRepositories))
 	for _, path := range gitRepositories {
 		worker := pool.GetWorker()
 		go cleanGitRepository(path, worker)
