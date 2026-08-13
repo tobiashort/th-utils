@@ -5,10 +5,11 @@ Usage:
   th-replace-all [OPTIONS] <OldString> <NewString>
 
 Options:
-  -h, --help  Show this help message and exit
+  -r, --regex  Use regex
+  -h, --help   Show this help message and exit
 
 Positional arguments:
-  OldString   The string to replace (required)
-  NewString   The strint that replaces OldString (required)
+  OldString    The string to replace (required)
+  NewString    The strint that replaces OldString (required)
 
 ```
