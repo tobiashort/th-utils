@@ -5,6 +5,7 @@ package main
 import (
 	"os"
 	"os/exec"
+	"runtime"
 )
 
 func main() {
@@ -14,6 +15,9 @@ func main() {
 	}
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, "CGO_ENABLED=1")
+	if runtime.GOOS == "windows" {
+		cmd.Env = append(cmd.Env, "CC=zig cc")
+	}
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
