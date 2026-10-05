@@ -25,3 +25,12 @@ func Reduce[A any](slice []A, initialValue A, reduce func(accumulator, value A) 
 func ForEach[A any](slice []A, do func(A)) {
 	iter.From(slice).ForEach(do)
 }
+
+func Chunks[T any](slice []T, size int) [][]T {
+	var result [][]T
+	for i := 0; i < len(slice); i += size {
+		end := min(i+size, len(slice))
+		result = append(result, slice[i:end])
+	}
+	return result
+}
