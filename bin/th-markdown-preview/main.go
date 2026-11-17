@@ -26,7 +26,7 @@ func run() int {
 	}
 	clog.Infof("pandoc: #g{%s}", pth)
 
-	tmp, err := os.CreateTemp("", "markdown-preview_*.html")
+	tmp, err := os.CreateTemp(".", "markdown-preview_*.html")
 	if err != nil {
 		clog.Error("create temp:", err)
 		return 1
