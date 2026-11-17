@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"os"
 	"os/exec"
 	"runtime"
 
 	"github.com/tobiashort/th-utils/lib/clap"
 	"github.com/tobiashort/th-utils/lib/clog"
+	"github.com/tobiashort/th-utils/lib/must"
 )
 
 type Args struct {
@@ -54,10 +56,12 @@ func run() int {
 	}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	err = cmd.Run()
+	err = cmd.Start()
 	if err != nil {
 		return 1
 	}
+
+	must.Do2(bufio.NewReader(os.Stdin).ReadByte())
 
 	return 0
 }
